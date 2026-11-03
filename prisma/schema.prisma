@@ -1,0 +1,375 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ---------------------------------------------------------------- enums
+
+enum Role {
+  CUSTOMER
+  ADMIN
+}
+
+enum Humor {
+  ACIDO
+  SARCASTICO
+  EXISTENCIAL
+  ABSURDO
+  PASSIVO_AGRESSIVO
+}
+
+enum CouponType {
+  PERCENT
+  FIXED
+  FREE_SHIPPING
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  CANCELLED
+  REFUNDED
+  FAILED
+}
+
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  IN_PROCESS
+  REJECTED
+  REFUNDED
+  CANCELLED
+}
+
+enum FulfillmentStatus {
+  QUEUED
+  SENT
+  IN_PRODUCTION
+  SHIPPED
+  DELIVERED
+  ERROR
+}
+
+// ---------------------------------------------------------------- usuarios
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String
+  name         String
+  phone        String?
+  document     String?
+  role         Role     @default(CUSTOMER)
+  humorLevel   Int      @default(50)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  addresses  Address[]
+  orders     Order[]
+  cart       Cart?
+  discoveries EasterEggDiscovery[]
+
+  @@map("users")
+}
+
+model Address {
+  id         String   @id @default(uuid())
+  userId     String
+  label      String   @default("Casa")
+  recipient  String
+  zipCode    String
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ---------------------------------------------------------------- catalogo
+
+model Category {
+  id          String  @id @default(uuid())
+  slug        String  @unique
+  name        String
+  description String?
+  emoji       String?
+  position    Int     @default(0)
+
+  products Product[]
+
+  @@map("categories")
+}
+
+model Product {
+  id               String   @id @default(uuid())
+  slug             String   @unique
+  name             String
+  shortDescription String
+  description      String
+  humor            Humor    @default(ACIDO)
+  basePriceCents   Int
+  categoryId       String
+  tags             String[] @default([])
+  isFeatured       Boolean  @default(false)
+  isSecret         Boolean  @default(false)
+  isActive         Boolean  @default(true)
+  printProviderSku String?
+  rating           Float    @default(5)
+  ratingCount      Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  category Category         @relation(fields: [categoryId], references: [id])
+  variants ProductVariant[]
+  images   ProductImage[]
+
+  @@index([categoryId])
+  @@index([humor])
+  @@map("products")
+}
+
+model ProductVariant {
+  id                     String  @id @default(uuid())
+  productId              String
+  sku                    String  @unique
+  size                   String?
+  color                  String?
+  model                  String?
+  priceCents             Int
+  weightGrams            Int     @default(300)
+  isAvailable            Boolean @default(true)
+  printProviderVariantId String?
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  cartItems  CartItem[]
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+model ProductImage {
+  id        String @id @default(uuid())
+  productId String
+  url       String
+  alt       String
+  position  Int    @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@map("product_images")
+}
+
+// ---------------------------------------------------------------- carrinho
+
+model Cart {
+  id        String   @id @default(uuid())
+  userId    String?  @unique
+  sessionId String?  @unique
+  couponId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user   User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coupon Coupon?    @relation(fields: [couponId], references: [id])
+  items  CartItem[]
+
+  @@map("carts")
+}
+
+model CartItem {
+  id         String   @id @default(uuid())
+  cartId     String
+  variantId  String
+  quantity   Int      @default(1)
+  customText String?
+  createdAt  DateTime @default(now())
+
+  cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([cartId, variantId])
+  @@index([cartId])
+  @@map("cart_items")
+}
+
+// ---------------------------------------------------------------- cupons
+
+model Coupon {
+  id              String     @id @default(uuid())
+  code            String     @unique
+  description     String
+  type            CouponType @default(PERCENT)
+  value           Int        @default(0)
+  minSubtotalCents Int       @default(0)
+  maxUses         Int?
+  usedCount       Int        @default(0)
+  isSecret        Boolean    @default(false)
+  isActive        Boolean    @default(true)
+  expiresAt       DateTime?
+  createdAt       DateTime   @default(now())
+
+  carts      Cart[]
+  orders     Order[]
+  easterEggs EasterEgg[]
+
+  @@map("coupons")
+}
+
+// ---------------------------------------------------------------- pedidos
+
+model Order {
+  id     String      @id @default(uuid())
+  number String      @unique
+  userId String?
+  status OrderStatus @default(PENDING)
+
+  customerName     String
+  customerEmail    String
+  customerPhone    String?
+  customerDocument String?
+
+  shippingRecipient  String
+  shippingZipCode    String
+  shippingStreet     String
+  shippingNumber     String
+  shippingComplement String?
+  shippingDistrict   String
+  shippingCity       String
+  shippingState      String
+
+  subtotalCents  Int
+  discountCents  Int @default(0)
+  shippingCents  Int @default(0)
+  totalCents     Int
+
+  couponId       String?
+  shippingMethod String  @default("economico")
+  estimatedDays  Int     @default(10)
+  trackingCode   String?
+  notes          String?
+  timeline       Json    @default("[]")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User?        @relation(fields: [userId], references: [id])
+  coupon      Coupon?      @relation(fields: [couponId], references: [id])
+  items       OrderItem[]
+  payment     Payment?
+  fulfillment Fulfillment?
+
+  @@index([userId])
+  @@index([status])
+  @@map("orders")
+}
+
+model OrderItem {
+  id             String  @id @default(uuid())
+  orderId        String
+  variantId      String?
+  productName    String
+  variantLabel   String
+  sku            String
+  unitPriceCents Int
+  quantity       Int
+  totalCents     Int
+  imageUrl       String?
+  customText     String?
+
+  order   Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant? @relation(fields: [variantId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+model Payment {
+  id                String        @id @default(uuid())
+  orderId           String        @unique
+  provider          String        @default("mercadopago")
+  preferenceId      String?
+  providerPaymentId String?
+  status            PaymentStatus @default(PENDING)
+  method            String?
+  installments      Int?
+  amountCents       Int
+  initPoint         String?
+  rawPayload        Json?
+  paidAt            DateTime?
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("payments")
+}
+
+model Fulfillment {
+  id              String            @id @default(uuid())
+  orderId         String            @unique
+  provider        String            @default("mock")
+  providerOrderId String?
+  status          FulfillmentStatus @default(QUEUED)
+  trackingCode    String?
+  trackingUrl     String?
+  lastError       String?
+  rawPayload      Json?
+  sentAt          DateTime?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("fulfillments")
+}
+
+// ---------------------------------------------------------------- easter eggs
+
+model EasterEgg {
+  id             String  @id @default(uuid())
+  code           String  @unique
+  title          String
+  hint           String
+  message        String
+  trigger        String
+  points         Int     @default(10)
+  rewardCouponId String?
+  isActive       Boolean @default(true)
+
+  rewardCoupon Coupon?              @relation(fields: [rewardCouponId], references: [id])
+  discoveries  EasterEggDiscovery[]
+
+  @@map("easter_eggs")
+}
+
+model EasterEggDiscovery {
+  id           String   @id @default(uuid())
+  easterEggId  String
+  userId       String?
+  sessionId    String?
+  discoveredAt DateTime @default(now())
+
+  easterEgg EasterEgg @relation(fields: [easterEggId], references: [id], onDelete: Cascade)
+  user      User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([easterEggId, userId])
+  @@unique([easterEggId, sessionId])
+  @@map("easter_egg_discoveries")
+}
