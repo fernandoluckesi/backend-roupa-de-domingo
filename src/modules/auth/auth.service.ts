@@ -88,23 +88,9 @@ export class AuthService {
     };
   }
 
-  private buildSession(user: {
-    id: string;
-    email: string;
-    name: string;
-    role: string;
-    humorLevel: number;
-  }) {
+  /** Sessao com o perfil completo (CPF, telefone, enderecos): o front usa direto na tela de conta. */
+  private async buildSession(user: { id: string; email: string }) {
     const accessToken = this.jwt.sign({ sub: user.id, email: user.email });
-    return {
-      accessToken,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
-        humorLevel: user.humorLevel,
-      },
-    };
+    return { accessToken, user: await this.me(user.id) };
   }
 }

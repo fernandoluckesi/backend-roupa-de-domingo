@@ -8,7 +8,6 @@ import { OrderStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CartOwner, CartService } from "../cart/cart.service";
 import { PaymentsService } from "../payments/payments.service";
-import { ShippingService } from "../shipping/shipping.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import {
   generateOrderNumber,
@@ -47,7 +46,6 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly cart: CartService,
     private readonly payments: PaymentsService,
-    private readonly shipping: ShippingService,
   ) {}
 
   /**
@@ -67,12 +65,11 @@ export class OrdersService {
     }
 
     const { totals, items } = cartSnapshot;
-    const shippingOption = this.shipping.resolveOption(
-      zipCode,
-      totals.weightGrams,
-      totals.subtotalCents - totals.discountCents,
-      method,
-    );
+    // Mesma cotacao usada nos totais do carrinho (evita uma segunda chamada a Printful)
+    const shippingOption = cartSnapshot.shipping.selected;
+    if (!shippingOption) {
+      throw new BadRequestException("Nao foi possivel cotar o frete para esse CEP.");
+    }
     const shippingCents = totals.shippingCents;
 
     const couponRecord = cartSnapshot.coupon

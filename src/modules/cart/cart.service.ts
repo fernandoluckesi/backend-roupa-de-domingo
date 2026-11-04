@@ -318,10 +318,14 @@ export class CartService {
     let selectedShipping: ShippingOption | null = null;
 
     if (zipCode && itemCount > 0) {
-      shippingOptions = this.shipping.quote(
+      shippingOptions = await this.shipping.quote(
         zipCode,
         weightGrams,
         subtotalCents - discountCents,
+        cart.items.map((item) => ({
+          providerVariantId: item.variant.printProviderVariantId,
+          quantity: item.quantity,
+        })),
       );
       selectedShipping =
         shippingOptions.find((o) => o.method === method) ?? shippingOptions[0];

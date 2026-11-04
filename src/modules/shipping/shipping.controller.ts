@@ -39,12 +39,15 @@ export class ShippingController {
   constructor(private readonly shipping: ShippingService) {}
 
   @Post("quote")
-  @ApiOperation({ summary: "Cota frete por CEP e peso" })
-  quote(@Body() dto: QuoteShippingDto) {
+  @ApiOperation({
+    summary:
+      "Cota frete por CEP e peso (tabela). A cotacao real da Printful sai em GET /cart?zipCode=",
+  })
+  async quote(@Body() dto: QuoteShippingDto) {
     return {
       zipCode: dto.zipCode,
       freeShippingThresholdCents: this.shipping.freeShippingThresholdCents,
-      options: this.shipping.quote(
+      options: await this.shipping.quote(
         dto.zipCode,
         dto.weightGrams ?? 300,
         dto.subtotalCents ?? 0,
