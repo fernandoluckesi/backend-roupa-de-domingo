@@ -1,11 +1,20 @@
-import { Body, Controller, Post } from "@nestjs/common";
+import { Body, Controller, NotFoundException, Post } from "@nestjs/common";
 import {
   ApiOperation,
   ApiProperty,
   ApiPropertyOptional,
   ApiTags,
 } from "@nestjs/swagger";
-import { IsInt, IsOptional, IsString, Matches, Min } from "class-validator";
+import {
+  IsInt,
+  IsOptional,
+  IsString,
+  IsUUID,
+  Matches,
+  Max,
+  Min,
+} from "class-validator";
+import { PrismaService } from "../../prisma/prisma.service";
 import { ShippingService } from "./shipping.service";
 
 class QuoteShippingDto {
@@ -31,26 +40,61 @@ class QuoteShippingDto {
   @IsOptional()
   @IsString()
   cartId?: string;
+
+  @ApiPropertyOptional({
+    description:
+      "Variante do produto (pagina de produto). Com ela, peso, subtotal e cotacao real da Printful vem do catalogo",
+  })
+  @IsOptional()
+  @IsUUID()
+  variantId?: string;
+
+  @ApiPropertyOptional({ default: 1 })
+  @IsOptional()
+  @IsInt()
+  @Min(1)
+  @Max(99)
+  quantity?: number;
 }
 
 @ApiTags("shipping")
 @Controller("shipping")
 export class ShippingController {
-  constructor(private readonly shipping: ShippingService) {}
+  constructor(
+    private readonly shipping: ShippingService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   @Post("quote")
   @ApiOperation({
     summary:
-      "Cota frete por CEP e peso (tabela). A cotacao real da Printful sai em GET /cart?zipCode=",
+      "Cota frete por CEP. Com variantId usa o catalogo (e a Printful, se a variante existir la)",
   })
   async quote(@Body() dto: QuoteShippingDto) {
+    let weightGrams = dto.weightGrams ?? 300;
+    let subtotalCents = dto.subtotalCents ?? 0;
+    let items: { providerVariantId: string | null; quantity: number }[] = [];
+
+    if (dto.variantId) {
+      const variant = await this.prisma.productVariant.findUnique({
+        where: { id: dto.variantId },
+        select: { priceCents: true, weightGrams: true, printProviderVariantId: true },
+      });
+      if (!variant) throw new NotFoundException("Variante nao encontrada.");
+      const quantity = dto.quantity ?? 1;
+      weightGrams = variant.weightGrams * quantity;
+      subtotalCents = variant.priceCents * quantity;
+      items = [{ providerVariantId: variant.printProviderVariantId, quantity }];
+    }
+
     return {
       zipCode: dto.zipCode,
       freeShippingThresholdCents: this.shipping.freeShippingThresholdCents,
       options: await this.shipping.quote(
         dto.zipCode,
-        dto.weightGrams ?? 300,
-        dto.subtotalCents ?? 0,
+        weightGrams,
+        subtotalCents,
+        items,
       ),
     };
   }
