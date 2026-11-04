@@ -24,5 +24,6 @@ COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/tsconfig.json ./tsconfig.json
 EXPOSE 3333
 # Migrations antes de subir. O seed so roda com o banco vazio (SEED_IF_EMPTY): nunca apaga dados.
-# Falha no seed nao impede a API de subir (fica registrada no log).
-CMD ["sh", "-c", "npm run prisma:deploy && { SEED_IF_EMPTY=true npm run seed || echo 'AVISO: seed falhou'; } && node dist/src/main"]
+# catalog:sync aplica prisma/catalog.ts (upsert por slug/SKU) sem tocar em pedidos e usuarios.
+# Falhas no seed ou no sync nao impedem a API de subir (ficam registradas no log).
+CMD ["sh", "-c", "npm run prisma:deploy && { SEED_IF_EMPTY=true npm run seed || echo 'AVISO: seed falhou'; } && { npm run catalog:sync || echo 'AVISO: catalog:sync falhou'; } && node dist/src/main"]

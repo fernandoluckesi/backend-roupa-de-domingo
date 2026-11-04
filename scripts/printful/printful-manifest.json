@@ -1,0 +1,1484 @@
+{
+  "camiseta-sorria-e-de-graca": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-SORRIA-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SORRIA-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SORRIA-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SORRIA-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SORRIA-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SORRIA-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SORRIA-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SORRIA-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SORRIA-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SORRIA-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "camiseta-estou-bem-mentira": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-BEM-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-BEM-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-BEM-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-BEM-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-BEM-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-BEM-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-BEM-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-BEM-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-BEM-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-BEM-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "camiseta-trabalho-em-equipe": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-EQUIPE-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-EQUIPE-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-EQUIPE-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-EQUIPE-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-EQUIPE-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-EQUIPE-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-EQUIPE-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-EQUIPE-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-EQUIPE-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-EQUIPE-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "camiseta-domingo-eterno": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-DOMINGO-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-DOMINGO-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-DOMINGO-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-DOMINGO-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-DOMINGO-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-DOMINGO-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-DOMINGO-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-DOMINGO-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-DOMINGO-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-DOMINGO-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "camiseta-nao-foi-nada": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-NADA-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-NADA-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-NADA-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-NADA-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-NADA-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-NADA-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-NADA-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-NADA-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-NADA-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-NADA-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "camiseta-voce-nao-devia-estar-aqui": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-SECRETA-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SECRETA-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SECRETA-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SECRETA-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SECRETA-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SECRETA-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SECRETA-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SECRETA-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SECRETA-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SECRETA-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "caneca-primeiro-cafe": {
+    "type": "caneca",
+    "variants": [
+      {
+        "externalId": "CAN-CAFE-325",
+        "variantId": 1320,
+        "catalogProductId": 19,
+        "retail": "69.90",
+        "sku": "325",
+        "size": "325ml",
+        "color": "Branca"
+      }
+    ]
+  },
+  "caneca-reuniao-email": {
+    "type": "caneca",
+    "variants": [
+      {
+        "externalId": "CAN-EMAIL-325",
+        "variantId": 1320,
+        "catalogProductId": 19,
+        "retail": "69.90",
+        "sku": "325",
+        "size": "325ml",
+        "color": "Branca"
+      }
+    ]
+  },
+  "caneca-chefe-do-ano": {
+    "type": "caneca",
+    "variants": [
+      {
+        "externalId": "CAN-CHEFE-325",
+        "variantId": 1320,
+        "catalogProductId": 19,
+        "retail": "69.90",
+        "sku": "325",
+        "size": "325ml",
+        "color": "Branca"
+      }
+    ]
+  },
+  "caneca-lagrimas-dos-meus-inimigos": {
+    "type": "caneca",
+    "variants": [
+      {
+        "externalId": "CAN-LAGRIMAS-325",
+        "variantId": 1320,
+        "catalogProductId": 19,
+        "retail": "69.90",
+        "sku": "325",
+        "size": "325ml",
+        "color": "Branca"
+      }
+    ]
+  },
+  "capa-visto-e-nao-respondido": {
+    "type": "capa",
+    "variants": [
+      {
+        "externalId": "CAP-VISTO-IP13",
+        "variantId": 13427,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP13",
+        "model": "iPhone 13",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP14",
+        "variantId": 16240,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP14",
+        "model": "iPhone 14",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP15PRO",
+        "variantId": 17618,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15PRO",
+        "model": "iPhone 15 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP15",
+        "variantId": 17616,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15",
+        "model": "iPhone 15",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP16PROMAX",
+        "variantId": 20293,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PROMAX",
+        "model": "iPhone 16 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP16PRO",
+        "variantId": 20292,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PRO",
+        "model": "iPhone 16 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP16",
+        "variantId": 20290,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16",
+        "model": "iPhone 16",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP17PROMAX",
+        "variantId": 33996,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PROMAX",
+        "model": "iPhone 17 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP17PRO",
+        "variantId": 33995,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PRO",
+        "model": "iPhone 17 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-IP17",
+        "variantId": 33993,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17",
+        "model": "iPhone 17",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-GALAXYS25ULTRA",
+        "variantId": 21483,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25ULTRA",
+        "model": "Galaxy S25 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-GALAXYS25",
+        "variantId": 21481,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25",
+        "model": "Galaxy S25",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-GALAXYS23",
+        "variantId": 18749,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS23",
+        "model": "Galaxy S23",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-GALAXYS24ULTRA",
+        "variantId": 18736,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24ULTRA",
+        "model": "Galaxy S24 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-VISTO-GALAXYS24",
+        "variantId": 18734,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24",
+        "model": "Galaxy S24",
+        "color": null,
+        "size": null
+      }
+    ]
+  },
+  "capa-bateria-social-2": {
+    "type": "capa",
+    "variants": [
+      {
+        "externalId": "CAP-BATERIA-IP13",
+        "variantId": 13427,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP13",
+        "model": "iPhone 13",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP14",
+        "variantId": 16240,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP14",
+        "model": "iPhone 14",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP15PRO",
+        "variantId": 17618,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15PRO",
+        "model": "iPhone 15 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP15",
+        "variantId": 17616,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15",
+        "model": "iPhone 15",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP16PROMAX",
+        "variantId": 20293,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PROMAX",
+        "model": "iPhone 16 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP16PRO",
+        "variantId": 20292,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PRO",
+        "model": "iPhone 16 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP16",
+        "variantId": 20290,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16",
+        "model": "iPhone 16",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP17PROMAX",
+        "variantId": 33996,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PROMAX",
+        "model": "iPhone 17 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP17PRO",
+        "variantId": 33995,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PRO",
+        "model": "iPhone 17 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-IP17",
+        "variantId": 33993,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17",
+        "model": "iPhone 17",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-GALAXYS25ULTRA",
+        "variantId": 21483,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25ULTRA",
+        "model": "Galaxy S25 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-GALAXYS25",
+        "variantId": 21481,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25",
+        "model": "Galaxy S25",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-GALAXYS23",
+        "variantId": 18749,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS23",
+        "model": "Galaxy S23",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-GALAXYS24ULTRA",
+        "variantId": 18736,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24ULTRA",
+        "model": "Galaxy S24 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-BATERIA-GALAXYS24",
+        "variantId": 18734,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24",
+        "model": "Galaxy S24",
+        "color": null,
+        "size": null
+      }
+    ]
+  },
+  "capa-rolando-por-nada": {
+    "type": "capa",
+    "variants": [
+      {
+        "externalId": "CAP-ROLANDO-IP13",
+        "variantId": 13427,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP13",
+        "model": "iPhone 13",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP14",
+        "variantId": 16240,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP14",
+        "model": "iPhone 14",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP15PRO",
+        "variantId": 17618,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15PRO",
+        "model": "iPhone 15 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP15",
+        "variantId": 17616,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15",
+        "model": "iPhone 15",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP16PROMAX",
+        "variantId": 20293,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PROMAX",
+        "model": "iPhone 16 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP16PRO",
+        "variantId": 20292,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PRO",
+        "model": "iPhone 16 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP16",
+        "variantId": 20290,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16",
+        "model": "iPhone 16",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP17PROMAX",
+        "variantId": 33996,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PROMAX",
+        "model": "iPhone 17 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP17PRO",
+        "variantId": 33995,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PRO",
+        "model": "iPhone 17 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-IP17",
+        "variantId": 33993,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17",
+        "model": "iPhone 17",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-GALAXYS25ULTRA",
+        "variantId": 21483,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25ULTRA",
+        "model": "Galaxy S25 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-GALAXYS25",
+        "variantId": 21481,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25",
+        "model": "Galaxy S25",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-GALAXYS23",
+        "variantId": 18749,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS23",
+        "model": "Galaxy S23",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-GALAXYS24ULTRA",
+        "variantId": 18736,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24ULTRA",
+        "model": "Galaxy S24 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-ROLANDO-GALAXYS24",
+        "variantId": 18734,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24",
+        "model": "Galaxy S24",
+        "color": null,
+        "size": null
+      }
+    ]
+  },
+  "capa-ja-vou-sair-de-casa": {
+    "type": "capa",
+    "variants": [
+      {
+        "externalId": "CAP-SAINDO-IP13",
+        "variantId": 13427,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP13",
+        "model": "iPhone 13",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP14",
+        "variantId": 16240,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP14",
+        "model": "iPhone 14",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP15PRO",
+        "variantId": 17618,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15PRO",
+        "model": "iPhone 15 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP15",
+        "variantId": 17616,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15",
+        "model": "iPhone 15",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP16PROMAX",
+        "variantId": 20293,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PROMAX",
+        "model": "iPhone 16 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP16PRO",
+        "variantId": 20292,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PRO",
+        "model": "iPhone 16 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP16",
+        "variantId": 20290,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16",
+        "model": "iPhone 16",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP17PROMAX",
+        "variantId": 33996,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PROMAX",
+        "model": "iPhone 17 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP17PRO",
+        "variantId": 33995,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PRO",
+        "model": "iPhone 17 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-IP17",
+        "variantId": 33993,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17",
+        "model": "iPhone 17",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-GALAXYS25ULTRA",
+        "variantId": 21483,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25ULTRA",
+        "model": "Galaxy S25 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-GALAXYS25",
+        "variantId": 21481,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25",
+        "model": "Galaxy S25",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-GALAXYS23",
+        "variantId": 18749,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS23",
+        "model": "Galaxy S23",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-GALAXYS24ULTRA",
+        "variantId": 18736,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24ULTRA",
+        "model": "Galaxy S24 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-SAINDO-GALAXYS24",
+        "variantId": 18734,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24",
+        "model": "Galaxy S24",
+        "color": null,
+        "size": null
+      }
+    ]
+  },
+  "moletom-socialmente-indisponivel": {
+    "type": "moletom",
+    "variants": [
+      {
+        "externalId": "MOL-INDISP-PT-XGG",
+        "variantId": 5534,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-INDISP-PT-G",
+        "variantId": 5532,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-INDISP-PT-M",
+        "variantId": 5531,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-INDISP-PT-P",
+        "variantId": 5530,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-INDISP-PT-GG",
+        "variantId": 5533,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-INDISP-MA-XGG",
+        "variantId": 5598,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-XGG",
+        "size": "XGG",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-INDISP-MA-G",
+        "variantId": 5596,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-G",
+        "size": "G",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-INDISP-MA-M",
+        "variantId": 5595,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-M",
+        "size": "M",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-INDISP-MA-P",
+        "variantId": 5594,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-P",
+        "size": "P",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-INDISP-MA-GG",
+        "variantId": 5597,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-GG",
+        "size": "GG",
+        "color": "Marinho"
+      }
+    ]
+  },
+  "moletom-domingo-18h": {
+    "type": "moletom",
+    "variants": [
+      {
+        "externalId": "MOL-18H-PT-XGG",
+        "variantId": 5534,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-18H-PT-G",
+        "variantId": 5532,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-18H-PT-M",
+        "variantId": 5531,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-18H-PT-P",
+        "variantId": 5530,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-18H-PT-GG",
+        "variantId": 5533,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-18H-MA-XGG",
+        "variantId": 5598,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-XGG",
+        "size": "XGG",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-18H-MA-G",
+        "variantId": 5596,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-G",
+        "size": "G",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-18H-MA-M",
+        "variantId": 5595,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-M",
+        "size": "M",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-18H-MA-P",
+        "variantId": 5594,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-P",
+        "size": "P",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-18H-MA-GG",
+        "variantId": 5597,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-GG",
+        "size": "GG",
+        "color": "Marinho"
+      }
+    ]
+  },
+  "garrafa-hidratado-e-cansado": {
+    "type": "garrafa",
+    "variants": [
+      {
+        "externalId": "GAR-CANSADO-PT",
+        "variantId": 16030,
+        "catalogProductId": 382,
+        "retail": "219.90",
+        "sku": "PT",
+        "size": "500ml",
+        "color": "Preta"
+      },
+      {
+        "externalId": "GAR-CANSADO-BR",
+        "variantId": 10798,
+        "catalogProductId": 382,
+        "retail": "219.90",
+        "sku": "BR",
+        "size": "500ml",
+        "color": "Branca"
+      }
+    ]
+  },
+  "garrafa-bebendo-agua-para-nao-responder": {
+    "type": "garrafa",
+    "variants": [
+      {
+        "externalId": "GAR-AGUA-PT",
+        "variantId": 16030,
+        "catalogProductId": 382,
+        "retail": "219.90",
+        "sku": "PT",
+        "size": "500ml",
+        "color": "Preta"
+      },
+      {
+        "externalId": "GAR-AGUA-BR",
+        "variantId": 10798,
+        "catalogProductId": 382,
+        "retail": "219.90",
+        "sku": "BR",
+        "size": "500ml",
+        "color": "Branca"
+      }
+    ]
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "products": [
+    { "slug": "camiseta-sorria-e-de-graca", "type": "camiseta", "lines": ["SORRIA,", "É DE GRAÇA"], "small": "(O RESTO NÃO)" },
+    { "slug": "camiseta-estou-bem-mentira", "type": "camiseta", "lines": ["ESTOU", "BEM"], "small": "(MENTIRA)" },
+    { "slug": "camiseta-trabalho-em-equipe", "type": "camiseta", "lines": ["TRABALHO BEM", "EM EQUIPE"], "small": "(SOZINHO)" },
+    { "slug": "camiseta-domingo-eterno", "type": "camiseta", "lines": ["DOMINGO É", "UMA SENSAÇÃO,", "NÃO UM DIA"] },
+    { "slug": "camiseta-nao-foi-nada", "type": "camiseta", "lines": ["NÃO FOI", "NADA"], "small": "(ERA TUDO)" },
+    { "slug": "camiseta-voce-nao-devia-estar-aqui", "type": "camiseta", "lines": ["VOCÊ NÃO", "DEVIA ESTAR", "AQUI"] },
+    { "slug": "caneca-primeiro-cafe", "type": "caneca", "lines": ["ANTES DO CAFÉ", "EU NÃO ASSINO", "CONTRATO"] },
+    { "slug": "caneca-reuniao-email", "type": "caneca", "lines": ["ISSO PODIA", "SER UM", "E-MAIL"] },
+    { "slug": "caneca-chefe-do-ano", "type": "caneca", "lines": ["CHEFE", "DO ANO"], "small": "(VOTAÇÃO COM 1 VOTO)" },
+    { "slug": "caneca-lagrimas-dos-meus-inimigos", "type": "caneca", "lines": ["LÁGRIMAS DOS", "MEUS INIMIGOS"], "small": "(SEM AÇÚCAR)" },
+    { "slug": "capa-visto-e-nao-respondido", "type": "capa", "lines": ["VISTO", "E NÃO", "RESPON-", "DIDO"] },
+    { "slug": "capa-bateria-social-2", "type": "capa", "lines": ["BATERIA", "SOCIAL:", "2%"] },
+    { "slug": "capa-rolando-por-nada", "type": "capa", "lines": ["ROLANDO", "A TELA", "POR NADA"], "small": "(ESPECÍFICO)" },
+    { "slug": "capa-ja-vou-sair-de-casa", "type": "capa", "lines": ["JÁ ESTOU", "SAINDO"], "small": "(AINDA DEITADO)" },
+    { "slug": "moletom-socialmente-indisponivel", "type": "moletom", "lines": ["SOCIALMENTE", "INDISPONÍVEL"] },
+    { "slug": "moletom-domingo-18h", "type": "moletom", "lines": ["DOMINGO, 18H.", "PRONTO PARA", "O PÂNICO"] },
+    { "slug": "garrafa-hidratado-e-cansado", "type": "garrafa", "lines": ["HIDRATADO", "E AINDA ASSIM", "CANSADO"] },
+    { "slug": "garrafa-bebendo-agua-para-nao-responder", "type": "garrafa", "lines": ["BEBENDO ÁGUA", "PARA NÃO", "RESPONDER"] }
+  ],
+  "types": {
+    "camiseta": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "area": [0.08, 0.06, 0.84, 0.42] },
+    "moletom": { "files": { "front": [1800, 2400] }, "inks": ["light"], "area": [0.1, 0.1, 0.8, 0.36] },
+    "caneca": { "files": { "default": [2700, 1050] }, "inks": ["dark"], "wrap": true, "area": [0.04, 0.1, 0.42, 0.8] },
+    "capa": { "files": { "iphone": [879, 1830], "samsung": [936, 1950] }, "inks": ["dark"], "area": [0.12, 0.3, 0.76, 0.5] },
+    "garrafa": { "files": { "default": [2557, 1582] }, "inks": ["dark", "light"], "area": [0.3, 0.12, 0.4, 0.76] }
+  }
+}
