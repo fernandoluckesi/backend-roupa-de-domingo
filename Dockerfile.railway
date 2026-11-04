@@ -20,6 +20,9 @@ COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
 COPY --from=build /app/prisma ./prisma
 COPY --from=build /app/package.json ./package.json
+# ts-node (seed) precisa do tsconfig; sem ele cai em defaults incompativeis (TS5109)
+COPY --from=build /app/tsconfig.json ./tsconfig.json
 EXPOSE 3333
 # Migrations antes de subir. O seed so roda com o banco vazio (SEED_IF_EMPTY): nunca apaga dados.
-CMD ["sh", "-c", "npm run prisma:deploy && SEED_IF_EMPTY=true npm run seed && node dist/src/main"]
+# Falha no seed nao impede a API de subir (fica registrada no log).
+CMD ["sh", "-c", "npm run prisma:deploy && { SEED_IF_EMPTY=true npm run seed || echo 'AVISO: seed falhou'; } && node dist/src/main"]
