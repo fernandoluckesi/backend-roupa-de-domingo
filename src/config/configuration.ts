@@ -11,6 +11,8 @@ export interface AppConfig {
     publicKey: string;
     useSandbox: boolean;
     notificationUrl: string;
+    /** Assinatura secreta do webhook (painel do MP). Vazia = nao valida x-signature */
+    webhookSecret: string;
   };
   print: {
     provider: "mock" | "http" | "printful";
@@ -45,6 +47,7 @@ export default (): AppConfig => ({
     publicKey: process.env.MP_PUBLIC_KEY ?? "",
     useSandbox: process.env.MP_USE_SANDBOX !== "false",
     notificationUrl: process.env.MP_NOTIFICATION_URL ?? "",
+    webhookSecret: process.env.MP_WEBHOOK_SECRET ?? "",
   },
   print: {
     provider:

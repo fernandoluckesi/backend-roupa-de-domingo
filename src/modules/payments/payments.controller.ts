@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Headers,
   HttpCode,
   Param,
   Post,
@@ -21,8 +22,13 @@ export class PaymentsController {
   webhook(
     @Body() body: Record<string, any>,
     @Query() query: Record<string, any>,
+    @Headers("x-signature") signature?: string,
+    @Headers("x-request-id") requestId?: string,
   ) {
-    return this.payments.handleMercadoPagoWebhook(body ?? {}, query ?? {});
+    return this.payments.handleMercadoPagoWebhook(body ?? {}, query ?? {}, {
+      signature,
+      requestId,
+    });
   }
 
   @Get("config")

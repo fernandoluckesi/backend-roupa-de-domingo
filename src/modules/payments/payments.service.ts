@@ -3,8 +3,10 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { isValidMercadoPagoSignature } from "./mercado-pago-signature";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { FulfillmentService } from "../fulfillment/fulfillment.service";
@@ -63,7 +65,25 @@ export class PaymentsService {
   async handleMercadoPagoWebhook(
     payload: Record<string, any>,
     query: Record<string, any>,
+    headers: { signature?: string; requestId?: string } = {},
   ) {
+    // Com a assinatura secreta configurada, rejeita notificacoes que nao vieram do Mercado Pago.
+    // Mesmo sem ela o pagamento e sempre reconsultado na API, entao um webhook forjado nao aprova nada.
+    const secret = this.config.get<string>("payment.webhookSecret", "");
+    if (secret) {
+      const dataId = query?.["data.id"] ?? payload?.data?.id;
+      const valid = isValidMercadoPagoSignature({
+        secret,
+        signatureHeader: headers.signature,
+        requestId: headers.requestId,
+        dataId: dataId != null ? String(dataId) : undefined,
+      });
+      if (!valid) {
+        this.logger.warn("Webhook do Mercado Pago com assinatura invalida. Rejeitado.");
+        throw new UnauthorizedException("Assinatura invalida.");
+      }
+    }
+
     const paymentId =
       payload?.data?.id ??
       payload?.resource ??
