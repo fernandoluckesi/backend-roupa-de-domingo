@@ -1,4 +1,10 @@
-import { Inject, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { FulfillmentStatus, OrderStatus } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
@@ -90,6 +96,18 @@ export class FulfillmentService {
         },
       });
 
+      if (result.draft) {
+        // Rascunho nao entra em producao: fica PAID ate alguem confirmar na Printful
+        await this.appendTimeline(
+          order.id,
+          `Rascunho criado na estamparia (${result.providerOrderId}). Aguardando confirmacao.`,
+        );
+        this.logger.log(
+          `Pedido ${order.number} criado como rascunho (${result.providerOrderId}).`,
+        );
+        return;
+      }
+
       await this.advanceOrder(order.id, OrderStatus.IN_PRODUCTION, {
         note: `Enviado para a estamparia (${result.providerOrderId})`,
       });
@@ -110,6 +128,23 @@ export class FulfillmentService {
         update: { status: FulfillmentStatus.ERROR, lastError: message },
       });
     }
+  }
+
+  /** Reenvio manual de pedido pago que nao chegou na estamparia (status ERROR). */
+  async redispatch(orderNumber: string) {
+    const order = await this.prisma.order.findUnique({
+      where: { number: orderNumber },
+      include: { fulfillment: true },
+    });
+    if (!order) throw new NotFoundException("Pedido nao encontrado.");
+    if (order.status !== OrderStatus.PAID) {
+      throw new BadRequestException(
+        `So pedidos pagos aguardando producao podem ser reenviados (status atual: ${order.status}).`,
+      );
+    }
+
+    await this.dispatchOrder(order.id);
+    return this.prisma.fulfillment.findUnique({ where: { orderId: order.id } });
   }
 
   /** Consulta o parceiro e sincroniza o estado local. */
@@ -208,6 +243,23 @@ export class FulfillmentService {
         note: `Atualizacao da estamparia: ${status}`,
       });
     }
+  }
+
+  private async appendTimeline(orderId: string, note: string) {
+    const order = await this.prisma.order.findUniqueOrThrow({
+      where: { id: orderId },
+      select: { status: true, timeline: true },
+    });
+    const timeline = Array.isArray(order.timeline) ? order.timeline : [];
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: {
+        timeline: [
+          ...(timeline as object[]),
+          { status: order.status, at: new Date().toISOString(), note },
+        ] as object,
+      },
+    });
   }
 
   /** Nunca retrocede o status do pedido. */

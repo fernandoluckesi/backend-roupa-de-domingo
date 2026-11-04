@@ -40,6 +40,8 @@ export interface PrintOrderResult {
   status: PrintOrderStatus;
   trackingCode?: string | null;
   trackingUrl?: string | null;
+  /** Pedido criado como rascunho no parceiro: nao foi confirmado nem cobrado */
+  draft?: boolean;
   raw: unknown;
 }
 

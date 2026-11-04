@@ -1,0 +1,25 @@
+# Imagem de producao para o Railway.
+# O Railway so aceita "RUN --mount=type=cache"; o Dockerfile principal usa
+# "--mount=type=bind" para a CA corporativa (rede local com proxy) e por isso
+# falha na validacao de la. Aqui nao ha proxy: build direto, sem mounts.
+# Selecionado pelo railway.json (build.dockerfilePath).
+
+FROM node:20 AS build
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci --no-audit --no-fund
+COPY prisma ./prisma
+RUN npm run prisma:generate
+COPY . .
+RUN npm run build
+
+FROM node:20 AS production
+WORKDIR /app
+ENV NODE_ENV=production
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+COPY --from=build /app/package.json ./package.json
+EXPOSE 3333
+# Migrations antes de subir. O seed so roda com o banco vazio (SEED_IF_EMPTY): nunca apaga dados.
+CMD ["sh", "-c", "npm run prisma:deploy && SEED_IF_EMPTY=true npm run seed && node dist/src/main"]

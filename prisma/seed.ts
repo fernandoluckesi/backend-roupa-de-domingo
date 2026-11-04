@@ -13,6 +13,8 @@ type VariantSeed = {
   model?: string;
   priceCents: number;
   weightGrams: number;
+  /** external_id da sync variant na Printful; sem ele o pedido nao vai para a Printful */
+  printProviderVariantId?: string;
 };
 
 type ProductSeed = {
@@ -56,6 +58,30 @@ function shirtVariants(prefix: string, priceCents: number): VariantSeed[] {
     });
   });
   return out;
+}
+
+/**
+ * Sync variants reais da loja "Roupa de Domingo" na Printful (store 19007611,
+ * sync product 488823609). Base: Men's Fitted Straight Cut T-Shirt (Dimona, produzida no BR).
+ * Ver docs/PRINTFUL-API.md.
+ */
+const PRINTFUL_SHIRT_VARIANTS: Record<string, string> = {
+  P: "6aea4518912a04",
+  M: "6aea4518912a22",
+  G: "6aea4518912a33",
+  GG: "6aea4518912a58",
+  XGG: "6aea4518912a67",
+};
+
+function printfulShirtVariants(prefix: string, priceCents: number): VariantSeed[] {
+  return SHIRT_SIZES.map((size) => ({
+    sku: `${prefix}-BR-${size}`,
+    size,
+    color: "Branca",
+    priceCents,
+    weightGrams: 250,
+    printProviderVariantId: PRINTFUL_SHIRT_VARIANTS[size],
+  }));
 }
 
 function mugVariants(prefix: string, priceCents: number): VariantSeed[] {
@@ -161,6 +187,24 @@ const PRODUCTS: ProductSeed[] = [
     ratingCount: 221,
     images: [img("rd-equipe-1"), img("rd-equipe-2")],
     variants: shirtVariants("CAM-EQUIPE", 9490),
+  },
+  {
+    slug: "camiseta-roupa-de-domingo",
+    name: "Roupa de Domingo (a original)",
+    shortDescription: "O nome da loja no peito. Produzida sob demanda no Brasil.",
+    description:
+      "Camiseta branca 100% algodão fio penteado, impressão DTG na frente. Feita sob demanda pela nossa estamparia parceira e enviada direto para você. Primeira peça integrada à produção real.",
+    humor: Humor.EXISTENCIAL,
+    basePriceCents: 8990,
+    category: "camisetas",
+    tags: ["camiseta", "colecao-assinatura", "domingo", "producao-real"],
+    isFeatured: true,
+    rating: 5,
+    ratingCount: 1,
+    images: [
+      "https://files.cdn.printful.com/files/e77/e771b034155f87bfd99153441f4d3c51_preview.png",
+    ],
+    variants: printfulShirtVariants("CAM-RD", 8990),
   },
   {
     slug: "camiseta-domingo-eterno",
@@ -475,7 +519,31 @@ const EASTER_EGGS = [
   },
 ];
 
+const IS_PRODUCTION = process.env.NODE_ENV === "production";
+
 async function main() {
+  // SEED_IF_EMPTY=true: carga inicial no deploy. So roda com o banco vazio, nunca apaga dados.
+  const firstLoad = process.env.SEED_IF_EMPTY === "true";
+  if (firstLoad) {
+    const [products, orders, users] = await Promise.all([
+      prisma.product.count(),
+      prisma.order.count(),
+      prisma.user.count(),
+    ]);
+    if (products + orders + users > 0) {
+      console.log("🌱 Banco ja possui dados: seed ignorado.");
+      return;
+    }
+    console.log("🌱 Banco vazio: carga inicial do catalogo.");
+  }
+
+  // O seed apaga TODAS as tabelas. Em producao so roda com permissao explicita.
+  if (IS_PRODUCTION && !firstLoad && process.env.SEED_ALLOW_RESET !== "true") {
+    throw new Error(
+      "Seed em producao apaga todos os dados. Defina SEED_ALLOW_RESET=true para confirmar.",
+    );
+  }
+
   console.log("🧹 Limpando dados anteriores...");
   await prisma.easterEggDiscovery.deleteMany();
   await prisma.easterEgg.deleteMany();
@@ -493,43 +561,63 @@ async function main() {
   await prisma.address.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log("👤 Criando usuários demo...");
-  const passwordHash = await bcrypt.hash("domingo123", 10);
+  if (IS_PRODUCTION) {
+    // Producao: nada de usuario com senha conhecida. Admin so se as variaveis vierem.
+    const adminEmail = process.env.SEED_ADMIN_EMAIL;
+    const adminPassword = process.env.SEED_ADMIN_PASSWORD;
+    if (adminEmail && adminPassword) {
+      console.log(`👤 Criando admin ${adminEmail}...`);
+      await prisma.user.create({
+        data: {
+          email: adminEmail,
+          passwordHash: await bcrypt.hash(adminPassword, 10),
+          name: "Admin do Domingo",
+          role: Role.ADMIN,
+        },
+      });
+    } else {
+      console.log("👤 Producao sem SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD: nenhum usuario criado.");
+    }
+  } else {
+    console.log("👤 Criando usuários demo...");
+    const passwordHash = await bcrypt.hash("domingo123", 10);
 
-  const customer = await prisma.user.create({
-    data: {
-      email: "cliente@roupadedomingo.com",
-      passwordHash,
-      name: "Maria Souza",
-      phone: "11988887777",
-      document: "12345678909",
-      humorLevel: 87,
-      addresses: {
-        create: {
-          label: "Casa",
-          recipient: "Maria Souza",
-          zipCode: "01310100",
-          street: "Avenida Paulista",
-          number: "1000",
-          complement: "Apto 142",
-          district: "Bela Vista",
-          city: "São Paulo",
-          state: "SP",
-          isDefault: true,
+    await prisma.user.create({
+      data: {
+        email: "cliente@roupadedomingo.com",
+        passwordHash,
+        name: "Maria Souza",
+        phone: "11988887777",
+        document: "12345678909",
+        humorLevel: 87,
+        addresses: {
+          create: {
+            label: "Casa",
+            recipient: "Maria Souza",
+            zipCode: "01310100",
+            street: "Avenida Paulista",
+            number: "1000",
+            complement: "Apto 142",
+            district: "Bela Vista",
+            city: "São Paulo",
+            state: "SP",
+            isDefault: true,
+          },
         },
       },
-    },
-  });
+    });
 
-  await prisma.user.create({
-    data: {
-      email: "admin@roupadedomingo.com",
-      passwordHash,
-      name: "Admin do Domingo",
-      role: Role.ADMIN,
-      humorLevel: 100,
-    },
-  });
+    await prisma.user.create({
+      data: {
+        email: "admin@roupadedomingo.com",
+        passwordHash,
+        name: "Admin do Domingo",
+        role: Role.ADMIN,
+        humorLevel: 100,
+      },
+    });
+
+  }
 
   console.log("🏷️  Criando categorias...");
   const categoryMap = new Map<string, string>();
@@ -577,7 +665,7 @@ async function main() {
             model: v.model ?? null,
             priceCents: v.priceCents,
             weightGrams: v.weightGrams,
-            printProviderVariantId: `PV-${v.sku}`,
+            printProviderVariantId: v.printProviderVariantId ?? null,
           })),
         },
       },
@@ -604,8 +692,10 @@ async function main() {
   };
 
   console.log("\n✅ Seed concluído:", totals);
-  console.log(`   Login demo: ${customer.email} / domingo123`);
-  console.log("   Admin:      admin@roupadedomingo.com / domingo123\n");
+  if (!IS_PRODUCTION) {
+    console.log("   Login demo: cliente@roupadedomingo.com / domingo123");
+    console.log("   Admin:      admin@roupadedomingo.com / domingo123\n");
+  }
 }
 
 main()

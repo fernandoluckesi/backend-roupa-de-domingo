@@ -13,11 +13,16 @@ export interface AppConfig {
     notificationUrl: string;
   };
   print: {
-    provider: "mock" | "http";
+    provider: "mock" | "http" | "printful";
     apiUrl: string;
     apiKey: string;
     webhookSecret: string;
     mockSpeed: number;
+    printful: {
+      storeId: string;
+      /** false = pedidos ficam em rascunho na Printful (sem cobranca) */
+      confirmOrders: boolean;
+    };
   };
   business: {
     freeShippingThresholdCents: number;
@@ -42,11 +47,16 @@ export default (): AppConfig => ({
     notificationUrl: process.env.MP_NOTIFICATION_URL ?? "",
   },
   print: {
-    provider: (process.env.PRINT_PROVIDER as "mock" | "http") ?? "mock",
+    provider:
+      (process.env.PRINT_PROVIDER as "mock" | "http" | "printful") ?? "mock",
     apiUrl: process.env.PRINT_API_URL ?? "",
     apiKey: process.env.PRINT_API_KEY ?? "",
     webhookSecret: process.env.PRINT_WEBHOOK_SECRET ?? "segredo-estamparia",
     mockSpeed: parseFloat(process.env.PRINT_MOCK_SPEED ?? "1"),
+    printful: {
+      storeId: process.env.PRINTFUL_STORE_ID ?? "",
+      confirmOrders: process.env.PRINTFUL_CONFIRM_ORDERS === "true",
+    },
   },
   business: {
     freeShippingThresholdCents: parseInt(
