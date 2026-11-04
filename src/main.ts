@@ -72,7 +72,9 @@ async function bootstrap(): Promise<void> {
 
   app.enableShutdownHooks();
 
-  await app.listen(port, "0.0.0.0");
+  // "::" escuta em IPv6 e IPv4 (dual-stack). A rede privada do Railway usa IPv6:
+  // com "0.0.0.0" o frontend nao alcancaria o backend por <servico>.railway.internal.
+  await app.listen(port, "::");
 
   logger.log(`API em http://localhost:${port}/${apiPrefix}`);
   logger.log(`Docs em http://localhost:${port}/${apiPrefix}/docs`);
