@@ -22,7 +22,9 @@ const PRODUCT_LIST_SELECT = {
     take: 2,
     select: { url: true, alt: true, color: true },
   },
+  // Só variantes à venda: as desativadas pelo catalog:sync (ex.: cor que saiu da Printful) não aparecem
   variants: {
+    where: { isAvailable: true },
     select: {
       id: true,
       sku: true,
@@ -127,7 +129,10 @@ export class CatalogService {
       include: {
         category: true,
         images: { orderBy: { position: "asc" } },
-        variants: { orderBy: [{ priceCents: "asc" }, { sku: "asc" }] },
+        variants: {
+          where: { isAvailable: true },
+          orderBy: [{ priceCents: "asc" }, { sku: "asc" }],
+        },
       },
     });
 
