@@ -10,6 +10,8 @@ import { isValidMercadoPagoSignature } from "./mercado-pago-signature";
 import { OrderStatus, PaymentStatus } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { FulfillmentService } from "../fulfillment/fulfillment.service";
+import { MailService } from "../mail/mail.service";
+import { InvoicesService } from "../invoices/invoices.module";
 import {
   CreatePreferenceInput,
   MercadoPagoService,
@@ -26,6 +28,8 @@ export class PaymentsService {
     private readonly config: ConfigService,
     private readonly mercadoPago: MercadoPagoService,
     private readonly fulfillment: FulfillmentService,
+    private readonly mail: MailService,
+    private readonly invoices: InvoicesService,
   ) {}
 
   get driver(): string {
@@ -208,6 +212,17 @@ export class PaymentsService {
       return;
     }
 
+    // Trava propria: aprovado com valor diferente do pedido nao libera producao
+    // (tolerancia de 1 centavo para arredondamento do rateio de desconto)
+    const amountMismatch =
+      snapshot.status === PaymentStatus.APPROVED &&
+      Math.abs(snapshot.amountCents - order.totalCents) > 1;
+    if (amountMismatch) {
+      this.logger.error(
+        `Valor pago divergente em ${order.number}: pago ${snapshot.amountCents}, pedido ${order.totalCents}. Pedido NAO liberado.`,
+      );
+    }
+
     await this.prisma.payment.upsert({
       where: { orderId: order.id },
       create: {
@@ -232,6 +247,24 @@ export class PaymentsService {
           : {}),
       },
     });
+
+    if (amountMismatch) {
+      const timeline = Array.isArray(order.timeline) ? (order.timeline as object[]) : [];
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: {
+          timeline: [
+            ...timeline,
+            {
+              status: order.status,
+              at: new Date().toISOString(),
+              note: "Pagamento com valor divergente do pedido: em análise manual",
+            },
+          ] as object,
+        },
+      });
+      return;
+    }
 
     const nextOrderStatus = this.orderStatusFor(snapshot.status, order.status);
 
@@ -262,6 +295,10 @@ export class PaymentsService {
           data: { usedCount: { increment: 1 } },
         });
       }
+      void this.mail.sendPaymentApproved(order.customerEmail, order.customerName, order.number);
+      await this.invoices.issueForOrder(order.id).catch((error) => {
+        this.logger.error(`Emissao de nota falhou: ${(error as Error).message}`);
+      });
       // Falha na estamparia nao deve derrubar a confirmacao do pagamento
       await this.fulfillment.dispatchOrder(order.id).catch((error) => {
         this.logger.error(`dispatchOrder falhou: ${(error as Error).message}`);

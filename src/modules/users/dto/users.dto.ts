@@ -95,3 +95,22 @@ export class AddressDto {
   @IsBoolean()
   isDefault?: boolean;
 }
+
+export class MarketingConsentDto {
+  @ApiProperty({ description: "true = aceita receber novidades; false = revoga" })
+  @IsBoolean()
+  marketingOptIn: boolean;
+}
+
+export class DeleteAccountDto {
+  @ApiProperty({ description: "Senha atual, para confirmar a exclusao" })
+  @IsString()
+  @MaxLength(72)
+  password: string;
+
+  @ApiPropertyOptional({ description: "Motivo (opcional, ajuda a melhorar)" })
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
+}

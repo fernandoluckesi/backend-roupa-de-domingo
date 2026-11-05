@@ -71,10 +71,32 @@ model User {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  addresses  Address[]
-  orders     Order[]
-  cart       Cart?
+  /// Aceite dos termos e da politica de privacidade (versao vigente no cadastro)
+  termsAcceptedAt    DateTime?
+  termsVersion       String?
+  privacyVersion     String?
+  /// Consentimento de marketing (LGPD art. 7o, I): opcional e revogavel
+  marketingOptIn     Boolean   @default(false)
+  marketingConsentAt DateTime?
+  emailVerifiedAt    DateTime?
+  /// Bloqueio progressivo contra forca bruta
+  failedLoginCount   Int       @default(0)
+  lockedUntil        DateTime?
+  /// Incrementar revoga todas as sessoes (logout em todos os dispositivos)
+  tokenVersion       Int       @default(0)
+  /// 2FA (TOTP); segredo cifrado em repouso
+  twoFactorSecret    String?
+  twoFactorEnabled   Boolean   @default(false)
+  /// Conta excluida a pedido do titular: dados pessoais anonimizados
+  deletedAt          DateTime?
+
+  addresses   Address[]
+  orders      Order[]
+  cart        Cart?
   discoveries EasterEggDiscovery[]
+  authTokens  AuthToken[]
+  consents    ConsentRecord[]
+  returns     ReturnRequest[]
 
   @@map("users")
 }
@@ -164,11 +186,13 @@ model ProductVariant {
 }
 
 model ProductImage {
-  id        String @id @default(uuid())
+  id        String  @id @default(uuid())
   productId String
   url       String
   alt       String
-  position  Int    @default(0)
+  /// Cor da variante que aparece na foto; null = vale para todas
+  color     String?
+  position  Int     @default(0)
 
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
@@ -212,18 +236,18 @@ model CartItem {
 // ---------------------------------------------------------------- cupons
 
 model Coupon {
-  id              String     @id @default(uuid())
-  code            String     @unique
-  description     String
-  type            CouponType @default(PERCENT)
-  value           Int        @default(0)
-  minSubtotalCents Int       @default(0)
-  maxUses         Int?
-  usedCount       Int        @default(0)
-  isSecret        Boolean    @default(false)
-  isActive        Boolean    @default(true)
-  expiresAt       DateTime?
-  createdAt       DateTime   @default(now())
+  id               String     @id @default(uuid())
+  code             String     @unique
+  description      String
+  type             CouponType @default(PERCENT)
+  value            Int        @default(0)
+  minSubtotalCents Int        @default(0)
+  maxUses          Int?
+  usedCount        Int        @default(0)
+  isSecret         Boolean    @default(false)
+  isActive         Boolean    @default(true)
+  expiresAt        DateTime?
+  createdAt        DateTime   @default(now())
 
   carts      Cart[]
   orders     Order[]
@@ -254,10 +278,10 @@ model Order {
   shippingCity       String
   shippingState      String
 
-  subtotalCents  Int
-  discountCents  Int @default(0)
-  shippingCents  Int @default(0)
-  totalCents     Int
+  subtotalCents Int
+  discountCents Int @default(0)
+  shippingCents Int @default(0)
+  totalCents    Int
 
   couponId       String?
   shippingMethod String  @default("economico")
@@ -269,11 +293,13 @@ model Order {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User?        @relation(fields: [userId], references: [id])
-  coupon      Coupon?      @relation(fields: [couponId], references: [id])
+  user        User?           @relation(fields: [userId], references: [id])
+  coupon      Coupon?         @relation(fields: [couponId], references: [id])
   items       OrderItem[]
   payment     Payment?
   fulfillment Fulfillment?
+  invoice     Invoice?
+  returns     ReturnRequest[]
 
   @@index([userId])
   @@index([status])
@@ -372,4 +398,167 @@ model EasterEggDiscovery {
   @@unique([easterEggId, userId])
   @@unique([easterEggId, sessionId])
   @@map("easter_egg_discoveries")
+}
+
+// ---------------------------------------------------------------- conformidade (LGPD, CDC, seguranca)
+
+enum AuthTokenType {
+  EMAIL_VERIFICATION
+  PASSWORD_RESET
+}
+
+/// Tokens de uso unico; so o hash fica no banco
+model AuthToken {
+  id        String        @id @default(uuid())
+  userId    String
+  type      AuthTokenType
+  tokenHash String        @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime      @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, type])
+  @@map("auth_tokens")
+}
+
+/// Prova do consentimento (LGPD art. 8o, par. 2o): quem, o que, qual versao, quando
+model ConsentRecord {
+  id        String   @id @default(uuid())
+  userId    String?
+  sessionId String?
+  /// cookies | terms | privacy | marketing
+  kind      String
+  version   String
+  granted   Boolean
+  details   Json?
+  /// IP com hash (minimizacao): suficiente para auditoria sem guardar o IP cru
+  ipHash    String?
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([sessionId])
+  @@map("consent_records")
+}
+
+enum ContactStatus {
+  OPEN
+  ANSWERED
+  CLOSED
+}
+
+/// SAC (Decreto 7.962/2013, art. 4o): protocolo e prazo de resposta de 5 dias uteis
+model ContactMessage {
+  id          String        @id @default(uuid())
+  protocol    String        @unique
+  userId      String?
+  name        String
+  email       String
+  subject     String
+  orderNumber String?
+  message     String
+  status      ContactStatus @default(OPEN)
+  respondBy   DateTime
+  answeredAt  DateTime?
+  createdAt   DateTime      @default(now())
+
+  @@index([status])
+  @@map("contact_messages")
+}
+
+enum ReturnType {
+  /// Direito de arrependimento (CDC art. 49): 7 dias do recebimento
+  REGRET
+  /// Vicio do produto (CDC art. 26): 90 dias para produto duravel
+  DEFECT
+}
+
+enum ReturnStatus {
+  REQUESTED
+  APPROVED
+  REJECTED
+  IN_TRANSIT
+  RECEIVED
+  REFUNDED
+  EXCHANGED
+}
+
+model ReturnRequest {
+  id          String       @id @default(uuid())
+  protocol    String       @unique
+  orderId     String
+  userId      String?
+  type        ReturnType
+  status      ReturnStatus @default(REQUESTED)
+  reason      String
+  /// [{ orderItemId, quantity }]
+  items       Json
+  /// Codigo de postagem reversa (Correios), gratuito para o cliente
+  reverseCode String?
+  refundCents Int?
+  resolution  String?
+  timeline    Json         @default("[]")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  user  User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([orderId])
+  @@index([userId])
+  @@map("return_requests")
+}
+
+/// Trilha de auditoria das acoes administrativas
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  actorEmail String?
+  action     String
+  method     String
+  path       String
+  statusCode Int
+  targetId   String?
+  /// Corpo da requisicao com dados pessoais mascarados
+  payload    Json?
+  ipHash     String?
+  createdAt  DateTime @default(now())
+
+  @@index([actorId])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+enum InvoiceStatus {
+  PENDING
+  ISSUED
+  ERROR
+  CANCELLED
+}
+
+/// NF-e do pedido (guarda fiscal de 5 anos)
+model Invoice {
+  id             String        @id @default(uuid())
+  orderId        String        @unique
+  provider       String        @default("mock")
+  status         InvoiceStatus @default(PENDING)
+  number         String?
+  series         String?
+  accessKey      String?
+  pdfUrl         String?
+  xmlUrl         String?
+  /// Tributos aproximados (Lei 12.741/2012), em centavos
+  approxTaxCents Int?
+  lastError      String?
+  issuedAt       DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@map("invoices")
 }

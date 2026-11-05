@@ -8,6 +8,28 @@ import axios, { AxiosInstance } from "axios";
 import { PaymentStatus } from "@prisma/client";
 import { centsToUnit, prorateDiscount } from "../../common/utils/money.util";
 import { onlyDigits } from "../../common/utils/order-number.util";
+import { scrubCpfFromText } from "../../common/utils/privacy.util";
+
+/** Campos do pagamento que guardamos (minimizacao, LGPD art. 6o, III): nada do pagador. */
+const PAYMENT_FIELDS_KEPT = [
+  "id",
+  "status",
+  "status_detail",
+  "payment_method_id",
+  "payment_type_id",
+  "installments",
+  "transaction_amount",
+  "currency_id",
+  "date_created",
+  "date_approved",
+  "date_last_updated",
+  "external_reference",
+  "live_mode",
+] as const;
+
+export function minimizePayment(data: Record<string, unknown>) {
+  return Object.fromEntries(PAYMENT_FIELDS_KEPT.filter((k) => k in data).map((k) => [k, data[k]]));
+}
 
 const MP_BASE_URL = "https://api.mercadopago.com";
 
@@ -138,14 +160,14 @@ export class MercadoPagoService {
         preferenceId: data.id,
         initPoint,
         provider: "mercadopago",
-        raw: data,
+        raw: { id: data.id, date_created: data.date_created },
       };
     } catch (error) {
       const detail =
         axios.isAxiosError(error) && error.response
           ? JSON.stringify(error.response.data)
           : (error as Error).message;
-      this.logger.error(`Falha ao criar preference: ${detail}`);
+      this.logger.error(`Falha ao criar preference: ${scrubCpfFromText(detail)}`);
       throw new InternalServerErrorException(
         "Nao foi possivel iniciar o pagamento no Mercado Pago. Tente novamente.",
       );
@@ -166,8 +188,26 @@ export class MercadoPagoService {
       method: data.payment_method_id ?? data.payment_type_id ?? null,
       installments: data.installments ?? null,
       amountCents: Math.round((data.transaction_amount ?? 0) * 100),
-      raw: data,
+      raw: minimizePayment(data),
     };
+  }
+
+  /**
+   * Estorno total (sem amountCents) ou parcial no mesmo meio de pagamento
+   * (devolucao por arrependimento/defeito). Idempotency key evita estorno duplo.
+   */
+  async refundPayment(paymentId: string, idempotencyKey: string, amountCents?: number) {
+    const { data } = await this.client.post(
+      `/v1/payments/${paymentId}/refunds`,
+      amountCents ? { amount: centsToUnit(amountCents) } : {},
+      {
+        headers: {
+          Authorization: `Bearer ${this.accessToken}`,
+          "X-Idempotency-Key": idempotencyKey,
+        },
+      },
+    );
+    return { refundId: String(data.id), status: String(data.status ?? "approved") };
   }
 
   private buildPreferenceBody(input: CreatePreferenceInput) {
@@ -242,6 +282,8 @@ export class MercadoPagoService {
         failure: `${this.frontendUrl}/pagamento/falha`,
       },
       auto_return: "approved",
+      // Parcelamento em ate 12x (o que a pagina do produto informa); juros, se houver, sao exibidos pelo MP
+      payment_methods: { installments: 12 },
       ...(notificationUrl ? { notification_url: notificationUrl } : {}),
       expires: true,
       expiration_date_to: expiration.toISOString(),

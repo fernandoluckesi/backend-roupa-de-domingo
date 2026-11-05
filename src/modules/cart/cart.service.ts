@@ -26,7 +26,7 @@ const CART_INCLUDE = {
               slug: true,
               name: true,
               humor: true,
-              images: { orderBy: { position: "asc" }, take: 1 },
+              images: { orderBy: { position: "asc" }, select: { url: true, color: true } },
               category: { select: { slug: true, name: true } },
             },
           },
@@ -112,11 +112,9 @@ export class CartService {
         cartId: cart.id,
         variantId: dto.variantId,
         quantity,
-        customText: dto.customText,
       },
       update: {
         quantity: { increment: quantity },
-        ...(dto.customText ? { customText: dto.customText } : {}),
       },
     });
 
@@ -130,7 +128,7 @@ export class CartService {
 
     await this.prisma.cartItem.update({
       where: { id: itemId },
-      data: { quantity: dto.quantity, customText: dto.customText },
+      data: { quantity: dto.quantity },
     });
 
     await this.touch(cart.id);
@@ -286,7 +284,11 @@ export class CartService {
         humor: item.variant.product.humor,
         sku: item.variant.sku,
         variantLabel: this.variantLabel(item.variant),
-        imageUrl: item.variant.product.images[0]?.url ?? null,
+        imageUrl:
+          (
+            item.variant.product.images.find((image) => image.color && image.color === item.variant.color) ??
+            item.variant.product.images[0]
+          )?.url ?? null,
         unitPriceCents,
         quantity: item.quantity,
         totalCents: unitPriceCents * item.quantity,

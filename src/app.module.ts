@@ -1,5 +1,7 @@
 import { Module } from "@nestjs/common";
 import { ConfigModule } from "@nestjs/config";
+import { APP_GUARD, APP_INTERCEPTOR } from "@nestjs/core";
+import { ThrottlerGuard, ThrottlerModule } from "@nestjs/throttler";
 import configuration from "./config/configuration";
 import { PrismaModule } from "./prisma/prisma.module";
 import { HealthModule } from "./modules/health/health.module";
@@ -12,6 +14,13 @@ import { PaymentsModule } from "./modules/payments/payments.module";
 import { ShippingModule } from "./modules/shipping/shipping.module";
 import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
 import { EasterEggsModule } from "./modules/easter-eggs/easter-eggs.module";
+import { MailModule } from "./modules/mail/mail.module";
+import { PrivacyModule } from "./modules/privacy/privacy.module";
+import { ContactModule } from "./modules/contact/contact.module";
+import { ReturnsModule } from "./modules/returns/returns.module";
+import { InvoicesModule } from "./modules/invoices/invoices.module";
+import { SeoModule } from "./modules/seo/seo.module";
+import { AuditInterceptor } from "./modules/audit/audit.interceptor";
 
 @Module({
   imports: [
@@ -20,7 +29,12 @@ import { EasterEggsModule } from "./modules/easter-eggs/easter-eggs.module";
       load: [configuration],
       cache: true,
     }),
+    // Rate limit global (por IP): 120 req/min; rotas sensiveis tem limites proprios via @Throttle
+    ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 120 }]),
     PrismaModule,
+    MailModule,
+    PrivacyModule,
+    InvoicesModule,
     HealthModule,
     AuthModule,
     UsersModule,
@@ -31,6 +45,13 @@ import { EasterEggsModule } from "./modules/easter-eggs/easter-eggs.module";
     PaymentsModule,
     FulfillmentModule,
     EasterEggsModule,
+    ContactModule,
+    ReturnsModule,
+    SeoModule,
+  ],
+  providers: [
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+    { provide: APP_INTERCEPTOR, useClass: AuditInterceptor },
   ],
 })
 export class AppModule {}

@@ -11,6 +11,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
+import { SkipThrottle } from "@nestjs/throttler";
 import {
   ApiBearerAuth,
   ApiExcludeEndpoint,
@@ -34,6 +35,7 @@ export class FulfillmentController {
     private readonly config: ConfigService,
   ) {}
 
+  @SkipThrottle()
   @Post("webhook")
   @HttpCode(200)
   @ApiExcludeEndpoint()
@@ -60,6 +62,7 @@ export class FulfillmentController {
    * Webhook da Printful (API v1). A Printful nao assina o payload, entao o
    * segredo vai na URL cadastrada: /fulfillment/webhook/printful?secret=...
    */
+  @SkipThrottle()
   @Post("webhook/printful")
   @HttpCode(200)
   @ApiExcludeEndpoint()

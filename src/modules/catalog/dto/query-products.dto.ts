@@ -13,16 +13,26 @@ import {
   Min,
 } from "class-validator";
 
-export class QueryProductsDto {
-  @ApiPropertyOptional({ description: "Slug da categoria" })
-  @IsOptional()
-  @IsString()
-  category?: string;
+/** "a,b" ou ["a","b"] -> ["a","b"] (filtros de multipla escolha) */
+const toList = ({ value }: { value: unknown }) =>
+  (Array.isArray(value) ? value : String(value ?? "").split(","))
+    .map((item) => String(item).trim())
+    .filter(Boolean);
 
-  @ApiPropertyOptional({ enum: Humor })
+export class QueryProductsDto {
+  @ApiPropertyOptional({ description: "Slugs de categoria separados por virgula (qualquer um deles)" })
   @IsOptional()
-  @IsEnum(Humor)
-  humor?: Humor;
+  @Transform(toList)
+  @IsArray()
+  @IsString({ each: true })
+  category?: string[];
+
+  @ApiPropertyOptional({ description: "Tipos de humor separados por virgula (qualquer um deles)", enum: Humor, isArray: true })
+  @IsOptional()
+  @Transform(toList)
+  @IsArray()
+  @IsEnum(Humor, { each: true })
+  humor?: Humor[];
 
   @ApiPropertyOptional({ description: "Busca em nome, descricao e tags" })
   @IsOptional()

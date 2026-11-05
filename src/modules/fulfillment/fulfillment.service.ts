@@ -1,3 +1,4 @@
+import { redact, scrubCpfFromText } from "../../common/utils/privacy.util";
 import {
   BadRequestException,
   Inject,
@@ -84,14 +85,14 @@ export class FulfillmentService {
           provider: this.provider.name,
           providerOrderId: result.providerOrderId,
           status: FulfillmentStatus.SENT,
-          rawPayload: result.raw as object,
+          rawPayload: redact(result.raw) as object,
           sentAt: new Date(),
         },
         update: {
           providerOrderId: result.providerOrderId,
           status: FulfillmentStatus.SENT,
           lastError: null,
-          rawPayload: result.raw as object,
+          rawPayload: redact(result.raw) as object,
           sentAt: new Date(),
         },
       });
@@ -115,7 +116,7 @@ export class FulfillmentService {
       this.logger.log(`Pedido ${order.number} enviado para producao.`);
     } catch (error) {
       const message = (error as Error).message;
-      this.logger.error(`Falha no print job de ${order.number}: ${message}`);
+      this.logger.error(`Falha no print job de ${order.number}: ${scrubCpfFromText(message)}`);
 
       await this.prisma.fulfillment.upsert({
         where: { orderId: order.id },
@@ -223,7 +224,7 @@ export class FulfillmentService {
         status: status as FulfillmentStatus,
         trackingCode: extra.trackingCode,
         trackingUrl: extra.trackingUrl,
-        rawPayload: (extra.raw ?? {}) as object,
+        rawPayload: redact(extra.raw ?? {}) as object,
       },
       update: {
         status: status as FulfillmentStatus,
@@ -232,7 +233,7 @@ export class FulfillmentService {
           : {}),
         ...(extra.trackingCode ? { trackingCode: extra.trackingCode } : {}),
         ...(extra.trackingUrl ? { trackingUrl: extra.trackingUrl } : {}),
-        rawPayload: (extra.raw ?? {}) as object,
+        rawPayload: redact(extra.raw ?? {}) as object,
       },
     });
 

@@ -3,12 +3,15 @@ import { Logger, ValidationPipe } from "@nestjs/common";
 import { NestFactory } from "@nestjs/core";
 import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import type { NestExpressApplication } from "@nestjs/platform-express";
+import cookieParser from "cookie-parser";
+import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
 import { EasterEggHeaderInterceptor } from "./common/interceptors/easter-egg-header.interceptor";
 
 async function bootstrap(): Promise<void> {
-  const app = await NestFactory.create(AppModule, { bufferLogs: true });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { bufferLogs: true });
   const config = app.get(ConfigService);
   const logger = new Logger("Bootstrap");
 
@@ -18,6 +21,47 @@ async function bootstrap(): Promise<void> {
 
   app.setGlobalPrefix(apiPrefix, { exclude: ["health"] });
 
+  // Producao: cliente -> borda do Railway -> nginx do frontend -> API = 2 proxies confiaveis.
+  // Assim req.ip e o IP real do cliente (rate limit por pessoa, nao por proxy).
+  const hops = process.env.TRUST_PROXY_HOPS ?? (process.env.NODE_ENV === "production" ? "2" : "loopback");
+  app.set("trust proxy", /^\d+$/.test(hops) ? Number(hops) : hops);
+  app.disable("x-powered-by");
+
+  // Cabecalhos de seguranca. A API so devolve JSON, entao a CSP e a mais restrita possivel;
+  // a pagina do Swagger (dev) precisa de inline, por isso fica fora da CSP estrita.
+  const strictHelmet = helmet({
+    contentSecurityPolicy: { directives: { defaultSrc: ["'none'"], frameAncestors: ["'none'"] } },
+    hsts: { maxAge: 31_536_000, includeSubDomains: true },
+    referrerPolicy: { policy: "strict-origin-when-cross-origin" },
+    crossOriginResourcePolicy: { policy: "same-site" },
+  });
+  const docsHelmet = helmet({ contentSecurityPolicy: false });
+  app.use((req: any, res: any, next: any) =>
+    String(req.path).startsWith(`/${apiPrefix}/docs`) ? docsHelmet(req, res, next) : strictHelmet(req, res, next),
+  );
+
+  app.use(cookieParser());
+
+  // CSRF: a sessao viaja em cookie, entao toda escrita autenticada por cookie
+  // precisa do cabecalho X-Requested-With (um site de terceiro nao consegue envia-lo
+  // sem passar pelo CORS, que so libera a nossa origem). SameSite=Lax cobre o resto.
+  const sessionCookie = config.get<string>("security.sessionCookie", "rd_session");
+  app.use((req: any, res: any, next: any) => {
+    const unsafe = !["GET", "HEAD", "OPTIONS"].includes(req.method);
+    const cookieAuth = Boolean(req.cookies?.[sessionCookie]) && !req.headers.authorization;
+    if (unsafe && cookieAuth && req.headers["x-requested-with"] !== "rd-web") {
+      res.status(403).json({
+        statusCode: 403,
+        error: "Forbidden",
+        message: "Requisicao bloqueada (protecao CSRF).",
+        path: req.url,
+        timestamp: new Date().toISOString(),
+      });
+      return;
+    }
+    next();
+  });
+
   app.enableCors({
     origin: corsOrigin.split(",").map((o) => o.trim()),
     credentials: true,
@@ -26,6 +70,7 @@ async function bootstrap(): Promise<void> {
       "Authorization",
       "x-session-id",
       "x-print-signature",
+      "x-requested-with",
     ],
     exposedHeaders: ["X-Powered-By-Domingo", "X-Easter-Eggs-Total"],
   });
@@ -42,12 +87,8 @@ async function bootstrap(): Promise<void> {
   app.useGlobalFilters(new AllExceptionsFilter());
   app.useGlobalInterceptors(new EasterEggHeaderInterceptor());
 
-  // Webhooks precisam do corpo cru para eventual validacao de assinatura
-  app.use("/api/payments/webhook", (req: any, _res: any, next: any) => {
-    req.rawBodyNeeded = true;
-    next();
-  });
-
+  // Swagger so fora de producao (SWAGGER_ENABLED=true reabre, por exemplo em staging)
+  const swaggerEnabled = config.get<boolean>("security.swaggerEnabled", true);
   const swaggerConfig = new DocumentBuilder()
     .setTitle("Roupa de Domingo API")
     .setDescription(
@@ -65,10 +106,12 @@ async function bootstrap(): Promise<void> {
     })
     .build();
 
-  const document = SwaggerModule.createDocument(app, swaggerConfig);
-  SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
-    customSiteTitle: "Roupa de Domingo API",
-  });
+  if (swaggerEnabled) {
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
+      customSiteTitle: "Roupa de Domingo API",
+    });
+  }
 
   app.enableShutdownHooks();
 
@@ -77,7 +120,7 @@ async function bootstrap(): Promise<void> {
   await app.listen(port, "::");
 
   logger.log(`API em http://localhost:${port}/${apiPrefix}`);
-  logger.log(`Docs em http://localhost:${port}/${apiPrefix}/docs`);
+  logger.log(swaggerEnabled ? `Docs em http://localhost:${port}/${apiPrefix}/docs` : "Swagger desativado (producao)");
   logger.log(`Driver de pagamento: ${config.get("payment.driver")}`);
   logger.log(`Provider de estamparia: ${config.get("print.provider")}`);
 }

@@ -1,11 +1,199 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
+import * as bcrypt from "bcryptjs";
+import { randomBytes } from "crypto";
 import { PrismaService } from "../../prisma/prisma.service";
-import { AddressDto, UpdateProfileDto } from "./dto/users.dto";
+import { MailService } from "../mail/mail.service";
+import { ConsentService } from "../privacy/consent.service";
+import { AddressDto, DeleteAccountDto, UpdateProfileDto } from "./dto/users.dto";
 import { onlyDigits } from "../../common/utils/order-number.util";
+
+/** Com quem os dados podem ser compartilhados (LGPD art. 18, VII). */
+export const DATA_SHARING = [
+  {
+    recipient: "Mercado Pago (Mercado Pago Instituição de Pagamento Ltda.)",
+    country: "Brasil",
+    purpose: "Processar o pagamento do pedido",
+    data: ["nome", "e-mail", "CPF", "valor e itens do pedido"],
+  },
+  {
+    recipient: "Printful Inc.",
+    country: "Estados Unidos (transferência internacional, LGPD art. 33)",
+    purpose: "Produzir e entregar os produtos",
+    data: [
+      "nome do destinatário",
+      "endereço de entrega",
+      "telefone",
+      "e-mail",
+      "CPF (exigido para envio ao Brasil)",
+      "itens do pedido",
+    ],
+  },
+  {
+    recipient: "Railway Corporation",
+    country: "Estados Unidos (transferência internacional, LGPD art. 33)",
+    purpose: "Hospedagem da aplicação e do banco de dados",
+    data: ["dados da conta e dos pedidos, cifrados em trânsito; CPF cifrado em repouso"],
+  },
+  {
+    recipient: "Provedor de e-mail transacional",
+    country: "conforme o provedor contratado",
+    purpose: "Enviar confirmações de pedido, de cadastro e de redefinição de senha",
+    data: ["nome", "e-mail", "número e resumo do pedido"],
+  },
+];
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly mail: MailService,
+    private readonly consents: ConsentService,
+  ) {}
+
+  // ---------------------------------------------------------------- direitos do titular (LGPD art. 18)
+
+  /** Confirmacao, acesso e portabilidade: todos os dados da conta em JSON legivel. */
+  async exportData(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        name: true,
+        phone: true,
+        document: true,
+        role: true,
+        humorLevel: true,
+        createdAt: true,
+        updatedAt: true,
+        emailVerifiedAt: true,
+        termsAcceptedAt: true,
+        termsVersion: true,
+        privacyVersion: true,
+        marketingOptIn: true,
+        marketingConsentAt: true,
+        twoFactorEnabled: true,
+        addresses: true,
+        orders: {
+          orderBy: { createdAt: "desc" },
+          include: {
+            items: true,
+            payment: {
+              select: { status: true, method: true, installments: true, amountCents: true, paidAt: true, provider: true },
+            },
+            fulfillment: { select: { status: true, trackingCode: true, trackingUrl: true, sentAt: true } },
+            invoice: { select: { number: true, series: true, accessKey: true, issuedAt: true, status: true } },
+            returns: true,
+          },
+        },
+        cart: { include: { items: true } },
+        discoveries: { include: { easterEgg: { select: { code: true, title: true } } } },
+      },
+    });
+
+    const contacts = await this.prisma.contactMessage.findMany({
+      where: { OR: [{ userId }, { email: user.email }] },
+      select: {
+        protocol: true,
+        subject: true,
+        orderNumber: true,
+        message: true,
+        status: true,
+        createdAt: true,
+        answeredAt: true,
+      },
+    });
+
+    return {
+      generatedAt: new Date().toISOString(),
+      controller: "Roupa de Domingo",
+      legalBasis: "LGPD art. 18, I, II e V (confirmação, acesso e portabilidade)",
+      account: user,
+      consents: await this.consents.listForUser(userId),
+      contactMessages: contacts,
+      sharedWith: DATA_SHARING,
+    };
+  }
+
+  sharing() {
+    return DATA_SHARING;
+  }
+
+  async setMarketingConsent(userId: string, granted: boolean, meta: { ip?: string; userAgent?: string } = {}) {
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { marketingOptIn: granted, marketingConsentAt: granted ? new Date() : null },
+      select: { marketingOptIn: true, marketingConsentAt: true, privacyVersion: true },
+    });
+    await this.consents.record({
+      userId,
+      kind: "marketing",
+      version: user.privacyVersion ?? "desconhecida",
+      granted,
+      ...meta,
+    });
+    return { marketingOptIn: user.marketingOptIn, marketingConsentAt: user.marketingConsentAt };
+  }
+
+  /**
+   * Eliminacao (art. 18, VI): anonimiza a conta. Pedidos ficam pelo prazo fiscal
+   * (5 anos, art. 16, I), desvinculados da pessoa. Pedido em andamento bloqueia.
+   */
+  async deleteAccount(userId: string, dto: DeleteAccountDto) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    if (!(await bcrypt.compare(dto.password, user.passwordHash))) {
+      throw new BadRequestException("Senha incorreta.");
+    }
+
+    const open = await this.prisma.order.count({
+      where: { userId, status: { in: ["PAID", "IN_PRODUCTION", "SHIPPED"] } },
+    });
+    if (open > 0) {
+      throw new BadRequestException(
+        "Você tem pedido em andamento. Assim que ele for entregue (ou cancelado), a conta pode ser excluída.",
+      );
+    }
+
+    const anonymousEmail = `excluido-${user.id}@anonimizado.invalid`;
+    const unusablePassword = await bcrypt.hash(randomBytes(32).toString("hex"), 10);
+    await this.prisma.$transaction([
+      this.prisma.address.deleteMany({ where: { userId } }),
+      this.prisma.cart.deleteMany({ where: { userId } }),
+      this.prisma.authToken.deleteMany({ where: { userId } }),
+      this.prisma.easterEggDiscovery.deleteMany({ where: { userId } }),
+      // Pedidos ficam para a contabilidade, sem o vinculo com a pessoa
+      this.prisma.order.updateMany({
+        where: { userId },
+        data: { userId: null, customerPhone: null, notes: null },
+      }),
+      this.prisma.user.update({
+        where: { id: userId },
+        data: {
+          email: anonymousEmail,
+          name: "Conta excluída",
+          phone: null,
+          document: null,
+          passwordHash: unusablePassword,
+          marketingOptIn: false,
+          marketingConsentAt: null,
+          twoFactorEnabled: false,
+          twoFactorSecret: null,
+          tokenVersion: { increment: 1 },
+          deletedAt: new Date(),
+        },
+      }),
+    ]);
+
+    await this.consents.record({
+      userId,
+      kind: "marketing",
+      version: user.privacyVersion ?? "-",
+      granted: false,
+      details: { reason: "account_deleted", note: dto.reason ?? null },
+    });
+    void this.mail.sendAccountDeleted(user.email, user.name);
+    return { deleted: true };
+  }
 
   updateProfile(userId: string, dto: UpdateProfileDto) {
     return this.prisma.user.update({

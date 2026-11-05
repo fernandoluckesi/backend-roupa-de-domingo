@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient, CouponType, Role } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
-import { CATEGORIES, PRODUCTS } from "./catalog";
+import { CATEGORIES, PRODUCTS, imageFields } from "./catalog";
 
 const prisma = new PrismaClient();
 
@@ -95,16 +95,7 @@ const EASTER_EGGS = [
     points: 10,
     rewardCode: null,
   },
-  {
-    code: "CONSOLE_CURIOSO",
-    title: "Curioso Profissional",
-    hint: "Desenvolvedores olham onde o usuário comum não olha.",
-    message:
-      "Você abriu o console. Isso tecnicamente é invadir a cozinha do restaurante. Deixamos uma vaga de emprego lá dentro.",
-    trigger: "devtools-console",
-    points: 20,
-    rewardCode: null,
-  },
+
   {
     code: "RODAPE_CONFISSAO",
     title: "Confissão do Rodapé",
@@ -279,8 +270,8 @@ async function main() {
         ratingCount: p.ratingCount,
         printProviderSku: `RD-${p.slug.toUpperCase().slice(0, 18)}`,
         images: {
-          create: p.images.map((url, i) => ({
-            url,
+          create: p.images.map((image, i) => ({
+            ...imageFields(image),
             alt: `${p.name} - imagem ${i + 1}`,
             position: i,
           })),

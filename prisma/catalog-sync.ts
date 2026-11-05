@@ -11,7 +11,7 @@
  * Uso: npm run catalog:sync
  */
 import { PrismaClient } from "@prisma/client";
-import { CATEGORIES, PRODUCTS } from "./catalog";
+import { CATEGORIES, PRODUCTS, imageFields } from "./catalog";
 
 const prisma = new PrismaClient();
 
@@ -61,9 +61,9 @@ async function main() {
 
     await prisma.productImage.deleteMany({ where: { productId: product.id } });
     await prisma.productImage.createMany({
-      data: p.images.map((url, i) => ({
+      data: p.images.map((image, i) => ({
         productId: product.id,
-        url,
+        ...imageFields(image),
         alt: `${p.name} - imagem ${i + 1}`,
         position: i,
       })),
@@ -95,6 +95,12 @@ async function main() {
     variantsDisabled += disabled.count;
   }
 
+  // Easter eggs aposentados: somem da contagem sem apagar descobertas antigas
+  const retiredEggs = await prisma.easterEgg.updateMany({
+    where: { code: { in: ["CONSOLE_CURIOSO"] }, isActive: true },
+    data: { isActive: false },
+  });
+
   // Itens de carrinho apontando para variantes desativadas sairiam do carrinho no checkout com erro:
   // remove-os agora para o cliente nao ser surpreendido.
   const staleCartItems = await prisma.cartItem.deleteMany({
@@ -107,6 +113,7 @@ async function main() {
     variantes: variantsUpserted,
     variantesDesativadas: variantsDisabled,
     itensDeCarrinhoRemovidos: staleCartItems.count,
+    easterEggsAposentados: retiredEggs.count,
   });
 }
 

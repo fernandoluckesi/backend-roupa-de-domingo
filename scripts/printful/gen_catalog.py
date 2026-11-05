@@ -121,8 +121,12 @@ def replace_block(text, slug):
     if slug == "camiseta-voce-nao-devia-estar-aqui":
         price = 11990  # peca secreta (recompensa de easter egg) mantem o preco especial
     block = re.sub(r"basePriceCents: \d+", f"basePriceCents: {price}", block)
-    imgs = [f'"/products/{i["file"]}"' for i in mk[slug]]
-    block = re.sub(r"images: \[[\s\S]*?\],", "images: [" + ", ".join(imgs) + "],", block, count=1)
+    imgs = [
+        f'{{ url: "/products/{i["file"]}", color: "{i["color"]}" }}' if i.get("color") else f'"/products/{i["file"]}"'
+        for i in mk[slug]
+    ]
+    images_txt = "images: [\n" + "".join(f"      {i},\n" for i in imgs) + "    ],"
+    block = re.sub(r"images: \[[\s\S]*?\],", lambda _m: images_txt, block, count=1)
     variants = []
     for v in info["variants"]:
         parts = [f'sku: "{v["externalId"]}"']

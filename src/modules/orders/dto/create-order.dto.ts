@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
+  Equals,
   IsEmail,
   IsIn,
   IsOptional,
@@ -93,4 +94,13 @@ export class CreateOrderDto {
   @IsString()
   @MaxLength(500)
   notes?: string;
+
+  @ApiProperty({ description: "Aceite dos termos de uso e da politica de trocas no checkout" })
+  @Equals(true, { message: "Para finalizar, aceite os termos de uso e a política de trocas." })
+  acceptTerms: boolean;
+
+  @ApiProperty({ example: "2026-11-04" })
+  @IsString()
+  @MaxLength(20)
+  termsVersion: string;
 }

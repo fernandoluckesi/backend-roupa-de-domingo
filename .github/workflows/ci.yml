@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    # Toda segunda as 9h (BRT): pega vulnerabilidade nova em dependencia sem precisar de commit
+    - cron: "0 12 * * 1"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: domingo
+          POSTGRES_PASSWORD: domingo
+          POSTGRES_DB: roupadedomingo
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U domingo" --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://domingo:domingo@localhost:5432/roupadedomingo?schema=public
+      JWT_SECRET: ci-secret
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-fund
+      - run: npx prisma generate
+      - run: npm run typecheck
+      - run: npm run build
+      - name: Migracoes aplicam do zero
+        run: npx prisma migrate deploy
+      - name: Seed e catalogo
+        run: npm run seed && npm run catalog:sync && npm run data:encrypt
+
+  dependencies:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci --no-fund --ignore-scripts
+      - name: npm audit (producao, severidade alta ou critica)
+        run: npm audit --omit=dev --audit-level=high
+
+  secrets:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Varredura de segredos commitados (gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

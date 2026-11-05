@@ -18,6 +18,15 @@ export type VariantSeed = {
   printProviderVariantId?: string;
 };
 
+export type CatalogImage = string | { url: string; color?: string };
+
+/** Campos de ProductImage a partir de uma imagem do catalogo. */
+export function imageFields(image: CatalogImage): { url: string; color: string | null } {
+  return typeof image === "string"
+    ? { url: image, color: null }
+    : { url: image.url, color: image.color ?? null };
+}
+
 export type ProductSeed = {
   slug: string;
   name: string;
@@ -31,7 +40,8 @@ export type ProductSeed = {
   isSecret?: boolean;
   rating: number;
   ratingCount: number;
-  images: string[];
+  /** URL ou { url, color }: com cor, a pagina do produto troca para essa foto ao escolher a cor */
+  images: CatalogImage[];
   variants: VariantSeed[];
 };
 
@@ -118,7 +128,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.8,
     ratingCount: 312,
-    images: ["/products/camiseta-sorria-e-de-graca-1.jpg", "/products/camiseta-sorria-e-de-graca-2.jpg", "/products/camiseta-sorria-e-de-graca-3.jpg", "/products/camiseta-sorria-e-de-graca-4.jpg"],
+    images: [
+      { url: "/products/camiseta-sorria-e-de-graca-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-sorria-e-de-graca-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-sorria-e-de-graca-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-sorria-e-de-graca-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAM-SORRIA-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-SORRIA-PT-G" },
       { sku: "CAM-SORRIA-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-SORRIA-PT-GG" },
@@ -145,7 +160,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.9,
     ratingCount: 487,
-    images: ["/products/camiseta-estou-bem-mentira-1.jpg", "/products/camiseta-estou-bem-mentira-2.jpg", "/products/camiseta-estou-bem-mentira-3.jpg", "/products/camiseta-estou-bem-mentira-4.jpg"],
+    images: [
+      { url: "/products/camiseta-estou-bem-mentira-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-estou-bem-mentira-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-estou-bem-mentira-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-estou-bem-mentira-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAM-BEM-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-BEM-PT-G" },
       { sku: "CAM-BEM-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-BEM-PT-GG" },
@@ -172,7 +192,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.7,
     ratingCount: 221,
-    images: ["/products/camiseta-trabalho-em-equipe-1.jpg", "/products/camiseta-trabalho-em-equipe-2.jpg", "/products/camiseta-trabalho-em-equipe-3.jpg", "/products/camiseta-trabalho-em-equipe-4.jpg"],
+    images: [
+      { url: "/products/camiseta-trabalho-em-equipe-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-trabalho-em-equipe-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-trabalho-em-equipe-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-trabalho-em-equipe-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAM-EQUIPE-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-EQUIPE-PT-G" },
       { sku: "CAM-EQUIPE-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-EQUIPE-PT-GG" },
@@ -217,7 +242,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 5,
     ratingCount: 158,
-    images: ["/products/camiseta-domingo-eterno-1.jpg", "/products/camiseta-domingo-eterno-2.jpg", "/products/camiseta-domingo-eterno-3.jpg", "/products/camiseta-domingo-eterno-4.jpg"],
+    images: [
+      { url: "/products/camiseta-domingo-eterno-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-domingo-eterno-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-domingo-eterno-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-domingo-eterno-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAM-DOMINGO-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-DOMINGO-PT-G" },
       { sku: "CAM-DOMINGO-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-DOMINGO-PT-GG" },
@@ -243,7 +273,12 @@ export const PRODUCTS: ProductSeed[] = [
     tags: ["camiseta", "passivo-agressivo", "relacionamento"],
     rating: 4.6,
     ratingCount: 94,
-    images: ["/products/camiseta-nao-foi-nada-1.jpg", "/products/camiseta-nao-foi-nada-2.jpg", "/products/camiseta-nao-foi-nada-3.jpg", "/products/camiseta-nao-foi-nada-4.jpg"],
+    images: [
+      { url: "/products/camiseta-nao-foi-nada-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-nao-foi-nada-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-nao-foi-nada-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-nao-foi-nada-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAM-NADA-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-NADA-PT-G" },
       { sku: "CAM-NADA-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250, printProviderVariantId: "CAM-NADA-PT-GG" },
@@ -270,7 +305,11 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.9,
     ratingCount: 603,
-    images: ["/products/caneca-primeiro-cafe-1.jpg", "/products/caneca-primeiro-cafe-2.jpg", "/products/caneca-primeiro-cafe-3.jpg"],
+    images: [
+      { url: "/products/caneca-primeiro-cafe-1.jpg", color: "Branca" },
+      { url: "/products/caneca-primeiro-cafe-2.jpg", color: "Branca" },
+      { url: "/products/caneca-primeiro-cafe-3.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAN-CAFE-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450, printProviderVariantId: "CAN-CAFE-325" },
     ],
@@ -288,7 +327,11 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.8,
     ratingCount: 441,
-    images: ["/products/caneca-reuniao-email-1.jpg", "/products/caneca-reuniao-email-2.jpg", "/products/caneca-reuniao-email-3.jpg"],
+    images: [
+      { url: "/products/caneca-reuniao-email-1.jpg", color: "Branca" },
+      { url: "/products/caneca-reuniao-email-2.jpg", color: "Branca" },
+      { url: "/products/caneca-reuniao-email-3.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAN-EMAIL-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450, printProviderVariantId: "CAN-EMAIL-325" },
     ],
@@ -305,7 +348,11 @@ export const PRODUCTS: ProductSeed[] = [
     tags: ["caneca", "presente", "amigo-oculto", "trabalho"],
     rating: 4.5,
     ratingCount: 177,
-    images: ["/products/caneca-chefe-do-ano-1.jpg", "/products/caneca-chefe-do-ano-2.jpg", "/products/caneca-chefe-do-ano-3.jpg"],
+    images: [
+      { url: "/products/caneca-chefe-do-ano-1.jpg", color: "Branca" },
+      { url: "/products/caneca-chefe-do-ano-2.jpg", color: "Branca" },
+      { url: "/products/caneca-chefe-do-ano-3.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAN-CHEFE-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450, printProviderVariantId: "CAN-CHEFE-325" },
     ],
@@ -322,7 +369,11 @@ export const PRODUCTS: ProductSeed[] = [
     tags: ["caneca", "absurdo", "classico"],
     rating: 4.7,
     ratingCount: 265,
-    images: ["/products/caneca-lagrimas-dos-meus-inimigos-1.jpg", "/products/caneca-lagrimas-dos-meus-inimigos-2.jpg", "/products/caneca-lagrimas-dos-meus-inimigos-3.jpg"],
+    images: [
+      { url: "/products/caneca-lagrimas-dos-meus-inimigos-1.jpg", color: "Branca" },
+      { url: "/products/caneca-lagrimas-dos-meus-inimigos-2.jpg", color: "Branca" },
+      { url: "/products/caneca-lagrimas-dos-meus-inimigos-3.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAN-LAGRIMAS-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450, printProviderVariantId: "CAN-LAGRIMAS-325" },
     ],
@@ -340,7 +391,10 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.8,
     ratingCount: 389,
-    images: ["/products/capa-visto-e-nao-respondido-1.jpg", "/products/capa-visto-e-nao-respondido-2.jpg"],
+    images: [
+      "/products/capa-visto-e-nao-respondido-1.jpg",
+      "/products/capa-visto-e-nao-respondido-2.jpg",
+    ],
     variants: [
       { sku: "CAP-VISTO-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-VISTO-IP13" },
       { sku: "CAP-VISTO-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-VISTO-IP14" },
@@ -372,7 +426,10 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.9,
     ratingCount: 512,
-    images: ["/products/capa-bateria-social-2-1.jpg", "/products/capa-bateria-social-2-2.jpg"],
+    images: [
+      "/products/capa-bateria-social-2-1.jpg",
+      "/products/capa-bateria-social-2-2.jpg",
+    ],
     variants: [
       { sku: "CAP-BATERIA-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-BATERIA-IP13" },
       { sku: "CAP-BATERIA-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-BATERIA-IP14" },
@@ -403,7 +460,10 @@ export const PRODUCTS: ProductSeed[] = [
     tags: ["capa", "celular", "internet", "acido"],
     rating: 4.6,
     ratingCount: 143,
-    images: ["/products/capa-rolando-por-nada-1.jpg", "/products/capa-rolando-por-nada-2.jpg"],
+    images: [
+      "/products/capa-rolando-por-nada-1.jpg",
+      "/products/capa-rolando-por-nada-2.jpg",
+    ],
     variants: [
       { sku: "CAP-ROLANDO-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-ROLANDO-IP13" },
       { sku: "CAP-ROLANDO-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-ROLANDO-IP14" },
@@ -434,7 +494,10 @@ export const PRODUCTS: ProductSeed[] = [
     tags: ["capa", "celular", "atraso", "sarcasmo"],
     rating: 4.7,
     ratingCount: 208,
-    images: ["/products/capa-ja-vou-sair-de-casa-1.jpg", "/products/capa-ja-vou-sair-de-casa-2.jpg"],
+    images: [
+      "/products/capa-ja-vou-sair-de-casa-1.jpg",
+      "/products/capa-ja-vou-sair-de-casa-2.jpg",
+    ],
     variants: [
       { sku: "CAP-SAINDO-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-SAINDO-IP13" },
       { sku: "CAP-SAINDO-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60, printProviderVariantId: "CAP-SAINDO-IP14" },
@@ -466,7 +529,12 @@ export const PRODUCTS: ProductSeed[] = [
     isSecret: true,
     rating: 5,
     ratingCount: 13,
-    images: ["/products/camiseta-voce-nao-devia-estar-aqui-1.jpg", "/products/camiseta-voce-nao-devia-estar-aqui-2.jpg", "/products/camiseta-voce-nao-devia-estar-aqui-3.jpg", "/products/camiseta-voce-nao-devia-estar-aqui-4.jpg"],
+    images: [
+      { url: "/products/camiseta-voce-nao-devia-estar-aqui-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-voce-nao-devia-estar-aqui-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-voce-nao-devia-estar-aqui-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-voce-nao-devia-estar-aqui-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "CAM-SECRETA-PT-G", size: "G", color: "Preta", priceCents: 11990, weightGrams: 250, printProviderVariantId: "CAM-SECRETA-PT-G" },
       { sku: "CAM-SECRETA-PT-GG", size: "GG", color: "Preta", priceCents: 11990, weightGrams: 250, printProviderVariantId: "CAM-SECRETA-PT-GG" },
@@ -494,7 +562,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.9,
     ratingCount: 12,
-    images: ["/products/moletom-socialmente-indisponivel-1.jpg", "/products/moletom-socialmente-indisponivel-2.jpg", "/products/moletom-socialmente-indisponivel-3.jpg", "/products/moletom-socialmente-indisponivel-4.jpg"],
+    images: [
+      { url: "/products/moletom-socialmente-indisponivel-1.jpg", color: "Preta" },
+      { url: "/products/moletom-socialmente-indisponivel-2.jpg", color: "Preta" },
+      { url: "/products/moletom-socialmente-indisponivel-3.jpg", color: "Marinho" },
+      { url: "/products/moletom-socialmente-indisponivel-4.jpg", color: "Marinho" },
+    ],
     variants: [
       { sku: "MOL-INDISP-PT-XGG", size: "XGG", color: "Preta", priceCents: 21990, weightGrams: 650, printProviderVariantId: "MOL-INDISP-PT-XGG" },
       { sku: "MOL-INDISP-PT-G", size: "G", color: "Preta", priceCents: 21990, weightGrams: 650, printProviderVariantId: "MOL-INDISP-PT-G" },
@@ -521,7 +594,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: false,
     rating: 4.8,
     ratingCount: 9,
-    images: ["/products/moletom-domingo-18h-1.jpg", "/products/moletom-domingo-18h-2.jpg", "/products/moletom-domingo-18h-3.jpg", "/products/moletom-domingo-18h-4.jpg"],
+    images: [
+      { url: "/products/moletom-domingo-18h-1.jpg", color: "Preta" },
+      { url: "/products/moletom-domingo-18h-2.jpg", color: "Preta" },
+      { url: "/products/moletom-domingo-18h-3.jpg", color: "Marinho" },
+      { url: "/products/moletom-domingo-18h-4.jpg", color: "Marinho" },
+    ],
     variants: [
       { sku: "MOL-18H-PT-XGG", size: "XGG", color: "Preta", priceCents: 21990, weightGrams: 650, printProviderVariantId: "MOL-18H-PT-XGG" },
       { sku: "MOL-18H-PT-G", size: "G", color: "Preta", priceCents: 21990, weightGrams: 650, printProviderVariantId: "MOL-18H-PT-G" },
@@ -548,7 +626,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: true,
     rating: 4.7,
     ratingCount: 8,
-    images: ["/products/garrafa-hidratado-e-cansado-1.jpg", "/products/garrafa-hidratado-e-cansado-2.jpg", "/products/garrafa-hidratado-e-cansado-3.jpg", "/products/garrafa-hidratado-e-cansado-4.jpg"],
+    images: [
+      { url: "/products/garrafa-hidratado-e-cansado-1.jpg", color: "Preta" },
+      { url: "/products/garrafa-hidratado-e-cansado-2.jpg", color: "Preta" },
+      { url: "/products/garrafa-hidratado-e-cansado-3.jpg", color: "Branca" },
+      { url: "/products/garrafa-hidratado-e-cansado-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "GAR-CANSADO-PT", size: "500ml", color: "Preta", priceCents: 21990, weightGrams: 400, printProviderVariantId: "GAR-CANSADO-PT" },
       { sku: "GAR-CANSADO-BR", size: "500ml", color: "Branca", priceCents: 21990, weightGrams: 400, printProviderVariantId: "GAR-CANSADO-BR" },
@@ -567,7 +650,12 @@ export const PRODUCTS: ProductSeed[] = [
     isFeatured: false,
     rating: 4.9,
     ratingCount: 6,
-    images: ["/products/garrafa-bebendo-agua-para-nao-responder-1.jpg", "/products/garrafa-bebendo-agua-para-nao-responder-2.jpg", "/products/garrafa-bebendo-agua-para-nao-responder-3.jpg", "/products/garrafa-bebendo-agua-para-nao-responder-4.jpg"],
+    images: [
+      { url: "/products/garrafa-bebendo-agua-para-nao-responder-1.jpg", color: "Preta" },
+      { url: "/products/garrafa-bebendo-agua-para-nao-responder-2.jpg", color: "Preta" },
+      { url: "/products/garrafa-bebendo-agua-para-nao-responder-3.jpg", color: "Branca" },
+      { url: "/products/garrafa-bebendo-agua-para-nao-responder-4.jpg", color: "Branca" },
+    ],
     variants: [
       { sku: "GAR-AGUA-PT", size: "500ml", color: "Preta", priceCents: 21990, weightGrams: 400, printProviderVariantId: "GAR-AGUA-PT" },
       { sku: "GAR-AGUA-BR", size: "500ml", color: "Branca", priceCents: 21990, weightGrams: 400, printProviderVariantId: "GAR-AGUA-BR" },

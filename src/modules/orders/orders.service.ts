@@ -8,7 +8,10 @@ import { OrderStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CartOwner, CartService } from "../cart/cart.service";
 import { PaymentsService } from "../payments/payments.service";
+import { MailService } from "../mail/mail.service";
+import { ConsentService } from "../privacy/consent.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
+import { maskCpf, maskEmail } from "../../common/utils/privacy.util";
 import {
   generateOrderNumber,
   onlyDigits,
@@ -36,7 +39,27 @@ const ORDER_INCLUDE = {
     },
   },
   coupon: { select: { code: true, description: true } },
+  invoice: { select: { status: true, number: true, series: true, accessKey: true, pdfUrl: true, issuedAt: true } },
+  returns: {
+    orderBy: { createdAt: "desc" },
+    select: {
+      id: true,
+      protocol: true,
+      type: true,
+      status: true,
+      reason: true,
+      items: true,
+      reverseCode: true,
+      refundCents: true,
+      resolution: true,
+      timeline: true,
+      createdAt: true,
+    },
+  },
 } satisfies Prisma.OrderInclude;
+
+/** Antifraude simples: pedidos pendentes por pessoa na ultima hora */
+const MAX_PENDING_ORDERS_PER_HOUR = 5;
 
 @Injectable()
 export class OrdersService {
@@ -46,6 +69,8 @@ export class OrdersService {
     private readonly prisma: PrismaService,
     private readonly cart: CartService,
     private readonly payments: PaymentsService,
+    private readonly mail: MailService,
+    private readonly consents: ConsentService,
   ) {}
 
   /**
@@ -55,6 +80,24 @@ export class OrdersService {
   async checkout(owner: CartOwner, dto: CreateOrderDto) {
     const method = dto.shippingMethod ?? "economico";
     const zipCode = onlyDigits(dto.shippingAddress.zipCode);
+
+    // Limite de tentativas: muitos pedidos abertos em pouco tempo costuma ser teste de cartao
+    const since = new Date(Date.now() - 60 * 60 * 1000);
+    const recentPending = await this.prisma.order.count({
+      where: {
+        status: { in: [OrderStatus.PENDING, OrderStatus.FAILED] },
+        createdAt: { gte: since },
+        OR: [
+          ...(owner.userId ? [{ userId: owner.userId }] : []),
+          { customerEmail: dto.customerEmail.toLowerCase() },
+        ],
+      },
+    });
+    if (recentPending >= MAX_PENDING_ORDERS_PER_HOUR) {
+      throw new BadRequestException(
+        "Muitos pedidos abertos em pouco tempo. Conclua ou cancele um pedido pendente, ou tente de novo em 1 hora.",
+      );
+    }
 
     const cartSnapshot = await this.cart.getCart(owner, zipCode, method);
 
@@ -89,7 +132,7 @@ export class OrdersService {
         customerName: dto.customerName,
         customerEmail: dto.customerEmail.toLowerCase(),
         customerPhone: dto.customerPhone,
-        customerDocument: dto.customerDocument,
+        customerDocument: dto.customerDocument ? onlyDigits(dto.customerDocument) : undefined,
         shippingRecipient: dto.shippingAddress.recipient,
         shippingZipCode: zipCode,
         shippingStreet: dto.shippingAddress.street,
@@ -110,7 +153,7 @@ export class OrdersService {
           {
             status: OrderStatus.PENDING,
             at: new Date().toISOString(),
-            note: "Pedido criado, aguardando pagamento",
+            note: `Pedido criado, aguardando pagamento. Termos v${dto.termsVersion} aceitos no checkout.`,
           },
         ] as object,
         items: {
@@ -160,9 +203,18 @@ export class OrdersService {
         preferenceId: preference.preferenceId,
         amountCents: order.totalCents,
         initPoint: preference.initPoint,
-        rawPayload: preference.raw as object,
+        // Minimizacao (LGPD art. 6o, III): so o necessario para conciliar, sem os dados do pagador
+        rawPayload: { provider: preference.provider, preferenceId: preference.preferenceId } as object,
       },
     });
+
+    // Aceite dos termos no checkout (vale tambem para convidado)
+    await this.consents
+      .record({ userId: owner.userId, sessionId: owner.sessionId, kind: "terms", version: dto.termsVersion, granted: true, details: { orderNumber: order.number } })
+      .catch(() => undefined);
+
+    // Confirmacao por e-mail com o resumo do contrato (Decreto 7.962/2013, art. 4o, III e IV)
+    void this.mail.sendOrderConfirmation(order);
 
     // Carrinho esvaziado só após a preferência existir, para não perder dados em caso de falha
     await this.cart.clear(owner);
@@ -199,13 +251,13 @@ export class OrdersService {
       throw new NotFoundException("Pedido nao encontrado.");
     }
 
-    // Pedido de usuário logado não pode ser lido por outro usuário autenticado.
-    // Pedido de convidado fica acessível por quem tem o número (link de acompanhamento).
-    if (order.userId && owner.userId && order.userId !== owner.userId) {
-      throw new NotFoundException("Pedido nao encontrado.");
+    // Pedido de conta: so o dono le (anonimo ou outro usuario recebe 404, sem vazar dados).
+    // Pedido de convidado: acompanhamento pelo numero, mas com os dados pessoais mascarados.
+    if (order.userId) {
+      if (order.userId !== owner.userId) throw new NotFoundException("Pedido nao encontrado.");
+      return this.serialize(order);
     }
-
-    return this.serialize(order);
+    return this.maskPersonalData(this.serialize(order));
   }
 
   async cancel(number: string, owner: CartOwner) {
@@ -214,10 +266,7 @@ export class OrdersService {
       select: { id: true, status: true, userId: true, timeline: true },
     });
 
-    if (
-      !order ||
-      (order.userId && owner.userId && order.userId !== owner.userId)
-    ) {
+    if (!order || (order.userId && order.userId !== owner.userId)) {
       throw new NotFoundException("Pedido nao encontrado.");
     }
 
@@ -260,6 +309,20 @@ export class OrdersService {
       if (!exists) return candidate;
     }
     return `RD-${Date.now().toString(36).toUpperCase()}`;
+  }
+
+  /** Visao publica (link de acompanhamento de convidado): sem CPF, telefone, e-mail ou endereco completo. */
+  private maskPersonalData(order: any) {
+    return {
+      ...order,
+      customerEmail: maskEmail(order.customerEmail),
+      customerPhone: order.customerPhone ? "***" : null,
+      customerDocument: order.customerDocument ? maskCpf(order.customerDocument) : null,
+      shippingStreet: "***",
+      shippingNumber: "***",
+      shippingComplement: null,
+      notes: null,
+    };
   }
 
   private serialize(order: any) {

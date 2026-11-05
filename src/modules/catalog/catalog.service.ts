@@ -20,7 +20,7 @@ const PRODUCT_LIST_SELECT = {
   images: {
     orderBy: { position: "asc" },
     take: 2,
-    select: { url: true, alt: true },
+    select: { url: true, alt: true, color: true },
   },
   variants: {
     select: {
@@ -59,8 +59,8 @@ export class CatalogService {
     const where: Prisma.ProductWhereInput = {
       isActive: true,
       ...(canSeeSecret ? {} : { isSecret: false }),
-      ...(query.category ? { category: { slug: query.category } } : {}),
-      ...(query.humor ? { humor: query.humor } : {}),
+      ...(query.category?.length ? { category: { slug: { in: query.category } } } : {}),
+      ...(query.humor?.length ? { humor: { in: query.humor } } : {}),
       ...(query.tags?.length ? { tags: { hasSome: query.tags } } : {}),
       ...(query.minPrice || query.maxPrice
         ? {

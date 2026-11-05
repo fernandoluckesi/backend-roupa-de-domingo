@@ -8,6 +8,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { OrdersService } from "./orders.service";
 import { CreateOrderDto } from "./dto/create-order.dto";
 import {
@@ -25,6 +26,7 @@ export class OrdersController {
   constructor(private readonly orders: OrdersService) {}
 
   @Post()
+  @Throttle({ default: { limit: 10, ttl: 10 * 60_000 } })
   @UseGuards(OptionalJwtGuard)
   @ApiOperation({
     summary: "Fecha o pedido e devolve a URL de pagamento do Mercado Pago",

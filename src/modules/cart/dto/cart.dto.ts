@@ -20,12 +20,6 @@ export class AddCartItemDto {
   @Min(1)
   @Max(99)
   quantity?: number;
-
-  @ApiPropertyOptional({ description: "Texto personalizado na estampa" })
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  customText?: string;
 }
 
 export class UpdateCartItemDto {
@@ -34,12 +28,6 @@ export class UpdateCartItemDto {
   @Min(1)
   @Max(99)
   quantity: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  @MaxLength(60)
-  customText?: string;
 }
 
 export class ApplyCouponDto {

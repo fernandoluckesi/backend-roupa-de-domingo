@@ -9,6 +9,7 @@ import {
   Query,
 } from "@nestjs/common";
 import { ApiExcludeEndpoint, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { SkipThrottle } from "@nestjs/throttler";
 import { PaymentsService } from "./payments.service";
 
 @ApiTags("payments")
@@ -16,6 +17,7 @@ import { PaymentsService } from "./payments.service";
 export class PaymentsController {
   constructor(private readonly payments: PaymentsService) {}
 
+  @SkipThrottle()
   @Post("webhook")
   @HttpCode(200)
   @ApiExcludeEndpoint()

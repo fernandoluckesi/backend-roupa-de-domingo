@@ -10,6 +10,7 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
+  twoFactorEnabled?: boolean;
 }
 
 export const CurrentUser = createParamDecorator(

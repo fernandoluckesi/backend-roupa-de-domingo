@@ -10,6 +10,7 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { Throttle } from "@nestjs/throttler";
 import { CartService } from "./cart.service";
 import {
   AddCartItemDto,
@@ -80,6 +81,8 @@ export class CartController {
     return this.cart.clear({ userId, sessionId });
   }
 
+  // Contra forca bruta de cupons secretos
+  @Throttle({ default: { limit: 10, ttl: 60_000 } })
   @Post("coupon")
   @ApiOperation({ summary: "Aplica cupom" })
   applyCoupon(

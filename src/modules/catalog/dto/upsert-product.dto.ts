@@ -59,6 +59,11 @@ export class ImageInputDto {
   @ApiProperty()
   @IsString()
   alt: string;
+
+  @ApiPropertyOptional({ description: "Cor da variante mostrada na foto" })
+  @IsOptional()
+  @IsString()
+  color?: string;
 }
 
 export class CreateProductDto {

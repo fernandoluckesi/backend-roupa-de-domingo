@@ -29,6 +29,29 @@ export interface AppConfig {
   business: {
     freeShippingThresholdCents: number;
   };
+  security: {
+    /** Chave AES-256 (base64, 32 bytes) para cifrar CPF e segredo 2FA em repouso */
+    dataEncryptionKey: string;
+    /** Nome do cookie httpOnly da sessao */
+    sessionCookie: string;
+    cookieSecure: boolean;
+    swaggerEnabled: boolean;
+    /** Rotas de admin exigem 2FA ativo */
+    adminTwoFactorRequired: boolean;
+    /** Tentativas de login antes do bloqueio temporario */
+    maxFailedLogins: number;
+    lockMinutes: number;
+  };
+  mail: {
+    driver: "log" | "smtp";
+    from: string;
+    sacInbox: string;
+    smtp: { host: string; port: number; secure: boolean; user: string; pass: string };
+  };
+  invoice: {
+    /** mock: gera numero interno; trocar por um emissor de NF-e real (ver docs) */
+    provider: "mock";
+  };
 }
 
 export default (): AppConfig => ({
@@ -66,5 +89,35 @@ export default (): AppConfig => ({
       process.env.FREE_SHIPPING_THRESHOLD_CENTS ?? "24900",
       10,
     ),
+  },
+  security: {
+    dataEncryptionKey: process.env.DATA_ENCRYPTION_KEY ?? "",
+    sessionCookie: process.env.SESSION_COOKIE_NAME ?? "rd_session",
+    cookieSecure:
+      process.env.COOKIE_SECURE !== undefined
+        ? process.env.COOKIE_SECURE === "true"
+        : process.env.NODE_ENV === "production",
+    swaggerEnabled:
+      process.env.SWAGGER_ENABLED !== undefined
+        ? process.env.SWAGGER_ENABLED === "true"
+        : process.env.NODE_ENV !== "production",
+    adminTwoFactorRequired: process.env.ADMIN_2FA_REQUIRED !== "false",
+    maxFailedLogins: parseInt(process.env.MAX_FAILED_LOGINS ?? "5", 10),
+    lockMinutes: parseInt(process.env.LOGIN_LOCK_MINUTES ?? "15", 10),
+  },
+  mail: {
+    driver: (process.env.MAIL_DRIVER as "log" | "smtp") ?? "log",
+    from: process.env.MAIL_FROM ?? "Roupa de Domingo <nao-responda@roupadedomingo.com.br>",
+    sacInbox: process.env.MAIL_SAC_INBOX ?? "sac@roupadedomingo.com.br",
+    smtp: {
+      host: process.env.SMTP_HOST ?? "",
+      port: parseInt(process.env.SMTP_PORT ?? "587", 10),
+      secure: process.env.SMTP_SECURE === "true",
+      user: process.env.SMTP_USER ?? "",
+      pass: process.env.SMTP_PASS ?? "",
+    },
+  },
+  invoice: {
+    provider: "mock",
   },
 });
