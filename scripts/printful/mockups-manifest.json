@@ -274,5 +274,83 @@
       "file": "garrafa-bebendo-agua-para-nao-responder-4.jpg",
       "color": "Branca"
     }
+  ],
+  "camiseta-kkkkkkkkk-chorei": [
+    {
+      "file": "camiseta-kkkkkkkkk-chorei-1.jpg",
+      "color": "Preta"
+    },
+    {
+      "file": "camiseta-kkkkkkkkk-chorei-2.jpg",
+      "color": "Preta"
+    },
+    {
+      "file": "camiseta-kkkkkkkkk-chorei-3.jpg",
+      "color": "Branca"
+    },
+    {
+      "file": "camiseta-kkkkkkkkk-chorei-4.jpg",
+      "color": "Branca"
+    }
+  ],
+  "camiseta-sextou-e-terca": [
+    {
+      "file": "camiseta-sextou-e-terca-1.jpg",
+      "color": "Preta"
+    },
+    {
+      "file": "camiseta-sextou-e-terca-2.jpg",
+      "color": "Preta"
+    },
+    {
+      "file": "camiseta-sextou-e-terca-3.jpg",
+      "color": "Branca"
+    },
+    {
+      "file": "camiseta-sextou-e-terca-4.jpg",
+      "color": "Branca"
+    }
+  ],
+  "caneca-aceita-que-doi-menos": [
+    {
+      "file": "caneca-aceita-que-doi-menos-1.jpg",
+      "color": "Branca"
+    },
+    {
+      "file": "caneca-aceita-que-doi-menos-2.jpg",
+      "color": "Branca"
+    },
+    {
+      "file": "caneca-aceita-que-doi-menos-3.jpg",
+      "color": "Branca"
+    }
+  ],
+  "capa-erro-404-vontade": [
+    {
+      "file": "capa-erro-404-vontade-1.jpg",
+      "color": null
+    },
+    {
+      "file": "capa-erro-404-vontade-2.jpg",
+      "color": null
+    }
+  ],
+  "moletom-audio-de-7-minutos": [
+    {
+      "file": "moletom-audio-de-7-minutos-1.jpg",
+      "color": "Preta"
+    },
+    {
+      "file": "moletom-audio-de-7-minutos-2.jpg",
+      "color": "Preta"
+    },
+    {
+      "file": "moletom-audio-de-7-minutos-3.jpg",
+      "color": "Marinho"
+    },
+    {
+      "file": "moletom-audio-de-7-minutos-4.jpg",
+      "color": "Marinho"
+    }
   ]
 }

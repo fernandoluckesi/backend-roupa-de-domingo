@@ -1480,5 +1480,459 @@
         "color": "Branca"
       }
     ]
+  },
+  "camiseta-kkkkkkkkk-chorei": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-KKK-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-KKK-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-KKK-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-KKK-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-KKK-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-KKK-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-KKK-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-KKK-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-KKK-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-KKK-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "camiseta-sextou-e-terca": {
+    "type": "camiseta",
+    "variants": [
+      {
+        "externalId": "CAM-SEXTOU-PT-G",
+        "variantId": 12816,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SEXTOU-PT-GG",
+        "variantId": 12817,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SEXTOU-PT-M",
+        "variantId": 12815,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SEXTOU-PT-P",
+        "variantId": 12814,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SEXTOU-PT-XGG",
+        "variantId": 12818,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "CAM-SEXTOU-BR-G",
+        "variantId": 12806,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-G",
+        "size": "G",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SEXTOU-BR-GG",
+        "variantId": 12807,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-GG",
+        "size": "GG",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SEXTOU-BR-M",
+        "variantId": 12805,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-M",
+        "size": "M",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SEXTOU-BR-P",
+        "variantId": 12804,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-P",
+        "size": "P",
+        "color": "Branca"
+      },
+      {
+        "externalId": "CAM-SEXTOU-BR-XGG",
+        "variantId": 12808,
+        "catalogProductId": 509,
+        "retail": "89.90",
+        "sku": "BR-XGG",
+        "size": "XGG",
+        "color": "Branca"
+      }
+    ]
+  },
+  "caneca-aceita-que-doi-menos": {
+    "type": "caneca",
+    "variants": [
+      {
+        "externalId": "CAN-ACEITA-325",
+        "variantId": 1320,
+        "catalogProductId": 19,
+        "retail": "69.90",
+        "sku": "325",
+        "size": "325ml",
+        "color": "Branca"
+      }
+    ]
+  },
+  "capa-erro-404-vontade": {
+    "type": "capa",
+    "variants": [
+      {
+        "externalId": "CAP-404-IP13",
+        "variantId": 13427,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP13",
+        "model": "iPhone 13",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP14",
+        "variantId": 16240,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP14",
+        "model": "iPhone 14",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP15PRO",
+        "variantId": 17618,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15PRO",
+        "model": "iPhone 15 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP15",
+        "variantId": 17616,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP15",
+        "model": "iPhone 15",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP16PROMAX",
+        "variantId": 20293,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PROMAX",
+        "model": "iPhone 16 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP16PRO",
+        "variantId": 20292,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16PRO",
+        "model": "iPhone 16 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP16",
+        "variantId": 20290,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP16",
+        "model": "iPhone 16",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP17PROMAX",
+        "variantId": 33996,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PROMAX",
+        "model": "iPhone 17 Pro Max",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP17PRO",
+        "variantId": 33995,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17PRO",
+        "model": "iPhone 17 Pro",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-IP17",
+        "variantId": 33993,
+        "catalogProductId": 181,
+        "retail": "99.90",
+        "sku": "IP17",
+        "model": "iPhone 17",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-GALAXYS25ULTRA",
+        "variantId": 21483,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25ULTRA",
+        "model": "Galaxy S25 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-GALAXYS25",
+        "variantId": 21481,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS25",
+        "model": "Galaxy S25",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-GALAXYS23",
+        "variantId": 18749,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS23",
+        "model": "Galaxy S23",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-GALAXYS24ULTRA",
+        "variantId": 18736,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24ULTRA",
+        "model": "Galaxy S24 Ultra",
+        "color": null,
+        "size": null
+      },
+      {
+        "externalId": "CAP-404-GALAXYS24",
+        "variantId": 18734,
+        "catalogProductId": 267,
+        "retail": "99.90",
+        "sku": "GALAXYS24",
+        "model": "Galaxy S24",
+        "color": null,
+        "size": null
+      }
+    ]
+  },
+  "moletom-audio-de-7-minutos": {
+    "type": "moletom",
+    "variants": [
+      {
+        "externalId": "MOL-AUDIO-PT-XGG",
+        "variantId": 5534,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-XGG",
+        "size": "XGG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-AUDIO-PT-G",
+        "variantId": 5532,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-G",
+        "size": "G",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-AUDIO-PT-M",
+        "variantId": 5531,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-M",
+        "size": "M",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-AUDIO-PT-P",
+        "variantId": 5530,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-P",
+        "size": "P",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-AUDIO-PT-GG",
+        "variantId": 5533,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "PT-GG",
+        "size": "GG",
+        "color": "Preta"
+      },
+      {
+        "externalId": "MOL-AUDIO-MA-XGG",
+        "variantId": 5598,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-XGG",
+        "size": "XGG",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-AUDIO-MA-G",
+        "variantId": 5596,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-G",
+        "size": "G",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-AUDIO-MA-M",
+        "variantId": 5595,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-M",
+        "size": "M",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-AUDIO-MA-P",
+        "variantId": 5594,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-P",
+        "size": "P",
+        "color": "Marinho"
+      },
+      {
+        "externalId": "MOL-AUDIO-MA-GG",
+        "variantId": 5597,
+        "catalogProductId": 146,
+        "retail": "219.90",
+        "sku": "MA-GG",
+        "size": "GG",
+        "color": "Marinho"
+      }
+    ]
   }
 }
