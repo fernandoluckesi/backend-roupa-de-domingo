@@ -17,7 +17,12 @@
     { "slug": "moletom-socialmente-indisponivel", "type": "moletom", "lines": ["SOCIALMENTE", "INDISPONÍVEL"] },
     { "slug": "moletom-domingo-18h", "type": "moletom", "lines": ["DOMINGO, 18H.", "PRONTO PARA", "O PÂNICO"] },
     { "slug": "garrafa-hidratado-e-cansado", "type": "garrafa", "lines": ["HIDRATADO", "E AINDA ASSIM", "CANSADO"] },
-    { "slug": "garrafa-bebendo-agua-para-nao-responder", "type": "garrafa", "lines": ["BEBENDO ÁGUA", "PARA NÃO", "RESPONDER"] }
+    { "slug": "garrafa-bebendo-agua-para-nao-responder", "type": "garrafa", "lines": ["BEBENDO ÁGUA", "PARA NÃO", "RESPONDER"] },
+    { "slug": "camiseta-kkkkkkkkk-chorei", "type": "camiseta", "lines": ["KKKKKKKKK", "KKKKKKKKK"], "small": "(CHOREI)" },
+    { "slug": "camiseta-sextou-e-terca", "type": "camiseta", "lines": ["SEXTOU"], "small": "(É TERÇA)" },
+    { "slug": "caneca-aceita-que-doi-menos", "type": "caneca", "lines": ["ACEITA QUE", "DÓI MENOS"], "small": "(DÓI IGUAL)" },
+    { "slug": "capa-erro-404-vontade", "type": "capa", "lines": ["ERRO 404:", "VONTADE", "NÃO", "ENCONTRADA"] },
+    { "slug": "moletom-audio-de-7-minutos", "type": "moletom", "lines": ["MANDEI ÁUDIO", "DE 7 MINUTOS"], "small": "(OUVE NO 2X)" }
   ],
   "types": {
     "camiseta": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "area": [0.08, 0.06, 0.84, 0.42] },

@@ -191,6 +191,11 @@ export class CatalogService {
         label: "Passivo-agressivo",
         description: "Diz sem dizer.",
       },
+      {
+        value: "MEMES",
+        label: "Memes",
+        description: "Internet em forma de estampa.",
+      },
     ];
   }
 

@@ -20,6 +20,7 @@ enum Humor {
   EXISTENCIAL
   ABSURDO
   PASSIVO_AGRESSIVO
+  MEMES
 }
 
 enum CouponType {

@@ -54,6 +54,11 @@ const CODE = {
   "moletom-domingo-18h": "MOL-18H",
   "garrafa-hidratado-e-cansado": "GAR-CANSADO",
   "garrafa-bebendo-agua-para-nao-responder": "GAR-AGUA",
+  "camiseta-kkkkkkkkk-chorei": "CAM-KKK",
+  "camiseta-sextou-e-terca": "CAM-SEXTOU",
+  "caneca-aceita-que-doi-menos": "CAN-ACEITA",
+  "capa-erro-404-vontade": "CAP-404",
+  "moletom-audio-de-7-minutos": "MOL-AUDIO",
 };
 
 const NAME = {
@@ -75,6 +80,11 @@ const NAME = {
   "moletom-domingo-18h": "Domingo, 18h. Pronto para o pânico",
   "garrafa-hidratado-e-cansado": "Hidratado e ainda assim cansado",
   "garrafa-bebendo-agua-para-nao-responder": "Bebendo água para não responder",
+  "camiseta-kkkkkkkkk-chorei": "KKKKKKKKK (chorei)",
+  "camiseta-sextou-e-terca": "Sextou (é terça)",
+  "caneca-aceita-que-doi-menos": "Aceita que dói menos (dói igual)",
+  "capa-erro-404-vontade": "Erro 404: vontade não encontrada",
+  "moletom-audio-de-7-minutos": "Mandei áudio de 7 minutos (ouve no 2x)",
 };
 
 const SIZE_PT = { S: "P", M: "M", L: "G", XL: "GG", "2XL": "XGG", P: "P", G: "G", GG: "GG", XGG: "XGG" };
