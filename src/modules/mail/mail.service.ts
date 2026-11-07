@@ -85,33 +85,63 @@ export class MailService {
     ].join("\n");
   }
 
-  sendEmailVerification(to: string, name: string, token: string) {
+  /** Codigo de 6 digitos: confirmar cadastro, trocar e-mail, trocar ou redefinir a senha. */
+  sendVerificationCode(
+    to: string,
+    name: string,
+    code: string,
+    purpose: "register" | "email-change" | "password-change" | "password-reset",
+  ) {
+    const copy = {
+      register: {
+        subject: `${code} é o seu código de confirmação`,
+        intro: "Use o código abaixo para confirmar o seu cadastro na Roupa de Domingo:",
+        ignore: "Se não foi você que criou a conta, ignore esta mensagem.",
+      },
+      "email-change": {
+        subject: `${code} é o código para confirmar o seu novo e-mail`,
+        intro: "Use o código abaixo para confirmar este endereço como o novo e-mail da sua conta na Roupa de Domingo:",
+        ignore: "Se não foi você que pediu a troca, ignore esta mensagem: nada muda na conta.",
+      },
+      "password-change": {
+        subject: `${code} é o código para trocar a sua senha`,
+        intro: "Use o código abaixo para confirmar a troca da sua senha:",
+        ignore: `Se não foi você, não passe este código para ninguém e troque a senha agora: ${this.frontendUrl}/esqueci-a-senha`,
+      },
+      "password-reset": {
+        subject: `${code} é o código para redefinir a sua senha`,
+        intro: "Recebemos um pedido para redefinir a sua senha. Use o código abaixo:",
+        ignore: "Se não foi você, ignore este e-mail: a sua senha continua a mesma.",
+      },
+    }[purpose];
     return this.send({
       to,
-      subject: "Confirme seu e-mail na Roupa de Domingo",
+      subject: copy.subject,
       text: [
         `Oi, ${name}.`,
         "",
-        "Confirme que este e-mail é seu clicando no link abaixo (vale por 48 horas):",
-        `${this.frontendUrl}/verificar-email?token=${encodeURIComponent(token)}`,
+        copy.intro,
         "",
-        "Se não foi você que criou a conta, ignore esta mensagem.",
+        `    ${code}`,
+        "",
+        "O código vale por 15 minutos e só pode ser usado uma vez. A Roupa de Domingo nunca pede esse código por telefone ou WhatsApp.",
+        "",
+        copy.ignore,
         this.footer(),
       ].join("\n"),
     });
   }
 
-  sendPasswordReset(to: string, name: string, token: string) {
+  /** Aviso no endereco antigo: se a troca nao foi do dono, ele fica sabendo. */
+  sendEmailChanged(to: string, name: string, newEmail: string) {
     return this.send({
       to,
-      subject: "Redefinição de senha",
+      subject: "O e-mail da sua conta foi alterado",
       text: [
         `Oi, ${name}.`,
         "",
-        "Recebemos um pedido para redefinir a sua senha. O link vale por 1 hora e só pode ser usado uma vez:",
-        `${this.frontendUrl}/redefinir-senha?token=${encodeURIComponent(token)}`,
-        "",
-        "Se não foi você, ignore este e-mail: a sua senha continua a mesma.",
+        `O e-mail da sua conta na Roupa de Domingo foi alterado para ${maskEmail(newEmail)}. Este endereço não recebe mais as mensagens da conta.`,
+        `Se não foi você, fale com o SAC agora: ${this.frontendUrl}/contato`,
         this.footer(),
       ].join("\n"),
     });

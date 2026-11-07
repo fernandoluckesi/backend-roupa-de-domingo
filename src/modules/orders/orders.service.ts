@@ -4,8 +4,9 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { OrderStatus, Prisma } from "@prisma/client";
+import { AuditCategory, AuditOutcome, OrderStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import { CartOwner, CartService } from "../cart/cart.service";
 import { PaymentsService } from "../payments/payments.service";
 import { MailService } from "../mail/mail.service";
@@ -71,6 +72,7 @@ export class OrdersService {
     private readonly payments: PaymentsService,
     private readonly mail: MailService,
     private readonly consents: ConsentService,
+    private readonly audit: AuditService,
   ) {}
 
   /**
@@ -94,6 +96,12 @@ export class OrdersService {
       },
     });
     if (recentPending >= MAX_PENDING_ORDERS_PER_HOUR) {
+      this.audit.record({
+        category: AuditCategory.ORDER,
+        action: "order.checkout_blocked",
+        outcome: AuditOutcome.FAILURE,
+        data: { reason: "too_many_pending_orders", recentPending, guest: !owner.userId },
+      });
       throw new BadRequestException(
         "Muitos pedidos abertos em pouco tempo. Conclua ou cancele um pedido pendente, ou tente de novo em 1 hora.",
       );
@@ -220,6 +228,30 @@ export class OrdersService {
     await this.cart.clear(owner);
 
     this.logger.log(`Pedido ${order.number} criado (${preference.provider}).`);
+    this.audit.record({
+      category: AuditCategory.ORDER,
+      action: "order.created",
+      target: { type: "order", id: order.number },
+      data: {
+        guest: !owner.userId,
+        items: items.length,
+        units: items.reduce((sum, item) => sum + item.quantity, 0),
+        subtotalCents: totals.subtotalCents,
+        discountCents: totals.discountCents,
+        shippingCents,
+        totalCents: totals.totalCents,
+        coupon: cartSnapshot.coupon?.code ?? null,
+        shippingMethod: method,
+        shippingState: dto.shippingAddress.state.toUpperCase(),
+        termsVersion: dto.termsVersion,
+      },
+    });
+    this.audit.record({
+      category: AuditCategory.PAYMENT,
+      action: "payment.checkout_created",
+      target: { type: "order", id: order.number },
+      data: { provider: preference.provider, preferenceId: preference.preferenceId, amountCents: order.totalCents },
+    });
 
     return {
       order: this.serialize({ ...order, payment: null }),
@@ -263,7 +295,7 @@ export class OrdersService {
   async cancel(number: string, owner: CartOwner) {
     const order = await this.prisma.order.findUnique({
       where: { number: number.toUpperCase() },
-      select: { id: true, status: true, userId: true, timeline: true },
+      select: { id: true, number: true, status: true, userId: true, timeline: true },
     });
 
     if (!order || (order.userId && order.userId !== owner.userId)) {
@@ -271,6 +303,13 @@ export class OrdersService {
     }
 
     if (order.status !== OrderStatus.PENDING) {
+      this.audit.record({
+        category: AuditCategory.ORDER,
+        action: "order.cancel_failed",
+        outcome: AuditOutcome.FAILURE,
+        target: { type: "order", id: order.number },
+        data: { reason: "not_pending", status: order.status },
+      });
       throw new BadRequestException(
         "Só é possível cancelar pedidos que ainda não foram pagos. Depois disso, a estampa já está rodando.",
       );
@@ -294,6 +333,12 @@ export class OrdersService {
         ] as object,
       },
       include: ORDER_INCLUDE,
+    });
+    this.audit.record({
+      category: AuditCategory.ORDER,
+      action: "order.status_changed",
+      target: { type: "order", id: order.number },
+      data: { from: order.status, to: OrderStatus.CANCELLED, source: "customer_cancel", guest: !order.userId },
     });
 
     return this.serialize(updated);

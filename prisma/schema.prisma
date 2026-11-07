@@ -406,9 +406,11 @@ model EasterEggDiscovery {
 enum AuthTokenType {
   EMAIL_VERIFICATION
   PASSWORD_RESET
+  PASSWORD_CHANGE
+  EMAIL_CHANGE
 }
 
-/// Tokens de uso unico; so o hash fica no banco
+/// Tokens e codigos de 6 digitos de uso unico; so o hash fica no banco
 model AuthToken {
   id        String        @id @default(uuid())
   userId    String
@@ -416,6 +418,10 @@ model AuthToken {
   tokenHash String        @unique
   expiresAt DateTime
   usedAt    DateTime?
+  /// Tentativas erradas do codigo; ao chegar no limite o codigo e invalidado
+  attempts  Int           @default(0)
+  /// Troca de e-mail: endereco novo que recebe o codigo e passa a valer depois da confirmacao
+  newEmail  String?
   createdAt DateTime      @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -514,23 +520,66 @@ model ReturnRequest {
   @@map("return_requests")
 }
 
-/// Trilha de auditoria das acoes administrativas
+enum AuditCategory {
+  AUTH
+  ACCOUNT
+  PRIVACY
+  ORDER
+  PAYMENT
+  FULFILLMENT
+  RETURN
+  INVOICE
+  CONTACT
+  ADMIN
+  SYSTEM
+}
+
+enum AuditActorType {
+  CUSTOMER
+  ADMIN
+  ANONYMOUS
+  /// Rotinas internas (job, sincronizacao)
+  SYSTEM
+  /// Webhook de terceiro (Mercado Pago, grafica)
+  PROVIDER
+}
+
+enum AuditOutcome {
+  SUCCESS
+  FAILURE
+}
+
+/// Trilha de auditoria: seguranca (login, senha, e-mail), conta, privacidade,
+/// pedidos, pagamentos, entrega, trocas, notas e toda acao administrativa.
+/// So insercao (trigger bloqueia UPDATE); limpeza por retencao via DELETE.
 model AuditLog {
-  id         String   @id @default(uuid())
-  actorId    String?
-  actorEmail String?
+  id         String         @id @default(uuid())
+  category   AuditCategory
+  /// Evento no formato dominio.acao (ex.: auth.login.failed, order.created)
   action     String
-  method     String
-  path       String
-  statusCode Int
+  outcome    AuditOutcome   @default(SUCCESS)
+  actorType  AuditActorType
+  actorId    String?
+  /// So para a equipe (ADMIN); clientes ficam identificados apenas pelo id
+  actorEmail String?
+  targetType String?
   targetId   String?
-  /// Corpo da requisicao com dados pessoais mascarados
+  method     String?
+  /// Rota sem query string (query pode carregar dado pessoal)
+  path       String?
+  statusCode Int?
+  /// Dados do evento / corpo da requisicao, com dados pessoais mascarados
   payload    Json?
   ipHash     String?
-  createdAt  DateTime @default(now())
+  userAgent  String?
+  requestId  String?
+  createdAt  DateTime       @default(now())
 
   @@index([actorId])
   @@index([createdAt])
+  @@index([category, createdAt])
+  @@index([targetType, targetId])
+  @@index([action])
   @@map("audit_logs")
 }
 

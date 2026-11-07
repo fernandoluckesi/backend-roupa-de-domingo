@@ -1,5 +1,6 @@
 import { Global, Injectable, Logger, Module } from "@nestjs/common";
-import { InvoiceStatus } from "@prisma/client";
+import { AuditCategory, AuditOutcome, InvoiceStatus } from "@prisma/client";
+import { AuditService } from "../audit/audit.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import { MailService } from "../mail/mail.service";
 
@@ -22,6 +23,7 @@ export class InvoicesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
+    private readonly audit: AuditService,
   ) {}
 
   private get approxTaxPercent(): number | null {
@@ -62,12 +64,25 @@ export class InvoicesService {
         },
       });
 
+      this.audit.record({
+        category: AuditCategory.INVOICE,
+        action: "invoice.issued",
+        target: { type: "order", id: order.number },
+        data: { provider: "mock", invoiceNumber: number, series, totalCents: order.totalCents, approxTaxCents: invoice.approxTaxCents },
+      });
       void this.mail.sendInvoice(order.customerEmail, order.customerName, order.number, invoice);
       this.logger.log(`Nota ${number} registrada para ${order.number} (driver mock, sem validade fiscal).`);
       return invoice;
     } catch (error) {
       const message = (error as Error).message;
       this.logger.error(`Falha ao emitir nota de ${order.number}: ${message}`);
+      this.audit.record({
+        category: AuditCategory.INVOICE,
+        action: "invoice.failed",
+        outcome: AuditOutcome.FAILURE,
+        target: { type: "order", id: order.number },
+        data: { provider: "mock", error: message.slice(0, 300) },
+      });
       return this.prisma.invoice.upsert({
         where: { orderId },
         create: { orderId, provider: "mock", status: InvoiceStatus.ERROR, lastError: message },

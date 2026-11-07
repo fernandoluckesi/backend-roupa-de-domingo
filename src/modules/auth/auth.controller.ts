@@ -15,14 +15,20 @@ import type { CookieOptions, Request, Response } from "express";
 import { AuthService } from "./auth.service";
 import {
   ChangePasswordDto,
+  ConfirmRegistrationDto,
+  EmailChangeCodeDto,
+  EmailChangeDto,
   EmailDto,
   LoginDto,
   OtpDto,
+  PasswordCodeDto,
   RegisterDto,
   ResetPasswordDto,
   TokenDto,
 } from "./dto/auth.dto";
-import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
+import { JwtAuthGuard, OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
+import { AuditCategory } from "@prisma/client";
+import { AuditService } from "../audit/audit.service";
 import { CurrentUser } from "../../common/decorators/current-user.decorator";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -33,6 +39,7 @@ export class AuthController {
   constructor(
     private readonly auth: AuthService,
     private readonly config: ConfigService,
+    private readonly audit: AuditService,
   ) {}
 
   /** Sessao em cookie httpOnly + SameSite=Lax: o JavaScript da pagina nunca ve o token (mitiga XSS). */
@@ -54,10 +61,25 @@ export class AuthController {
 
   @Post("register")
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiOperation({ summary: "Cria conta (com aceite dos termos) e abre sessao" })
-  async register(@Body() dto: RegisterDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const session = await this.auth.register(dto, { ip: req.ip, userAgent: req.headers["user-agent"] });
-    return this.setSession(res, session);
+  @ApiOperation({ summary: "Cria a conta (com aceite dos termos) e envia o codigo de confirmacao por e-mail" })
+  register(@Body() dto: RegisterDto, @Req() req: Request) {
+    return this.auth.register(dto, { ip: req.ip, userAgent: req.headers["user-agent"] });
+  }
+
+  @Post("register/confirm")
+  @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 15 * 60_000 } })
+  @ApiOperation({ summary: "Confirma o cadastro com o codigo de 6 digitos e abre a sessao" })
+  async confirmRegistration(@Body() dto: ConfirmRegistrationDto, @Res({ passthrough: true }) res: Response) {
+    return this.setSession(res, await this.auth.confirmRegistration(dto));
+  }
+
+  @Post("register/resend")
+  @HttpCode(200)
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
+  @ApiOperation({ summary: "Reenvia o codigo de confirmacao do cadastro" })
+  resendRegistrationCode(@Body() dto: EmailDto) {
+    return this.auth.resendRegistrationCode(dto.email);
   }
 
   @Post("login")
@@ -70,8 +92,10 @@ export class AuthController {
 
   @Post("logout")
   @HttpCode(200)
+  @UseGuards(OptionalJwtGuard)
   @ApiOperation({ summary: "Encerra a sessao deste navegador" })
-  logout(@Res({ passthrough: true }) res: Response) {
+  logout(@Res({ passthrough: true }) res: Response, @CurrentUser("id") userId?: string) {
+    if (userId) this.audit.record({ category: AuditCategory.AUTH, action: "auth.logout", target: { type: "user", id: userId } });
     const { maxAge: _maxAge, ...options } = this.cookieOptions();
     res.clearCookie(this.config.get<string>("security.sessionCookie", "rd_session"), options);
     return { loggedOut: true };
@@ -95,12 +119,22 @@ export class AuthController {
     return this.auth.me(userId);
   }
 
+  @Post("password/code")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Confere a senha atual e envia o codigo para trocar a senha" })
+  requestPasswordChangeCode(@CurrentUser("id") userId: string, @Body() dto: PasswordCodeDto) {
+    return this.auth.requestPasswordChangeCode(userId, dto.currentPassword);
+  }
+
   @Post("password")
   @HttpCode(200)
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { limit: 5, ttl: 60_000 } })
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Troca a senha (revoga as outras sessoes)" })
+  @ApiOperation({ summary: "Troca a senha com o codigo do e-mail (revoga as outras sessoes)" })
   async changePassword(
     @CurrentUser("id") userId: string,
     @Body() dto: ChangePasswordDto,
@@ -114,15 +148,39 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Reenvia o e-mail de confirmacao" })
+  @ApiOperation({ summary: "Reenvia o codigo de confirmacao do e-mail" })
   resendVerification(@CurrentUser("id") userId: string) {
     return this.auth.sendEmailVerification(userId);
+  }
+
+  @Post("email/change/code")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Confere a senha atual e envia o codigo para o e-mail novo" })
+  requestEmailChangeCode(@CurrentUser("id") userId: string, @Body() dto: EmailChangeCodeDto) {
+    return this.auth.requestEmailChangeCode(userId, dto.newEmail, dto.currentPassword);
+  }
+
+  @Post("email/change")
+  @HttpCode(200)
+  @UseGuards(JwtAuthGuard)
+  @Throttle({ default: { limit: 10, ttl: 15 * 60_000 } })
+  @ApiBearerAuth()
+  @ApiOperation({ summary: "Troca o e-mail com o codigo recebido no endereco novo (revoga as outras sessoes)" })
+  async changeEmail(
+    @CurrentUser("id") userId: string,
+    @Body() dto: EmailChangeDto,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.setSession(res, await this.auth.changeEmail(userId, dto.code));
   }
 
   @Post("email/verify")
   @HttpCode(200)
   @Throttle({ default: { limit: 10, ttl: 15 * 60_000 } })
-  @ApiOperation({ summary: "Confirma o e-mail com o token do link" })
+  @ApiOperation({ summary: "Confirma o e-mail com o token dos links antigos" })
   verifyEmail(@Body() dto: TokenDto) {
     return this.auth.verifyEmail(dto.token);
   }
@@ -130,7 +188,7 @@ export class AuthController {
   @Post("password/forgot")
   @HttpCode(200)
   @Throttle({ default: { limit: 3, ttl: 15 * 60_000 } })
-  @ApiOperation({ summary: "Envia link de redefinicao de senha" })
+  @ApiOperation({ summary: "Envia o codigo de redefinicao de senha" })
   forgotPassword(@Body() dto: EmailDto) {
     return this.auth.forgotPassword(dto.email);
   }
@@ -138,7 +196,7 @@ export class AuthController {
   @Post("password/reset")
   @HttpCode(200)
   @Throttle({ default: { limit: 5, ttl: 15 * 60_000 } })
-  @ApiOperation({ summary: "Redefine a senha com o token do link" })
+  @ApiOperation({ summary: "Redefine a senha com e-mail + codigo (ou token dos links antigos)" })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.auth.resetPassword(dto);
   }

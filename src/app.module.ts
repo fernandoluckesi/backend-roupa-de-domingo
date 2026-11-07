@@ -21,6 +21,7 @@ import { ReturnsModule } from "./modules/returns/returns.module";
 import { InvoicesModule } from "./modules/invoices/invoices.module";
 import { SeoModule } from "./modules/seo/seo.module";
 import { AuditInterceptor } from "./modules/audit/audit.interceptor";
+import { AuditModule } from "./modules/audit/audit.module";
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { AuditInterceptor } from "./modules/audit/audit.interceptor";
     // Rate limit global (por IP): 120 req/min; rotas sensiveis tem limites proprios via @Throttle
     ThrottlerModule.forRoot([{ name: "default", ttl: 60_000, limit: 120 }]),
     PrismaModule,
+    AuditModule,
     MailModule,
     PrivacyModule,
     InvoicesModule,

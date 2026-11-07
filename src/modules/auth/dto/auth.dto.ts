@@ -150,7 +150,44 @@ export class TokenDto {
   token: string;
 }
 
-export class ResetPasswordDto extends TokenDto {
+const CODE_PATTERN = /^\d{6}$/;
+const CODE_MESSAGE = "O código tem 6 dígitos.";
+
+/** Codigo de 6 digitos enviado por e-mail. */
+export class EmailCodeDto extends EmailDto {
+  @ApiProperty({ example: "123456" })
+  @Matches(CODE_PATTERN, { message: CODE_MESSAGE })
+  code: string;
+}
+
+export class ConfirmRegistrationDto extends EmailCodeDto {
+  @ApiPropertyOptional({ description: "Id da sessao anonima, para migrar o carrinho de convidado" })
+  @IsOptional()
+  @IsString()
+  sessionId?: string;
+}
+
+/**
+ * Redefinicao de senha: com o codigo do e-mail (email + code) ou, por
+ * compatibilidade, com o token dos links antigos.
+ */
+export class ResetPasswordDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsEmail({}, { message: "E-mail invalido." })
+  email?: string;
+
+  @ApiPropertyOptional({ example: "123456" })
+  @IsOptional()
+  @Matches(CODE_PATTERN, { message: CODE_MESSAGE })
+  code?: string;
+
+  @ApiPropertyOptional({ description: "Token dos links antigos de redefinicao" })
+  @IsOptional()
+  @IsString()
+  @Length(20, 200)
+  token?: string;
+
   @ApiProperty()
   @IsString()
   @IsStrongPassword()
@@ -167,6 +204,37 @@ export class ChangePasswordDto {
   @IsString()
   @IsStrongPassword()
   newPassword: string;
+
+  @ApiProperty({ example: "123456", description: "Codigo enviado por e-mail em POST /auth/password/code" })
+  @Matches(CODE_PATTERN, { message: CODE_MESSAGE })
+  code: string;
+}
+
+export class PasswordCodeDto {
+  @ApiProperty()
+  @IsString()
+  @MaxLength(72)
+  currentPassword: string;
+}
+
+/** Passo 1 da troca de e-mail: senha atual + endereco novo (que recebe o codigo). */
+export class EmailChangeCodeDto {
+  @ApiProperty({ example: "novo@exemplo.com" })
+  @IsEmail({}, { message: "E-mail invalido." })
+  @MaxLength(254)
+  newEmail: string;
+
+  @ApiProperty()
+  @IsString()
+  @MaxLength(72)
+  currentPassword: string;
+}
+
+/** Passo 2: codigo enviado ao endereco novo. */
+export class EmailChangeDto {
+  @ApiProperty({ example: "123456", description: "Codigo enviado ao e-mail novo em POST /auth/email/change/code" })
+  @Matches(CODE_PATTERN, { message: CODE_MESSAGE })
+  code: string;
 }
 
 export class OtpDto {

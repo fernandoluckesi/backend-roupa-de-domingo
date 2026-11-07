@@ -7,7 +7,9 @@ import {
 } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { isValidMercadoPagoSignature } from "./mercado-pago-signature";
-import { OrderStatus, PaymentStatus } from "@prisma/client";
+import { AuditActorType, AuditCategory, AuditOutcome, OrderStatus, PaymentStatus } from "@prisma/client";
+import { AuditEvent, AuditService } from "../audit/audit.service";
+import { scrubCpfFromText } from "../../common/utils/privacy.util";
 import { PrismaService } from "../../prisma/prisma.service";
 import { FulfillmentService } from "../fulfillment/fulfillment.service";
 import { MailService } from "../mail/mail.service";
@@ -30,7 +32,15 @@ export class PaymentsService {
     private readonly fulfillment: FulfillmentService,
     private readonly mail: MailService,
     private readonly invoices: InvoicesService,
+    private readonly audit: AuditService,
   ) {}
+
+  private static readonly PROVIDER_ACTOR = { type: AuditActorType.PROVIDER, id: "mercadopago" };
+
+  /** Quem mudou o pagamento: o webhook do Mercado Pago ou a simulacao local (quem chamou). */
+  private actorFor(origin: "webhook" | "simulation"): AuditEvent["actor"] {
+    return origin === "webhook" ? PaymentsService.PROVIDER_ACTOR : undefined;
+  }
 
   get driver(): string {
     return this.mercadoPago.isConfigured ? "mercadopago" : "mock";
@@ -84,6 +94,13 @@ export class PaymentsService {
       });
       if (!valid) {
         this.logger.warn("Webhook do Mercado Pago com assinatura invalida. Rejeitado.");
+        this.audit.record({
+          category: AuditCategory.PAYMENT,
+          action: "payment.webhook.rejected",
+          outcome: AuditOutcome.FAILURE,
+          actor: PaymentsService.PROVIDER_ACTOR,
+          data: { reason: "invalid_signature", dataId: dataId != null ? String(dataId) : null },
+        });
         throw new UnauthorizedException("Assinatura invalida.");
       }
     }
@@ -111,13 +128,20 @@ export class PaymentsService {
 
     try {
       const snapshot = await this.mercadoPago.fetchPayment(String(paymentId));
-      await this.applyPaymentSnapshot(snapshot);
+      await this.applyPaymentSnapshot(snapshot, "webhook");
       return { received: true, processed: true, order: snapshot.orderNumber };
     } catch (error) {
       // Responder 200 evita retry infinito do MP por erro nosso de parsing
       this.logger.error(
         `Falha ao processar webhook: ${(error as Error).message}`,
       );
+      this.audit.record({
+        category: AuditCategory.PAYMENT,
+        action: "payment.webhook.failed",
+        outcome: AuditOutcome.FAILURE,
+        actor: PaymentsService.PROVIDER_ACTOR,
+        data: { paymentId: String(paymentId), error: scrubCpfFromText((error as Error).message).slice(0, 300) },
+      });
       return { received: true, processed: false };
     }
   }
@@ -157,7 +181,7 @@ export class PaymentsService {
       installments: 1,
       amountCents: order.totalCents,
       raw: { simulated: true, outcome },
-    });
+    }, "simulation");
 
     return this.getStatus(order.number);
   }
@@ -190,7 +214,8 @@ export class PaymentsService {
   }
 
   /** Nucleo idempotente: aplica o estado do pagamento no pedido. */
-  private async applyPaymentSnapshot(snapshot: PaymentSnapshot): Promise<void> {
+  private async applyPaymentSnapshot(snapshot: PaymentSnapshot, origin: "webhook" | "simulation"): Promise<void> {
+    const actor = this.actorFor(origin);
     const order = await this.prisma.order.findUnique({
       where: { number: snapshot.orderNumber },
       include: { payment: true },
@@ -200,6 +225,14 @@ export class PaymentsService {
       this.logger.warn(
         `Pagamento sem pedido correspondente: ${snapshot.orderNumber}`,
       );
+      this.audit.record({
+        category: AuditCategory.PAYMENT,
+        action: "payment.orphaned",
+        outcome: AuditOutcome.FAILURE,
+        actor,
+        target: { type: "order", id: snapshot.orderNumber },
+        data: { providerPaymentId: snapshot.providerPaymentId, status: snapshot.status },
+      });
       return;
     }
 
@@ -221,6 +254,14 @@ export class PaymentsService {
       this.logger.error(
         `Valor pago divergente em ${order.number}: pago ${snapshot.amountCents}, pedido ${order.totalCents}. Pedido NAO liberado.`,
       );
+      this.audit.record({
+        category: AuditCategory.PAYMENT,
+        action: "payment.amount_mismatch",
+        outcome: AuditOutcome.FAILURE,
+        actor,
+        target: { type: "order", id: order.number },
+        data: { paidCents: snapshot.amountCents, orderTotalCents: order.totalCents, providerPaymentId: snapshot.providerPaymentId },
+      });
     }
 
     await this.prisma.payment.upsert({
@@ -245,6 +286,23 @@ export class PaymentsService {
         ...(snapshot.status === PaymentStatus.APPROVED
           ? { paidAt: new Date() }
           : {}),
+      },
+    });
+    this.audit.record({
+      category: AuditCategory.PAYMENT,
+      action: "payment.status_changed",
+      outcome: snapshot.status === PaymentStatus.REJECTED ? AuditOutcome.FAILURE : AuditOutcome.SUCCESS,
+      actor,
+      target: { type: "order", id: order.number },
+      data: {
+        from: order.payment?.status ?? null,
+        to: snapshot.status,
+        providerStatus: snapshot.rawStatus,
+        providerPaymentId: snapshot.providerPaymentId,
+        method: snapshot.method,
+        installments: snapshot.installments,
+        amountCents: snapshot.amountCents,
+        origin,
       },
     });
 
@@ -286,6 +344,13 @@ export class PaymentsService {
           ] as object,
         },
       });
+      this.audit.record({
+        category: AuditCategory.ORDER,
+        action: "order.status_changed",
+        actor,
+        target: { type: "order", id: order.number },
+        data: { from: order.status, to: nextOrderStatus, source: "payment", paymentStatus: snapshot.status },
+      });
     }
 
     if (snapshot.status === PaymentStatus.APPROVED) {
@@ -293,6 +358,13 @@ export class PaymentsService {
         await this.prisma.coupon.update({
           where: { id: order.couponId },
           data: { usedCount: { increment: 1 } },
+        });
+        this.audit.record({
+          category: AuditCategory.ORDER,
+          action: "order.coupon_redeemed",
+          actor,
+          target: { type: "order", id: order.number },
+          data: { couponId: order.couponId, discountCents: order.discountCents },
         });
       }
       void this.mail.sendPaymentApproved(order.customerEmail, order.customerName, order.number);

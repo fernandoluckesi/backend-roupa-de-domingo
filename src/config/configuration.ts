@@ -41,6 +41,8 @@ export interface AppConfig {
     /** Tentativas de login antes do bloqueio temporario */
     maxFailedLogins: number;
     lockMinutes: number;
+    /** Dias que a trilha de auditoria fica guardada (padrao 5 anos: prazo do CDC e fiscal) */
+    auditRetentionDays: number;
   };
   mail: {
     driver: "log" | "smtp";
@@ -104,6 +106,7 @@ export default (): AppConfig => ({
     adminTwoFactorRequired: process.env.ADMIN_2FA_REQUIRED !== "false",
     maxFailedLogins: parseInt(process.env.MAX_FAILED_LOGINS ?? "5", 10),
     lockMinutes: parseInt(process.env.LOGIN_LOCK_MINUTES ?? "15", 10),
+    auditRetentionDays: parseInt(process.env.AUDIT_RETENTION_DAYS ?? "1825", 10),
   },
   mail: {
     driver: (process.env.MAIL_DRIVER as "log" | "smtp") ?? "log",

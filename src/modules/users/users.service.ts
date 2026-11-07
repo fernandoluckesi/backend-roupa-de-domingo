@@ -1,7 +1,9 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import { randomBytes } from "crypto";
+import { AuditCategory, AuditOutcome } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
+import { AuditService } from "../audit/audit.service";
 import { MailService } from "../mail/mail.service";
 import { ConsentService } from "../privacy/consent.service";
 import { AddressDto, DeleteAccountDto, UpdateProfileDto } from "./dto/users.dto";
@@ -48,7 +50,18 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly consents: ConsentService,
+    private readonly audit: AuditService,
   ) {}
+
+  private track(category: AuditCategory, action: string, userId: string, data?: Record<string, unknown>, failure = false) {
+    this.audit.record({
+      category,
+      action,
+      outcome: failure ? AuditOutcome.FAILURE : AuditOutcome.SUCCESS,
+      target: { type: "user", id: userId },
+      data,
+    });
+  }
 
   // ---------------------------------------------------------------- direitos do titular (LGPD art. 18)
 
@@ -104,6 +117,10 @@ export class UsersService {
       },
     });
 
+    this.track(AuditCategory.PRIVACY, "privacy.data.exported", userId, {
+      orders: user.orders.length,
+      addresses: user.addresses.length,
+    });
     return {
       generatedAt: new Date().toISOString(),
       controller: "Roupa de Domingo",
@@ -132,6 +149,7 @@ export class UsersService {
       granted,
       ...meta,
     });
+    this.track(AuditCategory.PRIVACY, "privacy.consent.changed", userId, { kind: "marketing", granted });
     return { marketingOptIn: user.marketingOptIn, marketingConsentAt: user.marketingConsentAt };
   }
 
@@ -142,6 +160,7 @@ export class UsersService {
   async deleteAccount(userId: string, dto: DeleteAccountDto) {
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
     if (!(await bcrypt.compare(dto.password, user.passwordHash))) {
+      this.track(AuditCategory.ACCOUNT, "account.delete_failed", userId, { reason: "wrong_password" }, true);
       throw new BadRequestException("Senha incorreta.");
     }
 
@@ -149,6 +168,7 @@ export class UsersService {
       where: { userId, status: { in: ["PAID", "IN_PRODUCTION", "SHIPPED"] } },
     });
     if (open > 0) {
+      this.track(AuditCategory.ACCOUNT, "account.delete_failed", userId, { reason: "open_orders", openOrders: open }, true);
       throw new BadRequestException(
         "Você tem pedido em andamento. Assim que ele for entregue (ou cancelado), a conta pode ser excluída.",
       );
@@ -192,11 +212,13 @@ export class UsersService {
       details: { reason: "account_deleted", note: dto.reason ?? null },
     });
     void this.mail.sendAccountDeleted(user.email, user.name);
+    // Sem motivo em texto livre na trilha (pode conter dado pessoal); ele fica no ConsentRecord
+    this.track(AuditCategory.ACCOUNT, "account.deleted", userId, { anonymized: true, reasonGiven: Boolean(dto.reason) });
     return { deleted: true };
   }
 
-  updateProfile(userId: string, dto: UpdateProfileDto) {
-    return this.prisma.user.update({
+  async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const updated = await this.prisma.user.update({
       where: { id: userId },
       data: dto,
       select: {
@@ -209,6 +231,11 @@ export class UsersService {
         role: true,
       },
     });
+    // So os nomes dos campos alterados: os valores sao dado pessoal
+    this.track(AuditCategory.ACCOUNT, "account.profile.updated", userId, {
+      fields: Object.keys(dto).filter((key) => (dto as Record<string, unknown>)[key] !== undefined),
+    });
+    return updated;
   }
 
   listAddresses(userId: string) {
@@ -229,7 +256,7 @@ export class UsersService {
       });
     }
 
-    return this.prisma.address.create({
+    const address = await this.prisma.address.create({
       data: {
         ...dto,
         zipCode: onlyDigits(dto.zipCode),
@@ -238,6 +265,8 @@ export class UsersService {
         userId,
       },
     });
+    this.track(AuditCategory.ACCOUNT, "account.address.created", userId, { addressId: address.id, isDefault });
+    return address;
   }
 
   async updateAddress(userId: string, addressId: string, dto: AddressDto) {
@@ -250,7 +279,7 @@ export class UsersService {
       });
     }
 
-    return this.prisma.address.update({
+    const address = await this.prisma.address.update({
       where: { id: addressId },
       data: {
         ...dto,
@@ -258,11 +287,14 @@ export class UsersService {
         state: dto.state.toUpperCase(),
       },
     });
+    this.track(AuditCategory.ACCOUNT, "account.address.updated", userId, { addressId });
+    return address;
   }
 
   async removeAddress(userId: string, addressId: string) {
     await this.assertOwnership(userId, addressId);
     await this.prisma.address.delete({ where: { id: addressId } });
+    this.track(AuditCategory.ACCOUNT, "account.address.deleted", userId, { addressId });
     return { removed: true };
   }
 

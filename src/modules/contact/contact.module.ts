@@ -13,7 +13,8 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { Throttle } from "@nestjs/throttler";
 import { ApiBearerAuth, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from "@nestjs/swagger";
-import { ContactStatus, Role } from "@prisma/client";
+import { AuditCategory, ContactStatus, Role } from "@prisma/client";
+import { AuditService } from "../audit/audit.service";
 import { IsEmail, IsEnum, IsIn, IsOptional, IsString, Length, MaxLength } from "class-validator";
 import { PrismaService } from "../../prisma/prisma.service";
 import { MailService } from "../mail/mail.service";
@@ -81,6 +82,7 @@ export class ContactService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly config: ConfigService,
+    private readonly audit: AuditService,
   ) {}
 
   async create(dto: CreateContactDto, userId?: string) {
@@ -114,6 +116,13 @@ export class ContactService {
       ].join("\n"),
     });
     void this.mail.sendContactReceipt(message.email, message.name, message.protocol, respondBy);
+    // Conteudo da mensagem fica so no atendimento; na trilha vai o protocolo e o assunto
+    this.audit.record({
+      category: AuditCategory.CONTACT,
+      action: "contact.created",
+      target: { type: "contact", id: message.protocol },
+      data: { subject: dto.subject, orderNumber: message.orderNumber, guest: !userId },
+    });
 
     return { protocol: message.protocol, respondBy: respondBy.toISOString() };
   }
@@ -126,11 +135,19 @@ export class ContactService {
     });
   }
 
-  update(protocol: string, status: ContactStatus) {
-    return this.prisma.contactMessage.update({
+  async update(protocol: string, status: ContactStatus) {
+    const before = await this.prisma.contactMessage.findUnique({ where: { protocol }, select: { status: true } });
+    const updated = await this.prisma.contactMessage.update({
       where: { protocol },
       data: { status, answeredAt: status === ContactStatus.OPEN ? null : new Date() },
     });
+    this.audit.record({
+      category: AuditCategory.CONTACT,
+      action: "contact.status_changed",
+      target: { type: "contact", id: protocol },
+      data: { from: before?.status ?? null, to: status },
+    });
+    return updated;
   }
 }
 

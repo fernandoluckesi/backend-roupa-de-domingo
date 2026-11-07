@@ -6,7 +6,8 @@ import {
   Logger,
   NotFoundException,
 } from "@nestjs/common";
-import { FulfillmentStatus, OrderStatus } from "@prisma/client";
+import { AuditCategory, AuditOutcome, FulfillmentStatus, OrderStatus } from "@prisma/client";
+import { AuditService } from "../audit/audit.service";
 import { PrismaService } from "../../prisma/prisma.service";
 import {
   PRINT_PROVIDER,
@@ -27,7 +28,18 @@ export class FulfillmentService {
   constructor(
     private readonly prisma: PrismaService,
     @Inject(PRINT_PROVIDER) private readonly provider: PrintProvider,
+    private readonly audit: AuditService,
   ) {}
+
+  private track(action: string, orderNumber: string, data: Record<string, unknown>, failure = false) {
+    this.audit.record({
+      category: AuditCategory.FULFILLMENT,
+      action,
+      outcome: failure ? AuditOutcome.FAILURE : AuditOutcome.SUCCESS,
+      target: { type: "order", id: orderNumber },
+      data,
+    });
+  }
 
   /** Chamado quando o pagamento e aprovado. Falha aqui nao derruba o pagamento. */
   async dispatchOrder(orderId: string): Promise<void> {
@@ -97,6 +109,13 @@ export class FulfillmentService {
         },
       });
 
+      this.track("fulfillment.submitted", order.number, {
+        provider: this.provider.name,
+        providerOrderId: result.providerOrderId,
+        draft: Boolean(result.draft),
+        retry: Boolean(order.fulfillment),
+      });
+
       if (result.draft) {
         // Rascunho nao entra em producao: fica PAID ate alguem confirmar na Printful
         await this.appendTimeline(
@@ -128,6 +147,10 @@ export class FulfillmentService {
         },
         update: { status: FulfillmentStatus.ERROR, lastError: message },
       });
+      this.track("fulfillment.failed", order.number, {
+        provider: this.provider.name,
+        error: scrubCpfFromText(message).slice(0, 300),
+      }, true);
     }
   }
 
@@ -192,6 +215,7 @@ export class FulfillmentService {
       this.logger.warn(
         `Webhook da estamparia para pedido inexistente: ${payload.externalId}`,
       );
+      this.track("fulfillment.webhook.unmatched", String(payload.externalId).slice(0, 60), { status: payload.status }, true);
       return { received: true, matched: false };
     }
 
@@ -215,6 +239,10 @@ export class FulfillmentService {
       providerOrderId?: string;
     },
   ) {
+    const previous = await this.prisma.fulfillment.findUnique({
+      where: { orderId },
+      select: { status: true, order: { select: { number: true } } },
+    });
     await this.prisma.fulfillment.upsert({
       where: { orderId },
       create: {
@@ -236,6 +264,18 @@ export class FulfillmentService {
         rawPayload: redact(extra.raw ?? {}) as object,
       },
     });
+
+    if (previous?.status !== status) {
+      const number =
+        previous?.order.number ??
+        (await this.prisma.order.findUnique({ where: { id: orderId }, select: { number: true } }))?.number ??
+        orderId;
+      this.track("fulfillment.status_changed", number, {
+        from: previous?.status ?? null,
+        to: status,
+        trackingCode: extra.trackingCode ?? null,
+      });
+    }
 
     const orderStatus = FULFILLMENT_TO_ORDER[status];
     if (orderStatus) {
@@ -271,7 +311,7 @@ export class FulfillmentService {
   ) {
     const order = await this.prisma.order.findUniqueOrThrow({
       where: { id: orderId },
-      select: { status: true, timeline: true },
+      select: { number: true, status: true, timeline: true },
     });
 
     const RANK: Record<string, number> = {
@@ -304,6 +344,12 @@ export class FulfillmentService {
           { status, at: new Date().toISOString(), note: extra.note ?? null },
         ] as object,
       },
+    });
+    this.audit.record({
+      category: AuditCategory.ORDER,
+      action: "order.status_changed",
+      target: { type: "order", id: order.number },
+      data: { from: order.status, to: status, source: "fulfillment", trackingCode: extra.trackingCode ?? null },
     });
   }
 }

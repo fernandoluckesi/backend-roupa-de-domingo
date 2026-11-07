@@ -1,31 +1,20 @@
-import {
-  CallHandler,
-  ExecutionContext,
-  HttpException,
-  Injectable,
-  Logger,
-  NestInterceptor,
-} from "@nestjs/common";
+import { CallHandler, ExecutionContext, HttpException, Injectable, NestInterceptor } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
-import { Role } from "@prisma/client";
+import { AuditCategory, AuditOutcome, Role } from "@prisma/client";
 import { Observable, catchError, tap, throwError } from "rxjs";
-import { PrismaService } from "../../prisma/prisma.service";
 import { ROLES_KEY } from "../../common/decorators/current-user.decorator";
-import { hashIdentifier } from "../../common/utils/crypto.util";
-import { redact } from "../../common/utils/privacy.util";
+import { AuditService } from "./audit.service";
 
 /**
- * Trilha de auditoria: toda chamada a rota @Roles(ADMIN) vira um AuditLog
- * (quem, o que, quando, resultado), com o corpo mascarado. Leituras de dados
- * pessoais (GET) tambem entram, porque acesso a dado pessoal e tratamento.
+ * Toda chamada a rota @Roles(ADMIN) vira um registro ADMIN (quem, o que,
+ * quando, resultado), com o corpo mascarado. Leituras (GET) tambem entram,
+ * porque acesso a dado pessoal e tratamento.
  */
 @Injectable()
 export class AuditInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(AuditInterceptor.name);
-
   constructor(
     private readonly reflector: Reflector,
-    private readonly prisma: PrismaService,
+    private readonly audit: AuditService,
   ) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
@@ -34,26 +23,18 @@ export class AuditInterceptor implements NestInterceptor {
     if (!roles?.includes(Role.ADMIN)) return next.handle();
 
     const req = context.switchToHttp().getRequest();
-    const action = `${context.getClass().name}.${context.getHandler().name}`;
+    const action = `admin.${context.getClass().name.replace(/Controller$/, "")}.${context.getHandler().name}`;
+    const targetId = (req.params?.id ?? req.params?.number ?? req.params?.protocol ?? null) as string | null;
 
-    const write = (statusCode: number) => {
-      const user = req.user as { id?: string; email?: string } | undefined;
-      void this.prisma.auditLog
-        .create({
-          data: {
-            actorId: user?.id ?? null,
-            actorEmail: user?.email ?? null,
-            action,
-            method: req.method,
-            path: String(req.originalUrl ?? req.url).slice(0, 300),
-            statusCode,
-            targetId: (req.params?.id ?? req.params?.number ?? req.params?.protocol ?? null) as string | null,
-            payload: req.body && Object.keys(req.body).length ? (redact(req.body) as object) : undefined,
-            ipHash: hashIdentifier(req.ip),
-          },
-        })
-        .catch((error: Error) => this.logger.error(`AuditLog falhou: ${error.message}`));
-    };
+    const write = (statusCode: number) =>
+      this.audit.record({
+        category: AuditCategory.ADMIN,
+        action,
+        outcome: statusCode >= 400 ? AuditOutcome.FAILURE : AuditOutcome.SUCCESS,
+        target: targetId ? { type: "route", id: targetId } : undefined,
+        data: req.body && Object.keys(req.body).length ? { body: req.body } : undefined,
+        statusCode,
+      });
 
     return next.handle().pipe(
       tap(() => write(context.switchToHttp().getResponse().statusCode ?? 200)),

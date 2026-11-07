@@ -191,6 +191,8 @@ async function main() {
           email: adminEmail,
           passwordHash: await bcrypt.hash(adminPassword, 10),
           name: "Admin do Domingo",
+          // Contas do seed ja nascem confirmadas (o login exige e-mail confirmado)
+          emailVerifiedAt: new Date(),
           role: Role.ADMIN,
         },
       });
@@ -206,6 +208,7 @@ async function main() {
         email: "cliente@roupadedomingo.com",
         passwordHash,
         name: "Maria Souza",
+        emailVerifiedAt: new Date(),
         phone: "11988887777",
         document: "12345678909",
         humorLevel: 87,
@@ -231,6 +234,7 @@ async function main() {
         email: "admin@roupadedomingo.com",
         passwordHash,
         name: "Admin do Domingo",
+        emailVerifiedAt: new Date(),
         role: Role.ADMIN,
         humorLevel: 100,
       },

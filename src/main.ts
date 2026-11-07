@@ -5,6 +5,7 @@ import { ConfigService } from "@nestjs/config";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import type { NestExpressApplication } from "@nestjs/platform-express";
 import cookieParser from "cookie-parser";
+import { requestContextMiddleware } from "./common/request-context";
 import helmet from "helmet";
 import { AppModule } from "./app.module";
 import { AllExceptionsFilter } from "./common/filters/all-exceptions.filter";
@@ -26,6 +27,9 @@ async function bootstrap(): Promise<void> {
   const hops = process.env.TRUST_PROXY_HOPS ?? (process.env.NODE_ENV === "production" ? "2" : "loopback");
   app.set("trust proxy", /^\d+$/.test(hops) ? Number(hops) : hops);
   app.disable("x-powered-by");
+
+  // Primeiro middleware: abre o contexto da requisicao (id + quem/IP) usado pela auditoria
+  app.use(requestContextMiddleware);
 
   // Cabecalhos de seguranca. A API so devolve JSON, entao a CSP e a mais restrita possivel;
   // a pagina do Swagger (dev) precisa de inline, por isso fica fora da CSP estrita.

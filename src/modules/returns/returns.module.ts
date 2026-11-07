@@ -14,7 +14,8 @@ import {
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { ApiBearerAuth, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from "@nestjs/swagger";
-import { OrderStatus, PaymentStatus, ReturnStatus, ReturnType, Role } from "@prisma/client";
+import { AuditCategory, AuditOutcome, OrderStatus, PaymentStatus, ReturnStatus, ReturnType, Role } from "@prisma/client";
+import { AuditService } from "../audit/audit.service";
 import { Type } from "class-transformer";
 import {
   ArrayMinSize,
@@ -116,6 +117,7 @@ export class ReturnsService {
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
     private readonly mercadoPago: MercadoPagoService,
+    private readonly audit: AuditService,
   ) {}
 
   /** Data de recebimento: evento DELIVERED da timeline (ou null se ainda nao entregue). */
@@ -177,6 +179,19 @@ export class ReturnsService {
       },
     });
 
+    // Motivo em texto livre fica so na solicitacao (pode ter dado pessoal)
+    this.audit.record({
+      category: AuditCategory.RETURN,
+      action: "return.requested",
+      target: { type: "order", id: order.number },
+      data: {
+        protocol: created.protocol,
+        type: dto.type,
+        items: dto.items.length,
+        units: dto.items.reduce((sum, item) => sum + item.quantity, 0),
+        daysSinceDelivery: delivered ? Math.floor((now - delivered.getTime()) / DAY_MS) : null,
+      },
+    });
     void this.mail.sendReturnUpdate(order.customerEmail, order.customerName, {
       protocol: created.protocol,
       orderNumber: order.number,
@@ -230,12 +245,36 @@ export class ReturnsService {
           await this.mercadoPago.refundPayment(payment.providerPaymentId, `refund-${request.id}`, allItems ? undefined : refundCents);
         } catch (error) {
           this.logger.error(`Estorno falhou para ${request.protocol}: ${(error as Error).message}`);
+          this.audit.record({
+            category: AuditCategory.PAYMENT,
+            action: "payment.refund_failed",
+            outcome: AuditOutcome.FAILURE,
+            target: { type: "order", id: request.order.number },
+            data: { protocol: request.protocol, refundCents, error: (error as Error).message.slice(0, 300) },
+          });
           throw new BadRequestException("O Mercado Pago recusou o estorno. Tente de novo ou estorne pelo painel do MP.");
         }
       }
+      this.audit.record({
+        category: AuditCategory.PAYMENT,
+        action: "payment.refunded",
+        target: { type: "order", id: request.order.number },
+        data: {
+          protocol: request.protocol,
+          refundCents,
+          full: allItems,
+          viaProvider: Boolean(payment?.providerPaymentId && this.mercadoPago.isConfigured && payment.provider === "mercadopago"),
+        },
+      });
       if (allItems) {
         await this.prisma.order.update({ where: { id: request.orderId }, data: { status: OrderStatus.REFUNDED } });
         if (payment) await this.prisma.payment.update({ where: { id: payment.id }, data: { status: PaymentStatus.REFUNDED } });
+        this.audit.record({
+          category: AuditCategory.ORDER,
+          action: "order.status_changed",
+          target: { type: "order", id: request.order.number },
+          data: { from: request.order.status, to: OrderStatus.REFUNDED, source: "return", protocol: request.protocol },
+        });
       }
       note = note ?? "Reembolso enviado para o mesmo meio de pagamento. No cartão, pode aparecer em até 2 faturas.";
     }
@@ -252,6 +291,18 @@ export class ReturnsService {
       },
     });
 
+    this.audit.record({
+      category: AuditCategory.RETURN,
+      action: "return.status_changed",
+      target: { type: "order", id: request.order.number },
+      data: {
+        protocol: request.protocol,
+        from: request.status,
+        to: dto.status,
+        reverseCode: dto.reverseCode ?? null,
+        refundCents: dto.status === ReturnStatus.REFUNDED ? refundCents : null,
+      },
+    });
     void this.mail.sendReturnUpdate(request.order.customerEmail, request.order.customerName, {
       protocol: request.protocol,
       orderNumber: request.order.number,
