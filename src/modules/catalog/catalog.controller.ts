@@ -10,18 +10,15 @@ import {
   UseGuards,
 } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { Role } from "@prisma/client";
 import { CatalogService } from "./catalog.service";
 import { QueryProductsDto } from "./dto/query-products.dto";
 import { CreateProductDto, UpdateProductDto } from "./dto/upsert-product.dto";
 import {
-  JwtAuthGuard,
   OptionalJwtGuard,
 } from "../../common/guards/jwt-auth.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
+import { AdminOnly } from "../../common/guards/admin-auth.guard";
 import {
   CurrentUser,
-  Roles,
   SessionId,
 } from "../../common/decorators/current-user.decorator";
 import { EasterEggsService } from "../easter-eggs/easter-eggs.service";
@@ -75,8 +72,7 @@ export class CatalogController {
   // ------------------------------------------------------------ admin
 
   @Post("admin/products")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[admin] Cria produto" })
   create(@Body() dto: CreateProductDto) {
@@ -84,8 +80,7 @@ export class CatalogController {
   }
 
   @Patch("admin/products/:id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[admin] Atualiza produto" })
   update(@Param("id") id: string, @Body() dto: UpdateProductDto) {
@@ -93,8 +88,7 @@ export class CatalogController {
   }
 
   @Delete("admin/products/:id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[admin] Arquiva produto" })
   remove(@Param("id") id: string) {

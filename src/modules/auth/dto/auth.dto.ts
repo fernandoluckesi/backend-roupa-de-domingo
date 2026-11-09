@@ -124,16 +124,6 @@ export class LoginDto {
   @MaxLength(72)
   password: string;
 
-  @ApiPropertyOptional({ description: "Codigo de 6 digitos enviado por e-mail (segunda etapa do login de admin)" })
-  @IsOptional()
-  @Matches(/^\d{6}$/, { message: "O código de verificação tem 6 dígitos." })
-  code?: string;
-
-  @ApiPropertyOptional({ description: "Pede um novo codigo de login mesmo que o anterior ainda valha" })
-  @IsOptional()
-  @IsBoolean()
-  resendCode?: boolean;
-
   @ApiPropertyOptional({
     description: "Id da sessao anonima para merge do carrinho",
   })

@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import { PrismaClient, CouponType, Role } from "@prisma/client";
+import { PrismaClient, CouponType } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
 import { CATEGORIES, PRODUCTS, imageFields } from "./catalog";
 
@@ -181,24 +181,9 @@ async function main() {
   await prisma.user.deleteMany();
 
   if (IS_PRODUCTION) {
-    // Producao: nada de usuario com senha conhecida. Admin so se as variaveis vierem.
-    const adminEmail = process.env.SEED_ADMIN_EMAIL;
-    const adminPassword = process.env.SEED_ADMIN_PASSWORD;
-    if (adminEmail && adminPassword) {
-      console.log(`👤 Criando admin ${adminEmail}...`);
-      await prisma.user.create({
-        data: {
-          email: adminEmail,
-          passwordHash: await bcrypt.hash(adminPassword, 10),
-          name: "Admin do Domingo",
-          // Contas do seed ja nascem confirmadas (o login exige e-mail confirmado)
-          emailVerifiedAt: new Date(),
-          role: Role.ADMIN,
-        },
-      });
-    } else {
-      console.log("👤 Producao sem SEED_ADMIN_EMAIL/SEED_ADMIN_PASSWORD: nenhum usuario criado.");
-    }
+    // Producao: nada de usuario com senha conhecida. A equipe do backoffice vem do seed:admin
+    // (tabela admin_users, variaveis ADMIN_EMAIL / ADMIN_INITIAL_PASSWORD).
+    console.log("👤 Producao: nenhum usuario demo criado.");
   } else {
     console.log("👤 Criando usuários demo...");
     const passwordHash = await bcrypt.hash("domingo123", 10);
@@ -229,17 +214,11 @@ async function main() {
       },
     });
 
-    await prisma.user.create({
-      data: {
-        email: "admin@roupadedomingo.com",
-        passwordHash,
-        name: "Admin do Domingo",
-        emailVerifiedAt: new Date(),
-        role: Role.ADMIN,
-        humorLevel: 100,
-      },
+    // Admin do backoffice (tabela propria, separada dos clientes) so em desenvolvimento
+    await prisma.adminUser.deleteMany();
+    await prisma.adminUser.create({
+      data: { email: "admin@roupadedomingo.com", passwordHash, name: "Admin do Domingo" },
     });
-
   }
 
   console.log("🏷️  Criando categorias...");

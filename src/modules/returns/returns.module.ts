@@ -14,7 +14,7 @@ import {
 } from "@nestjs/common";
 import { Throttle } from "@nestjs/throttler";
 import { ApiBearerAuth, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from "@nestjs/swagger";
-import { AuditCategory, AuditOutcome, OrderStatus, PaymentStatus, ReturnStatus, ReturnType, Role } from "@prisma/client";
+import { AuditCategory, AuditOutcome, OrderStatus, PaymentStatus, ReturnStatus, ReturnType } from "@prisma/client";
 import { AuditService } from "../audit/audit.service";
 import { Type } from "class-transformer";
 import {
@@ -35,8 +35,8 @@ import { MailService } from "../mail/mail.service";
 import { MercadoPagoService } from "../payments/mercado-pago.service";
 import { PaymentsModule } from "../payments/payments.module";
 import { JwtAuthGuard, OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { CurrentUser, Roles } from "../../common/decorators/current-user.decorator";
+import { AdminOnly } from "../../common/guards/admin-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { protocolNumber } from "../../common/utils/business-days.util";
 
 /** CDC art. 49: 7 dias corridos do recebimento */
@@ -335,8 +335,7 @@ export class ReturnsController {
   }
 
   @Get("admin/returns")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[Admin] Todas as solicitacoes de devolucao" })
   listAll() {
@@ -344,8 +343,7 @@ export class ReturnsController {
   }
 
   @Patch("admin/returns/:id")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[Admin] Atualiza status, codigo de postagem e reembolso" })
   update(@Param("id") id: string, @Body() dto: UpdateReturnDto) {

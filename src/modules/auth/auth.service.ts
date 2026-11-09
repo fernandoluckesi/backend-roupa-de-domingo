@@ -40,13 +40,12 @@ const CODE_MAX_ATTEMPTS = 5;
 const CODE_RESEND_MS = 60 * 1000;
 const BCRYPT_COST = 12;
 
-type CodePurpose = "register" | "email-change" | "password-change" | "password-reset" | "login";
+type CodePurpose = "register" | "email-change" | "password-change" | "password-reset";
 const CODE_TYPE: Record<CodePurpose, AuthTokenType> = {
   register: AuthTokenType.EMAIL_VERIFICATION,
   "email-change": AuthTokenType.EMAIL_CHANGE,
   "password-change": AuthTokenType.PASSWORD_CHANGE,
   "password-reset": AuthTokenType.PASSWORD_RESET,
-  login: AuthTokenType.LOGIN_CODE,
 };
 
 const INVALID_CODE = "Código incorreto ou expirado. Confira o e-mail ou peça um novo código.";
@@ -239,30 +238,6 @@ export class AuthService {
       });
     }
 
-    // Admin: segunda etapa com codigo de 6 digitos enviado ao e-mail da conta
-    const loginCodeRequired =
-      user.role === Role.ADMIN && this.config.get<boolean>("security.adminLoginCodeRequired", true);
-    if (loginCodeRequired) {
-      if (!dto.code) {
-        await this.sendCode(user, "login", { force: dto.resendCode === true });
-        // Desenvolvimento sem SMTP: o e-mail so e escrito no console da API
-        const consoleOnly =
-          this.config.get<string>("mail.driver") !== "smtp" && this.config.get<string>("nodeEnv") !== "production";
-        throw new UnauthorizedException({
-          message:
-            `Enviamos um código de 6 dígitos para ${maskEmail(user.email)}. Ele vale por 15 minutos.` +
-            (consoleOnly ? " (Ambiente local sem SMTP: o código aparece no terminal da API, não no e-mail.)" : ""),
-          error: "LOGIN_CODE_REQUIRED",
-        });
-      }
-      try {
-        await this.consumeCode(user.id, "login", dto.code);
-      } catch (error) {
-        this.track("auth.login.failed", user, { failure: true, data: { reason: "login_code_invalid" } });
-        throw new UnauthorizedException({ message: (error as Error).message, error: "LOGIN_CODE_INVALID" });
-      }
-    }
-
     if (user.failedLoginCount > 0 || user.lockedUntil) {
       await this.prisma.user.update({
         where: { id: user.id },
@@ -274,8 +249,8 @@ export class AuthService {
       await this.cart.mergeSessionCartIntoUser(dto.sessionId, user.id);
     }
 
-    this.track("auth.login.success", user, { asUser: true, data: { loginCode: loginCodeRequired } });
-    return this.buildSession(user, { loginCodeVerified: loginCodeRequired });
+    this.track("auth.login.success", user, { asUser: true });
+    return this.buildSession(user);
   }
 
   /** Revoga todas as sessoes do usuario (logout em todos os dispositivos). */
@@ -547,17 +522,8 @@ export class AuthService {
   }
 
   /** Sessao com o perfil completo. O token vai num cookie httpOnly (o controller grava). */
-  private async buildSession(
-    user: { id: string; email: string; tokenVersion: number },
-    options: { loginCodeVerified?: boolean } = {},
-  ) {
-    // lcv: sessao aberta com o codigo do e-mail; so ela acessa a area administrativa
-    const accessToken = this.jwt.sign({
-      sub: user.id,
-      email: user.email,
-      tv: user.tokenVersion,
-      ...(options.loginCodeVerified ? { lcv: true } : {}),
-    });
-    return { accessToken, user: { ...(await this.me(user.id)), loginCodeVerified: Boolean(options.loginCodeVerified) } };
+  private async buildSession(user: { id: string; email: string; tokenVersion: number }) {
+    const accessToken = this.jwt.sign({ sub: user.id, email: user.email, tv: user.tokenVersion });
+    return { accessToken, user: await this.me(user.id) };
   }
 }

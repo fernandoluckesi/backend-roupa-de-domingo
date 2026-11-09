@@ -18,7 +18,7 @@
     "seed": "ts-node --transpile-only prisma/seed.ts",
     "catalog:sync": "ts-node --transpile-only prisma/catalog-sync.ts",
     "data:encrypt": "ts-node --transpile-only prisma/encrypt-documents.ts",
-    "admin:create": "ts-node --transpile-only prisma/create-admin.ts",
+    "seed:admin": "ts-node --transpile-only prisma/seed-admin.ts",
     "audit:deps": "npm audit --omit=dev --audit-level=high",
     "db:setup": "prisma migrate deploy && npm run seed",
     "typecheck": "tsc --noEmit -p tsconfig.json",

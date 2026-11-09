@@ -11,8 +11,8 @@ interface JwtPayload {
   email: string;
   /** tokenVersion do usuario quando o token foi emitido */
   tv?: number;
-  /** Login confirmado com o codigo do e-mail */
-  lcv?: boolean;
+  /** "admin" = token do backoffice: nao vale nas rotas de cliente */
+  typ?: string;
 }
 
 @Injectable()
@@ -34,6 +34,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<AuthUser> {
+    if (payload.typ === "admin") throw new UnauthorizedException("Sessao invalida. Faca login novamente.");
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
       select: {
@@ -56,7 +57,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       name: user.name,
       role: user.role,
-      loginCodeVerified: payload.lcv === true,
     };
   }
 }

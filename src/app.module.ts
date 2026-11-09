@@ -14,6 +14,7 @@ import { PaymentsModule } from "./modules/payments/payments.module";
 import { ShippingModule } from "./modules/shipping/shipping.module";
 import { FulfillmentModule } from "./modules/fulfillment/fulfillment.module";
 import { AdminOrdersModule } from "./modules/admin-orders/admin-orders.module";
+import { AdminAuthModule } from "./modules/admin-auth/admin-auth.module";
 import { EasterEggsModule } from "./modules/easter-eggs/easter-eggs.module";
 import { MailModule } from "./modules/mail/mail.module";
 import { PrivacyModule } from "./modules/privacy/privacy.module";
@@ -47,6 +48,7 @@ import { AuditModule } from "./modules/audit/audit.module";
     OrdersModule,
     PaymentsModule,
     FulfillmentModule,
+    AdminAuthModule,
     AdminOrdersModule,
     EasterEggsModule,
     ContactModule,

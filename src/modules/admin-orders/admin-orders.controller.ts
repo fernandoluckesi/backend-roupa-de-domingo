@@ -1,17 +1,13 @@
-import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query, UseGuards } from "@nestjs/common";
+import { Body, Controller, Get, HttpCode, Param, Patch, Post, Query } from "@nestjs/common";
 import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { Role } from "@prisma/client";
-import { JwtAuthGuard } from "../../common/guards/jwt-auth.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { Roles } from "../../common/decorators/current-user.decorator";
+import { AdminOnly } from "../../common/guards/admin-auth.guard";
 import { AdminOrdersService } from "./admin-orders.service";
 import { ListOrdersQueryDto, PrintLabelsDto, ProductionListQueryDto, UpdateFulfillmentDto } from "./dto/admin-orders.dto";
 
 /** Backoffice: gestao de pedidos (toda chamada fica na trilha de auditoria pelo AuditInterceptor). */
 @ApiTags("admin-orders")
 @ApiBearerAuth()
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.ADMIN)
+@AdminOnly()
 @Controller("admin")
 export class AdminOrdersController {
   constructor(private readonly orders: AdminOrdersService) {}

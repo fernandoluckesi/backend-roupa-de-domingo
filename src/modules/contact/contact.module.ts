@@ -13,14 +13,14 @@ import {
 import { ConfigService } from "@nestjs/config";
 import { Throttle } from "@nestjs/throttler";
 import { ApiBearerAuth, ApiOperation, ApiProperty, ApiPropertyOptional, ApiTags } from "@nestjs/swagger";
-import { AuditCategory, ContactStatus, Role } from "@prisma/client";
+import { AuditCategory, ContactStatus } from "@prisma/client";
 import { AuditService } from "../audit/audit.service";
 import { IsEmail, IsEnum, IsIn, IsOptional, IsString, Length, MaxLength } from "class-validator";
 import { PrismaService } from "../../prisma/prisma.service";
 import { MailService } from "../mail/mail.service";
-import { JwtAuthGuard, OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
-import { RolesGuard } from "../../common/guards/roles.guard";
-import { CurrentUser, Roles } from "../../common/decorators/current-user.decorator";
+import { OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
+import { AdminOnly } from "../../common/guards/admin-auth.guard";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 import { addBusinessDays, protocolNumber } from "../../common/utils/business-days.util";
 
 export const CONTACT_SUBJECTS = [
@@ -166,8 +166,7 @@ export class ContactController {
   }
 
   @Get("admin/contact")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[Admin] Fila do SAC ordenada pelo prazo" })
   list() {
@@ -175,8 +174,7 @@ export class ContactController {
   }
 
   @Patch("admin/contact/:protocol")
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.ADMIN)
+  @AdminOnly()
   @ApiBearerAuth()
   @ApiOperation({ summary: "[Admin] Atualiza o status de um atendimento" })
   update(@Param("protocol") protocol: string, @Body() dto: UpdateContactDto) {

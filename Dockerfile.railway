@@ -26,5 +26,5 @@ EXPOSE 3333
 # Migrations antes de subir. O seed so roda com o banco vazio (SEED_IF_EMPTY): nunca apaga dados.
 # catalog:sync aplica prisma/catalog.ts (upsert por slug/SKU) sem tocar em pedidos e usuarios.
 # Falhas no seed ou no sync nao impedem a API de subir (ficam registradas no log).
-# admin:create cria/promove o admin de ADMIN_EMAIL (senha inicial so na criacao).
-CMD ["sh", "-c", "npm run prisma:deploy && { SEED_IF_EMPTY=true npm run seed || echo 'AVISO: seed falhou'; } && { npm run catalog:sync || echo 'AVISO: catalog:sync falhou'; } && { node dist/prisma/encrypt-documents.js || echo 'AVISO: data:encrypt falhou'; } && { node dist/prisma/create-admin.js || echo 'AVISO: admin:create falhou'; } && node dist/src/main"]
+# seed:admin cria o admin do backoffice (tabela admin_users) a partir de ADMIN_EMAIL (senha so na criacao).
+CMD ["sh", "-c", "npm run prisma:deploy && { SEED_IF_EMPTY=true npm run seed || echo 'AVISO: seed falhou'; } && { npm run catalog:sync || echo 'AVISO: catalog:sync falhou'; } && { node dist/prisma/encrypt-documents.js || echo 'AVISO: data:encrypt falhou'; } && { node dist/prisma/seed-admin.js || echo 'AVISO: seed:admin falhou'; } && node dist/src/main"]

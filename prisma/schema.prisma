@@ -417,7 +417,7 @@ enum AuthTokenType {
   PASSWORD_RESET
   PASSWORD_CHANGE
   EMAIL_CHANGE
-  /// Codigo do login de admin (segunda etapa, enviado por e-mail)
+  /// Legado (login de admin antes da tabela admin_users); sem uso
   LOGIN_CODE
 }
 
@@ -529,6 +529,45 @@ model ReturnRequest {
   @@index([orderId])
   @@index([userId])
   @@map("return_requests")
+}
+
+// ---------------------------------------------------------------- equipe (backoffice)
+
+/// Usuarios do backoffice. Separados dos clientes (users): login, sessao e senha proprios.
+model AdminUser {
+  id               String    @id @default(uuid())
+  email            String    @unique
+  name             String
+  passwordHash     String
+  isActive         Boolean   @default(true)
+  /// Bloqueio progressivo contra forca bruta
+  failedLoginCount Int       @default(0)
+  lockedUntil      DateTime?
+  /// Incrementar revoga todas as sessoes do admin
+  tokenVersion     Int       @default(0)
+  lastLoginAt      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  loginCodes AdminLoginCode[]
+
+  @@map("admin_users")
+}
+
+/// Codigo de 6 digitos da segunda etapa do login do backoffice (so o hash fica no banco)
+model AdminLoginCode {
+  id          String    @id @default(uuid())
+  adminUserId String
+  codeHash    String
+  expiresAt   DateTime
+  usedAt      DateTime?
+  attempts    Int       @default(0)
+  createdAt   DateTime  @default(now())
+
+  adminUser AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@map("admin_login_codes")
 }
 
 enum AuditCategory {

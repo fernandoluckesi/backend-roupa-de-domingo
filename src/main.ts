@@ -50,9 +50,11 @@ async function bootstrap(): Promise<void> {
   // precisa do cabecalho X-Requested-With (um site de terceiro nao consegue envia-lo
   // sem passar pelo CORS, que so libera a nossa origem). SameSite=Lax cobre o resto.
   const sessionCookie = config.get<string>("security.sessionCookie", "rd_session");
+  const adminSessionCookie = config.get<string>("security.adminSessionCookie", "rd_admin_session");
   app.use((req: any, res: any, next: any) => {
     const unsafe = !["GET", "HEAD", "OPTIONS"].includes(req.method);
-    const cookieAuth = Boolean(req.cookies?.[sessionCookie]) && !req.headers.authorization;
+    const cookieAuth =
+      Boolean(req.cookies?.[sessionCookie] || req.cookies?.[adminSessionCookie]) && !req.headers.authorization;
     if (unsafe && cookieAuth && req.headers["x-requested-with"] !== "rd-web") {
       res.status(403).json({
         statusCode: 403,

@@ -28,7 +28,7 @@ import {
 import { JwtAuthGuard, OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
 import { AuditCategory } from "@prisma/client";
 import { AuditService } from "../audit/audit.service";
-import { AuthUser, CurrentUser } from "../../common/decorators/current-user.decorator";
+import { CurrentUser } from "../../common/decorators/current-user.decorator";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -114,10 +114,8 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Dados do usuario autenticado" })
-  async me(@CurrentUser() user: AuthUser) {
-    // Com o codigo desligado (dev), toda sessao vale para a area de admin
-    const required = this.config.get<boolean>("security.adminLoginCodeRequired", true);
-    return { ...(await this.auth.me(user.id)), loginCodeVerified: !required || Boolean(user.loginCodeVerified) };
+  me(@CurrentUser("id") userId: string) {
+    return this.auth.me(userId);
   }
 
   @Post("password/code")

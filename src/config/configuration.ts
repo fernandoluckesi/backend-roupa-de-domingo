@@ -36,6 +36,8 @@ export interface AppConfig {
     dataEncryptionKey: string;
     /** Nome do cookie httpOnly da sessao */
     sessionCookie: string;
+    /** Cookie httpOnly da sessao do backoffice (separado do de cliente) */
+    adminSessionCookie: string;
     cookieSecure: boolean;
     swaggerEnabled: boolean;
     /** Login de admin exige o codigo de 6 digitos enviado por e-mail */
@@ -98,6 +100,7 @@ export default (): AppConfig => ({
   security: {
     dataEncryptionKey: process.env.DATA_ENCRYPTION_KEY ?? "",
     sessionCookie: process.env.SESSION_COOKIE_NAME ?? "rd_session",
+    adminSessionCookie: process.env.ADMIN_SESSION_COOKIE_NAME ?? "rd_admin_session",
     cookieSecure:
       process.env.COOKIE_SECURE !== undefined
         ? process.env.COOKIE_SECURE === "true"

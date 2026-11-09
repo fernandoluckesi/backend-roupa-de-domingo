@@ -10,8 +10,8 @@ export interface AuthUser {
   email: string;
   name: string;
   role: Role;
-  /** Sessao aberta com o codigo de login enviado por e-mail (exigido na area de admin) */
-  loginCodeVerified?: boolean;
+  /** Sessao do backoffice (admin_users), nao de cliente */
+  isAdmin?: boolean;
 }
 
 export const CurrentUser = createParamDecorator(
