@@ -12,7 +12,6 @@ import { ConfigService } from "@nestjs/config";
 import { JwtService } from "@nestjs/jwt";
 import { AuditActorType, AuditCategory, AuditOutcome, AuthTokenType, Role } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
-import { authenticator } from "otplib";
 import { PrismaService } from "../../prisma/prisma.service";
 import { CartService } from "../cart/cart.service";
 import { MailService } from "../mail/mail.service";
@@ -41,12 +40,13 @@ const CODE_MAX_ATTEMPTS = 5;
 const CODE_RESEND_MS = 60 * 1000;
 const BCRYPT_COST = 12;
 
-type CodePurpose = "register" | "email-change" | "password-change" | "password-reset";
+type CodePurpose = "register" | "email-change" | "password-change" | "password-reset" | "login";
 const CODE_TYPE: Record<CodePurpose, AuthTokenType> = {
   register: AuthTokenType.EMAIL_VERIFICATION,
   "email-change": AuthTokenType.EMAIL_CHANGE,
   "password-change": AuthTokenType.PASSWORD_CHANGE,
   "password-reset": AuthTokenType.PASSWORD_RESET,
+  login: AuthTokenType.LOGIN_CODE,
 };
 
 const INVALID_CODE = "Código incorreto ou expirado. Confira o e-mail ou peça um novo código.";
@@ -239,16 +239,27 @@ export class AuthService {
       });
     }
 
-    if (user.twoFactorEnabled) {
-      if (!dto.otp) {
+    // Admin: segunda etapa com codigo de 6 digitos enviado ao e-mail da conta
+    const loginCodeRequired =
+      user.role === Role.ADMIN && this.config.get<boolean>("security.adminLoginCodeRequired", true);
+    if (loginCodeRequired) {
+      if (!dto.code) {
+        await this.sendCode(user, "login", { force: dto.resendCode === true });
+        // Desenvolvimento sem SMTP: o e-mail so e escrito no console da API
+        const consoleOnly =
+          this.config.get<string>("mail.driver") !== "smtp" && this.config.get<string>("nodeEnv") !== "production";
         throw new UnauthorizedException({
-          message: "Digite o código do seu aplicativo autenticador.",
-          error: "OTP_REQUIRED",
+          message:
+            `Enviamos um código de 6 dígitos para ${maskEmail(user.email)}. Ele vale por 15 minutos.` +
+            (consoleOnly ? " (Ambiente local sem SMTP: o código aparece no terminal da API, não no e-mail.)" : ""),
+          error: "LOGIN_CODE_REQUIRED",
         });
       }
-      if (!user.twoFactorSecret || !authenticator.check(dto.otp, user.twoFactorSecret)) {
-        this.track("auth.login.failed", user, { failure: true, data: { reason: "otp_invalid" } });
-        throw new UnauthorizedException({ message: "Código de verificação inválido.", error: "OTP_INVALID" });
+      try {
+        await this.consumeCode(user.id, "login", dto.code);
+      } catch (error) {
+        this.track("auth.login.failed", user, { failure: true, data: { reason: "login_code_invalid" } });
+        throw new UnauthorizedException({ message: (error as Error).message, error: "LOGIN_CODE_INVALID" });
       }
     }
 
@@ -263,8 +274,8 @@ export class AuthService {
       await this.cart.mergeSessionCartIntoUser(dto.sessionId, user.id);
     }
 
-    this.track("auth.login.success", user, { asUser: true, data: { twoFactor: user.twoFactorEnabled } });
-    return this.buildSession(user);
+    this.track("auth.login.success", user, { asUser: true, data: { loginCode: loginCodeRequired } });
+    return this.buildSession(user, { loginCodeVerified: loginCodeRequired });
   }
 
   /** Revoga todas as sessoes do usuario (logout em todos os dispositivos). */
@@ -502,47 +513,6 @@ export class AuthService {
     return record;
   }
 
-  // ---------------------------------------------------------------- 2FA (TOTP)
-
-  async setupTwoFactor(userId: string) {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    if (user.twoFactorEnabled) {
-      throw new ConflictException("O 2FA já está ativo. Desative antes de gerar um novo segredo.");
-    }
-    const secret = authenticator.generateSecret();
-    await this.prisma.user.update({ where: { id: userId }, data: { twoFactorSecret: secret } });
-    this.track("auth.2fa.setup_started", user);
-    return {
-      secret,
-      otpauthUrl: authenticator.keyuri(user.email, "Roupa de Domingo", secret),
-    };
-  }
-
-  async enableTwoFactor(userId: string, otp: string) {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    if (!user.twoFactorSecret || !authenticator.check(otp, user.twoFactorSecret)) {
-      this.track("auth.2fa.enable_failed", user, { failure: true, data: { reason: "otp_invalid" } });
-      throw new BadRequestException("Código inválido. Confira o horário do celular e tente de novo.");
-    }
-    await this.prisma.user.update({ where: { id: userId }, data: { twoFactorEnabled: true } });
-    this.track("auth.2fa.enabled", user);
-    return { enabled: true };
-  }
-
-  async disableTwoFactor(userId: string, otp: string) {
-    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
-    if (!user.twoFactorEnabled || !user.twoFactorSecret || !authenticator.check(otp, user.twoFactorSecret)) {
-      this.track("auth.2fa.disable_failed", user, { failure: true, data: { reason: "otp_invalid" } });
-      throw new ForbiddenException("Código inválido.");
-    }
-    await this.prisma.user.update({
-      where: { id: userId },
-      data: { twoFactorEnabled: false, twoFactorSecret: null, tokenVersion: { increment: 1 } },
-    });
-    this.track("auth.2fa.disabled", user, { data: { otherSessionsRevoked: true } });
-    return { enabled: false };
-  }
-
   // ---------------------------------------------------------------- perfil
 
   async me(userId: string) {
@@ -561,7 +531,6 @@ export class AuthService {
         marketingOptIn: true,
         termsVersion: true,
         privacyVersion: true,
-        twoFactorEnabled: true,
         addresses: { orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }] },
         _count: { select: { orders: true, discoveries: true } },
       },
@@ -578,8 +547,17 @@ export class AuthService {
   }
 
   /** Sessao com o perfil completo. O token vai num cookie httpOnly (o controller grava). */
-  private async buildSession(user: { id: string; email: string; tokenVersion: number }) {
-    const accessToken = this.jwt.sign({ sub: user.id, email: user.email, tv: user.tokenVersion });
-    return { accessToken, user: await this.me(user.id) };
+  private async buildSession(
+    user: { id: string; email: string; tokenVersion: number },
+    options: { loginCodeVerified?: boolean } = {},
+  ) {
+    // lcv: sessao aberta com o codigo do e-mail; so ela acessa a area administrativa
+    const accessToken = this.jwt.sign({
+      sub: user.id,
+      email: user.email,
+      tv: user.tokenVersion,
+      ...(options.loginCodeVerified ? { lcv: true } : {}),
+    });
+    return { accessToken, user: { ...(await this.me(user.id)), loginCodeVerified: Boolean(options.loginCodeVerified) } };
   }
 }

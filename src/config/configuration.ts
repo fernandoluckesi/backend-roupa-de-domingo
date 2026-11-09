@@ -14,30 +14,32 @@ export interface AppConfig {
     /** Assinatura secreta do webhook (painel do MP). Vazia = nao valida x-signature */
     webhookSecret: string;
   };
-  print: {
-    provider: "mock" | "http" | "printful";
-    apiUrl: string;
-    apiKey: string;
-    webhookSecret: string;
-    mockSpeed: number;
-    printful: {
-      storeId: string;
-      /** false = pedidos ficam em rascunho na Printful (sem cobranca) */
-      confirmOrders: boolean;
-    };
+  /** Remetente impresso nas etiquetas e na declaracao de conteudo dos Correios */
+  sender: {
+    name: string;
+    document: string;
+    phone: string;
+    email: string;
+    street: string;
+    number: string;
+    complement: string;
+    district: string;
+    city: string;
+    state: string;
+    zipCode: string;
   };
   business: {
     freeShippingThresholdCents: number;
   };
   security: {
-    /** Chave AES-256 (base64, 32 bytes) para cifrar CPF e segredo 2FA em repouso */
+    /** Chave AES-256 (base64, 32 bytes) para cifrar CPF e documentos em repouso */
     dataEncryptionKey: string;
     /** Nome do cookie httpOnly da sessao */
     sessionCookie: string;
     cookieSecure: boolean;
     swaggerEnabled: boolean;
-    /** Rotas de admin exigem 2FA ativo */
-    adminTwoFactorRequired: boolean;
+    /** Login de admin exige o codigo de 6 digitos enviado por e-mail */
+    adminLoginCodeRequired: boolean;
     /** Tentativas de login antes do bloqueio temporario */
     maxFailedLogins: number;
     lockMinutes: number;
@@ -74,17 +76,18 @@ export default (): AppConfig => ({
     notificationUrl: process.env.MP_NOTIFICATION_URL ?? "",
     webhookSecret: process.env.MP_WEBHOOK_SECRET ?? "",
   },
-  print: {
-    provider:
-      (process.env.PRINT_PROVIDER as "mock" | "http" | "printful") ?? "mock",
-    apiUrl: process.env.PRINT_API_URL ?? "",
-    apiKey: process.env.PRINT_API_KEY ?? "",
-    webhookSecret: process.env.PRINT_WEBHOOK_SECRET ?? "segredo-estamparia",
-    mockSpeed: parseFloat(process.env.PRINT_MOCK_SPEED ?? "1"),
-    printful: {
-      storeId: process.env.PRINTFUL_STORE_ID ?? "",
-      confirmOrders: process.env.PRINTFUL_CONFIRM_ORDERS === "true",
-    },
+  sender: {
+    name: process.env.SENDER_NAME ?? "Roupa de Domingo",
+    document: process.env.SENDER_DOCUMENT ?? "",
+    phone: process.env.SENDER_PHONE ?? "",
+    email: process.env.SENDER_EMAIL ?? "sac@roupadedomingo.com.br",
+    street: process.env.SENDER_STREET ?? "",
+    number: process.env.SENDER_NUMBER ?? "",
+    complement: process.env.SENDER_COMPLEMENT ?? "",
+    district: process.env.SENDER_DISTRICT ?? "",
+    city: process.env.SENDER_CITY ?? "",
+    state: process.env.SENDER_STATE ?? "",
+    zipCode: (process.env.SENDER_ZIP_CODE ?? "").replace(/\D/g, ""),
   },
   business: {
     freeShippingThresholdCents: parseInt(
@@ -103,7 +106,7 @@ export default (): AppConfig => ({
       process.env.SWAGGER_ENABLED !== undefined
         ? process.env.SWAGGER_ENABLED === "true"
         : process.env.NODE_ENV !== "production",
-    adminTwoFactorRequired: process.env.ADMIN_2FA_REQUIRED !== "false",
+    adminLoginCodeRequired: (process.env.ADMIN_LOGIN_CODE_REQUIRED ?? process.env.ADMIN_2FA_REQUIRED) !== "false",
     maxFailedLogins: parseInt(process.env.MAX_FAILED_LOGINS ?? "5", 10),
     lockMinutes: parseInt(process.env.LOGIN_LOCK_MINUTES ?? "15", 10),
     auditRetentionDays: parseInt(process.env.AUDIT_RETENTION_DAYS ?? "1825", 10),

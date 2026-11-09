@@ -30,15 +30,16 @@ export class RolesGuard implements CanActivate {
         "Area restrita. Nem todo mundo precisa ver como a salsicha e feita.",
       );
     }
-    // Painel admin exige 2FA ativo (POST /auth/2fa/setup + /auth/2fa/enable)
+    // Area admin exige sessao aberta com o codigo de login enviado por e-mail
     if (
       required.includes(Role.ADMIN) &&
-      this.config.get<boolean>("security.adminTwoFactorRequired", true) &&
-      !user.twoFactorEnabled
+      this.config.get<boolean>("security.adminLoginCodeRequired", true) &&
+      !user.loginCodeVerified
     ) {
-      throw new ForbiddenException(
-        "Ative a verificacao em duas etapas (2FA) para acessar a area administrativa.",
-      );
+      throw new ForbiddenException({
+        message: "Entre de novo pelo backoffice para confirmar o código enviado ao seu e-mail.",
+        error: "LOGIN_CODE_REQUIRED",
+      });
     }
     return true;
   }

@@ -11,6 +11,8 @@ interface JwtPayload {
   email: string;
   /** tokenVersion do usuario quando o token foi emitido */
   tv?: number;
+  /** Login confirmado com o codigo do e-mail */
+  lcv?: boolean;
 }
 
 @Injectable()
@@ -40,7 +42,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         name: true,
         role: true,
         tokenVersion: true,
-        twoFactorEnabled: true,
         deletedAt: true,
       },
     });
@@ -55,7 +56,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       email: user.email,
       name: user.name,
       role: user.role,
-      twoFactorEnabled: user.twoFactorEnabled,
+      loginCodeVerified: payload.lcv === true,
     };
   }
 }

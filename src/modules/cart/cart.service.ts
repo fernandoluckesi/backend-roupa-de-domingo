@@ -324,10 +324,6 @@ export class CartService {
         zipCode,
         weightGrams,
         subtotalCents - discountCents,
-        cart.items.map((item) => ({
-          providerVariantId: item.variant.printProviderVariantId,
-          quantity: item.quantity,
-        })),
       );
       selectedShipping =
         shippingOptions.find((o) => o.method === method) ?? shippingOptions[0];

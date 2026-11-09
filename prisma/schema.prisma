@@ -49,13 +49,16 @@ enum PaymentStatus {
   CANCELLED
 }
 
+/// Producao e envio feitos pela propria loja (sem parceiro de estamparia)
 enum FulfillmentStatus {
+  /// Pago, aguardando entrar em producao
   QUEUED
-  SENT
   IN_PRODUCTION
+  /// Embalado, etiqueta pronta, aguardando postagem
+  PACKED
+  /// Postado nos Correios (com codigo de rastreio)
   SHIPPED
   DELIVERED
-  ERROR
 }
 
 // ---------------------------------------------------------------- usuarios
@@ -85,9 +88,6 @@ model User {
   lockedUntil        DateTime?
   /// Incrementar revoga todas as sessoes (logout em todos os dispositivos)
   tokenVersion       Int       @default(0)
-  /// 2FA (TOTP); segredo cifrado em repouso
-  twoFactorSecret    String?
-  twoFactorEnabled   Boolean   @default(false)
   /// Conta excluida a pedido do titular: dados pessoais anonimizados
   deletedAt          DateTime?
 
@@ -151,7 +151,6 @@ model Product {
   isFeatured       Boolean  @default(false)
   isSecret         Boolean  @default(false)
   isActive         Boolean  @default(true)
-  printProviderSku String?
   rating           Float    @default(5)
   ratingCount      Int      @default(0)
   createdAt        DateTime @default(now())
@@ -176,7 +175,6 @@ model ProductVariant {
   priceCents             Int
   weightGrams            Int     @default(300)
   isAvailable            Boolean @default(true)
-  printProviderVariantId String?
 
   product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
   cartItems  CartItem[]
@@ -348,22 +346,33 @@ model Payment {
   @@map("payments")
 }
 
+/// Producao, embalagem e postagem do pedido (operacao propria, envio pelos Correios)
 model Fulfillment {
-  id              String            @id @default(uuid())
-  orderId         String            @unique
-  provider        String            @default("mock")
-  providerOrderId String?
-  status          FulfillmentStatus @default(QUEUED)
-  trackingCode    String?
-  trackingUrl     String?
-  lastError       String?
-  rawPayload      Json?
-  sentAt          DateTime?
-  createdAt       DateTime          @default(now())
-  updatedAt       DateTime          @updatedAt
+  id                  String            @id @default(uuid())
+  orderId             String            @unique
+  status              FulfillmentStatus @default(QUEUED)
+  carrier             String            @default("Correios")
+  /// PAC | SEDEX
+  serviceCode         String?
+  trackingCode        String?
+  trackingUrl         String?
+  packageWeightGrams  Int?
+  packageLengthCm     Int?
+  packageWidthCm      Int?
+  packageHeightCm     Int?
+  /// Anotacao interna da equipe (o cliente nao ve)
+  internalNotes       String?
+  labelPrintedAt      DateTime?
+  productionStartedAt DateTime?
+  packedAt            DateTime?
+  shippedAt           DateTime?
+  deliveredAt         DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
 
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
+  @@index([status])
   @@map("fulfillments")
 }
 
@@ -408,6 +417,8 @@ enum AuthTokenType {
   PASSWORD_RESET
   PASSWORD_CHANGE
   EMAIL_CHANGE
+  /// Codigo do login de admin (segunda etapa, enviado por e-mail)
+  LOGIN_CODE
 }
 
 /// Tokens e codigos de 6 digitos de uso unico; so o hash fica no banco

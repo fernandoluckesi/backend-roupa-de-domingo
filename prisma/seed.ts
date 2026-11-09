@@ -272,7 +272,6 @@ async function main() {
         isSecret: p.isSecret ?? false,
         rating: p.rating,
         ratingCount: p.ratingCount,
-        printProviderSku: `RD-${p.slug.toUpperCase().slice(0, 18)}`,
         images: {
           create: p.images.map((image, i) => ({
             ...imageFields(image),
@@ -288,7 +287,6 @@ async function main() {
             model: v.model ?? null,
             priceCents: v.priceCents,
             weightGrams: v.weightGrams,
-            printProviderVariantId: v.printProviderVariantId ?? null,
           })),
         },
       },

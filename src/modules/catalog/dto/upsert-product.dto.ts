@@ -44,11 +44,6 @@ export class VariantInputDto {
   @IsInt()
   @Min(1)
   weightGrams?: number;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  printProviderVariantId?: string;
 }
 
 export class ImageInputDto {
@@ -109,11 +104,6 @@ export class CreateProductDto {
   @IsOptional()
   @IsBoolean()
   isSecret?: boolean;
-
-  @ApiPropertyOptional()
-  @IsOptional()
-  @IsString()
-  printProviderSku?: string;
 
   @ApiProperty({ type: [VariantInputDto] })
   @IsArray()

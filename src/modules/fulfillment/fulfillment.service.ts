@@ -1,355 +1,250 @@
-import { redact, scrubCpfFromText } from "../../common/utils/privacy.util";
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Logger,
-  NotFoundException,
-} from "@nestjs/common";
-import { AuditCategory, AuditOutcome, FulfillmentStatus, OrderStatus } from "@prisma/client";
-import { AuditService } from "../audit/audit.service";
+import { BadRequestException, Injectable, Logger, NotFoundException } from "@nestjs/common";
+import { AuditCategory, FulfillmentStatus, OrderStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
-import {
-  PRINT_PROVIDER,
-  PrintOrderStatus,
-  PrintProvider,
-} from "./providers/print-provider.interface";
+import { AuditService } from "../audit/audit.service";
+import { MailService } from "../mail/mail.service";
 
-const FULFILLMENT_TO_ORDER: Partial<Record<PrintOrderStatus, OrderStatus>> = {
+/** PAC/SEDEX a partir do metodo escolhido no checkout */
+export function serviceCodeFor(shippingMethod: string): "PAC" | "SEDEX" {
+  return shippingMethod === "expresso" ? "SEDEX" : "PAC";
+}
+
+export function correiosTrackingUrl(code: string): string {
+  return `https://rastreamento.correios.com.br/app/index.php?objetos=${encodeURIComponent(code)}`;
+}
+
+/** Padrao dos objetos registrados dos Correios: 2 letras + 9 digitos + 2 letras (ex.: AB123456789BR) */
+export const TRACKING_CODE_PATTERN = /^[A-Z]{2}\d{9}[A-Z]{2}$/;
+
+/** Transicoes permitidas na operacao (inclui voltar um passo para corrigir engano). */
+const TRANSITIONS: Record<FulfillmentStatus, FulfillmentStatus[]> = {
+  QUEUED: [FulfillmentStatus.IN_PRODUCTION],
+  IN_PRODUCTION: [FulfillmentStatus.PACKED, FulfillmentStatus.QUEUED],
+  PACKED: [FulfillmentStatus.SHIPPED, FulfillmentStatus.IN_PRODUCTION],
+  SHIPPED: [FulfillmentStatus.DELIVERED],
+  DELIVERED: [],
+};
+
+export const FULFILLMENT_LABELS: Record<FulfillmentStatus, string> = {
+  QUEUED: "A produzir",
+  IN_PRODUCTION: "Em produção",
+  PACKED: "Embalado",
+  SHIPPED: "Postado",
+  DELIVERED: "Entregue",
+};
+
+/** Status do pedido que acompanha cada etapa do fulfillment */
+const ORDER_STATUS_FOR: Record<FulfillmentStatus, OrderStatus> = {
+  QUEUED: OrderStatus.PAID,
   IN_PRODUCTION: OrderStatus.IN_PRODUCTION,
+  PACKED: OrderStatus.IN_PRODUCTION,
   SHIPPED: OrderStatus.SHIPPED,
   DELIVERED: OrderStatus.DELIVERED,
 };
 
+/** Nota padrao da timeline (visivel ao cliente) */
+const DEFAULT_NOTES: Record<FulfillmentStatus, string> = {
+  QUEUED: "Pedido na fila de produção.",
+  IN_PRODUCTION: "Seu pedido entrou em produção.",
+  PACKED: "Pedido embalado, aguardando postagem.",
+  SHIPPED: "Pedido postado nos Correios.",
+  DELIVERED: "Pedido entregue.",
+};
+
+/** Pedidos em que a operacao pode mexer */
+const WORKABLE_ORDER_STATUSES: OrderStatus[] = [
+  OrderStatus.PAID,
+  OrderStatus.IN_PRODUCTION,
+  OrderStatus.SHIPPED,
+  OrderStatus.DELIVERED,
+];
+
+export interface FulfillmentUpdate {
+  status?: FulfillmentStatus;
+  trackingCode?: string;
+  serviceCode?: "PAC" | "SEDEX";
+  packageWeightGrams?: number | null;
+  packageLengthCm?: number | null;
+  packageWidthCm?: number | null;
+  packageHeightCm?: number | null;
+  internalNotes?: string | null;
+  /** Texto extra na timeline do pedido (o cliente ve) */
+  note?: string;
+}
+
+type TimelineEvent = { status: string; at: string; note: string | null };
+
+/**
+ * Producao, embalagem e postagem feitas pela propria loja.
+ * Pagamento aprovado -> fila (QUEUED); a equipe avanca pelo backoffice.
+ */
 @Injectable()
 export class FulfillmentService {
   private readonly logger = new Logger(FulfillmentService.name);
 
   constructor(
     private readonly prisma: PrismaService,
-    @Inject(PRINT_PROVIDER) private readonly provider: PrintProvider,
     private readonly audit: AuditService,
+    private readonly mail: MailService,
   ) {}
 
-  private track(action: string, orderNumber: string, data: Record<string, unknown>, failure = false) {
+  /** Chamado quando o pagamento e aprovado: coloca o pedido na fila de producao (idempotente). */
+  async enqueue(orderId: string): Promise<void> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      select: { id: true, number: true, shippingMethod: true, fulfillment: { select: { id: true } } },
+    });
+    if (!order || order.fulfillment) return;
+
+    await this.prisma.fulfillment.create({
+      data: { orderId: order.id, status: FulfillmentStatus.QUEUED, serviceCode: serviceCodeFor(order.shippingMethod) },
+    });
+    await this.appendTimeline(order.id, null, DEFAULT_NOTES.QUEUED);
     this.audit.record({
       category: AuditCategory.FULFILLMENT,
-      action,
-      outcome: failure ? AuditOutcome.FAILURE : AuditOutcome.SUCCESS,
-      target: { type: "order", id: orderNumber },
-      data,
-    });
-  }
-
-  /** Chamado quando o pagamento e aprovado. Falha aqui nao derruba o pagamento. */
-  async dispatchOrder(orderId: string): Promise<void> {
-    const order = await this.prisma.order.findUnique({
-      where: { id: orderId },
-      include: {
-        items: {
-          include: { variant: { select: { printProviderVariantId: true } } },
-        },
-        fulfillment: true,
-      },
-    });
-
-    if (!order) return;
-
-    if (
-      order.fulfillment &&
-      order.fulfillment.status !== FulfillmentStatus.ERROR
-    ) {
-      this.logger.log(`Pedido ${order.number} ja tem print job. Ignorando.`);
-      return;
-    }
-
-    try {
-      const result = await this.provider.createOrder({
-        externalId: order.number,
-        shippingMethod: order.shippingMethod,
-        recipient: {
-          name: order.shippingRecipient,
-          phone: order.customerPhone,
-          document: order.customerDocument,
-          zipCode: order.shippingZipCode,
-          street: order.shippingStreet,
-          number: order.shippingNumber,
-          complement: order.shippingComplement,
-          district: order.shippingDistrict,
-          city: order.shippingCity,
-          state: order.shippingState,
-        },
-        items: order.items.map((item) => ({
-          sku: item.sku,
-          providerVariantId: item.variant?.printProviderVariantId ?? null,
-          productName: item.productName,
-          variantLabel: item.variantLabel,
-          quantity: item.quantity,
-          customText: item.customText,
-          artworkUrl: item.imageUrl,
-        })),
-      });
-
-      await this.prisma.fulfillment.upsert({
-        where: { orderId: order.id },
-        create: {
-          orderId: order.id,
-          provider: this.provider.name,
-          providerOrderId: result.providerOrderId,
-          status: FulfillmentStatus.SENT,
-          rawPayload: redact(result.raw) as object,
-          sentAt: new Date(),
-        },
-        update: {
-          providerOrderId: result.providerOrderId,
-          status: FulfillmentStatus.SENT,
-          lastError: null,
-          rawPayload: redact(result.raw) as object,
-          sentAt: new Date(),
-        },
-      });
-
-      this.track("fulfillment.submitted", order.number, {
-        provider: this.provider.name,
-        providerOrderId: result.providerOrderId,
-        draft: Boolean(result.draft),
-        retry: Boolean(order.fulfillment),
-      });
-
-      if (result.draft) {
-        // Rascunho nao entra em producao: fica PAID ate alguem confirmar na Printful
-        await this.appendTimeline(
-          order.id,
-          `Rascunho criado na estamparia (${result.providerOrderId}). Aguardando confirmacao.`,
-        );
-        this.logger.log(
-          `Pedido ${order.number} criado como rascunho (${result.providerOrderId}).`,
-        );
-        return;
-      }
-
-      await this.advanceOrder(order.id, OrderStatus.IN_PRODUCTION, {
-        note: `Enviado para a estamparia (${result.providerOrderId})`,
-      });
-
-      this.logger.log(`Pedido ${order.number} enviado para producao.`);
-    } catch (error) {
-      const message = (error as Error).message;
-      this.logger.error(`Falha no print job de ${order.number}: ${scrubCpfFromText(message)}`);
-
-      await this.prisma.fulfillment.upsert({
-        where: { orderId: order.id },
-        create: {
-          orderId: order.id,
-          provider: this.provider.name,
-          status: FulfillmentStatus.ERROR,
-          lastError: message,
-        },
-        update: { status: FulfillmentStatus.ERROR, lastError: message },
-      });
-      this.track("fulfillment.failed", order.number, {
-        provider: this.provider.name,
-        error: scrubCpfFromText(message).slice(0, 300),
-      }, true);
-    }
-  }
-
-  /** Reenvio manual de pedido pago que nao chegou na estamparia (status ERROR). */
-  async redispatch(orderNumber: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { number: orderNumber },
-      include: { fulfillment: true },
-    });
-    if (!order) throw new NotFoundException("Pedido nao encontrado.");
-    if (order.status !== OrderStatus.PAID) {
-      throw new BadRequestException(
-        `So pedidos pagos aguardando producao podem ser reenviados (status atual: ${order.status}).`,
-      );
-    }
-
-    await this.dispatchOrder(order.id);
-    return this.prisma.fulfillment.findUnique({ where: { orderId: order.id } });
-  }
-
-  /** Consulta o parceiro e sincroniza o estado local. */
-  async syncOrder(orderNumber: string) {
-    const order = await this.prisma.order.findUnique({
-      where: { number: orderNumber },
-      include: { fulfillment: true },
-    });
-
-    if (!order?.fulfillment?.providerOrderId) {
-      throw new NotFoundException(
-        "Esse pedido ainda nao tem producao iniciada.",
-      );
-    }
-
-    const result = await this.provider.getOrder(
-      order.fulfillment.providerOrderId,
-    );
-    await this.applyProviderStatus(order.id, result.status, {
-      trackingCode: result.trackingCode,
-      trackingUrl: result.trackingUrl,
-      raw: result.raw,
-    });
-
-    return this.prisma.fulfillment.findUniqueOrThrow({
-      where: { orderId: order.id },
-    });
-  }
-
-  async handleWebhook(payload: {
-    externalId: string;
-    providerOrderId?: string;
-    status: PrintOrderStatus;
-    trackingCode?: string | null;
-    trackingUrl?: string | null;
-    raw: unknown;
-  }) {
-    const order = await this.prisma.order.findUnique({
-      where: { number: payload.externalId },
-      select: { id: true, number: true },
-    });
-
-    if (!order) {
-      this.logger.warn(
-        `Webhook da estamparia para pedido inexistente: ${payload.externalId}`,
-      );
-      this.track("fulfillment.webhook.unmatched", String(payload.externalId).slice(0, 60), { status: payload.status }, true);
-      return { received: true, matched: false };
-    }
-
-    await this.applyProviderStatus(order.id, payload.status, {
-      trackingCode: payload.trackingCode,
-      trackingUrl: payload.trackingUrl,
-      raw: payload.raw,
-      providerOrderId: payload.providerOrderId,
-    });
-
-    return { received: true, matched: true, order: order.number };
-  }
-
-  private async applyProviderStatus(
-    orderId: string,
-    status: PrintOrderStatus,
-    extra: {
-      trackingCode?: string | null;
-      trackingUrl?: string | null;
-      raw?: unknown;
-      providerOrderId?: string;
-    },
-  ) {
-    const previous = await this.prisma.fulfillment.findUnique({
-      where: { orderId },
-      select: { status: true, order: { select: { number: true } } },
-    });
-    await this.prisma.fulfillment.upsert({
-      where: { orderId },
-      create: {
-        orderId,
-        provider: this.provider.name,
-        providerOrderId: extra.providerOrderId,
-        status: status as FulfillmentStatus,
-        trackingCode: extra.trackingCode,
-        trackingUrl: extra.trackingUrl,
-        rawPayload: redact(extra.raw ?? {}) as object,
-      },
-      update: {
-        status: status as FulfillmentStatus,
-        ...(extra.providerOrderId
-          ? { providerOrderId: extra.providerOrderId }
-          : {}),
-        ...(extra.trackingCode ? { trackingCode: extra.trackingCode } : {}),
-        ...(extra.trackingUrl ? { trackingUrl: extra.trackingUrl } : {}),
-        rawPayload: redact(extra.raw ?? {}) as object,
-      },
-    });
-
-    if (previous?.status !== status) {
-      const number =
-        previous?.order.number ??
-        (await this.prisma.order.findUnique({ where: { id: orderId }, select: { number: true } }))?.number ??
-        orderId;
-      this.track("fulfillment.status_changed", number, {
-        from: previous?.status ?? null,
-        to: status,
-        trackingCode: extra.trackingCode ?? null,
-      });
-    }
-
-    const orderStatus = FULFILLMENT_TO_ORDER[status];
-    if (orderStatus) {
-      await this.advanceOrder(orderId, orderStatus, {
-        trackingCode: extra.trackingCode ?? undefined,
-        note: `Atualizacao da estamparia: ${status}`,
-      });
-    }
-  }
-
-  private async appendTimeline(orderId: string, note: string) {
-    const order = await this.prisma.order.findUniqueOrThrow({
-      where: { id: orderId },
-      select: { status: true, timeline: true },
-    });
-    const timeline = Array.isArray(order.timeline) ? order.timeline : [];
-    await this.prisma.order.update({
-      where: { id: orderId },
-      data: {
-        timeline: [
-          ...(timeline as object[]),
-          { status: order.status, at: new Date().toISOString(), note },
-        ] as object,
-      },
-    });
-  }
-
-  /** Nunca retrocede o status do pedido. */
-  private async advanceOrder(
-    orderId: string,
-    status: OrderStatus,
-    extra: { trackingCode?: string; note?: string },
-  ) {
-    const order = await this.prisma.order.findUniqueOrThrow({
-      where: { id: orderId },
-      select: { number: true, status: true, timeline: true },
-    });
-
-    const RANK: Record<string, number> = {
-      PENDING: 0,
-      PAID: 1,
-      IN_PRODUCTION: 2,
-      SHIPPED: 3,
-      DELIVERED: 4,
-    };
-
-    if ((RANK[status] ?? 0) <= (RANK[order.status] ?? 0)) {
-      if (extra.trackingCode) {
-        await this.prisma.order.update({
-          where: { id: orderId },
-          data: { trackingCode: extra.trackingCode },
-        });
-      }
-      return;
-    }
-
-    const timeline = Array.isArray(order.timeline) ? order.timeline : [];
-
-    await this.prisma.order.update({
-      where: { id: orderId },
-      data: {
-        status,
-        ...(extra.trackingCode ? { trackingCode: extra.trackingCode } : {}),
-        timeline: [
-          ...(timeline as object[]),
-          { status, at: new Date().toISOString(), note: extra.note ?? null },
-        ] as object,
-      },
-    });
-    this.audit.record({
-      category: AuditCategory.ORDER,
-      action: "order.status_changed",
+      action: "fulfillment.queued",
       target: { type: "order", id: order.number },
-      data: { from: order.status, to: status, source: "fulfillment", trackingCode: extra.trackingCode ?? null },
+      data: { serviceCode: serviceCodeFor(order.shippingMethod) },
+    });
+    this.logger.log(`Pedido ${order.number} na fila de producao.`);
+  }
+
+  /** Atualizacao feita pela equipe (status, rastreio, embalagem, notas internas). */
+  async update(orderNumber: string, dto: FulfillmentUpdate): Promise<void> {
+    const order = await this.prisma.order.findUnique({
+      where: { number: orderNumber.toUpperCase() },
+      include: { fulfillment: true },
+    });
+    if (!order) throw new NotFoundException("Pedido não encontrado.");
+    if (!WORKABLE_ORDER_STATUSES.includes(order.status)) {
+      throw new BadRequestException(
+        `Pedido ${order.number} está "${order.status}": só pedidos pagos entram na produção.`,
+      );
+    }
+
+    // Pedido pago antes desta versao (ou sem fila) ganha o registro na hora
+    const current =
+      order.fulfillment ??
+      (await this.prisma.fulfillment.create({
+        data: { orderId: order.id, status: FulfillmentStatus.QUEUED, serviceCode: serviceCodeFor(order.shippingMethod) },
+      }));
+
+    const trackingCode = dto.trackingCode?.replace(/\s+/g, "").toUpperCase();
+    if (trackingCode && !TRACKING_CODE_PATTERN.test(trackingCode)) {
+      throw new BadRequestException("Código de rastreio inválido. Formato esperado: AB123456789BR.");
+    }
+
+    const target = dto.status && dto.status !== current.status ? dto.status : null;
+    if (target && !TRANSITIONS[current.status].includes(target)) {
+      throw new BadRequestException(
+        `Não dá para ir de "${FULFILLMENT_LABELS[current.status]}" para "${FULFILLMENT_LABELS[target]}".`,
+      );
+    }
+    const finalTracking = trackingCode ?? current.trackingCode;
+    if (target === FulfillmentStatus.SHIPPED && !finalTracking) {
+      throw new BadRequestException("Informe o código de rastreio dos Correios para marcar como postado.");
+    }
+
+    const now = new Date();
+    const data: Prisma.FulfillmentUpdateInput = {
+      ...(dto.serviceCode !== undefined ? { serviceCode: dto.serviceCode } : {}),
+      ...(dto.packageWeightGrams !== undefined ? { packageWeightGrams: dto.packageWeightGrams } : {}),
+      ...(dto.packageLengthCm !== undefined ? { packageLengthCm: dto.packageLengthCm } : {}),
+      ...(dto.packageWidthCm !== undefined ? { packageWidthCm: dto.packageWidthCm } : {}),
+      ...(dto.packageHeightCm !== undefined ? { packageHeightCm: dto.packageHeightCm } : {}),
+      ...(dto.internalNotes !== undefined ? { internalNotes: dto.internalNotes?.trim() || null } : {}),
+      ...(trackingCode ? { trackingCode, trackingUrl: correiosTrackingUrl(trackingCode) } : {}),
+    };
+    if (target) {
+      data.status = target;
+      if (target === FulfillmentStatus.IN_PRODUCTION && !current.productionStartedAt) data.productionStartedAt = now;
+      if (target === FulfillmentStatus.PACKED) data.packedAt = now;
+      if (target === FulfillmentStatus.SHIPPED) data.shippedAt = now;
+      if (target === FulfillmentStatus.DELIVERED) data.deliveredAt = now;
+    }
+
+    await this.prisma.fulfillment.update({ where: { id: current.id }, data });
+
+    // Rastreio corrigido depois da postagem tambem vai para o pedido
+    if (trackingCode && trackingCode !== order.trackingCode && !target) {
+      await this.prisma.order.update({ where: { id: order.id }, data: { trackingCode } });
+    }
+
+    const changedFields = Object.keys(data).filter((k) => k !== "status");
+    if (target) {
+      this.audit.record({
+        category: AuditCategory.FULFILLMENT,
+        action: "fulfillment.status_changed",
+        target: { type: "order", id: order.number },
+        data: { from: current.status, to: target, trackingCode: finalTracking ?? null, fields: changedFields },
+      });
+      await this.syncOrder(order, target, finalTracking ?? null, dto.note?.trim() || null);
+    } else if (changedFields.length) {
+      this.audit.record({
+        category: AuditCategory.FULFILLMENT,
+        action: "fulfillment.updated",
+        target: { type: "order", id: order.number },
+        data: { fields: changedFields },
+      });
+    }
+
+    if (target === FulfillmentStatus.SHIPPED && finalTracking) {
+      void this.mail.sendOrderShipped(order.customerEmail, order.customerName, {
+        orderNumber: order.number,
+        trackingCode: finalTracking,
+        trackingUrl: correiosTrackingUrl(finalTracking),
+        serviceCode: dto.serviceCode ?? current.serviceCode,
+        estimatedDays: order.estimatedDays,
+      });
+    }
+  }
+
+  /** Marca as etiquetas como impressas. */
+  async markLabelsPrinted(orderIds: string[]): Promise<void> {
+    if (!orderIds.length) return;
+    await this.prisma.fulfillment.updateMany({
+      where: { orderId: { in: orderIds } },
+      data: { labelPrintedAt: new Date() },
+    });
+  }
+
+  /** Leva o pedido para o status que corresponde a etapa (avanca ou volta junto com a operacao). */
+  private async syncOrder(
+    order: { id: string; number: string; status: OrderStatus; timeline: Prisma.JsonValue },
+    fulfillmentStatus: FulfillmentStatus,
+    trackingCode: string | null,
+    extraNote: string | null,
+  ) {
+    const next = ORDER_STATUS_FOR[fulfillmentStatus];
+    const note = [DEFAULT_NOTES[fulfillmentStatus], trackingCode && fulfillmentStatus === FulfillmentStatus.SHIPPED ? `Rastreio: ${trackingCode}.` : null, extraNote]
+      .filter(Boolean)
+      .join(" ");
+    const timeline = (Array.isArray(order.timeline) ? order.timeline : []) as TimelineEvent[];
+
+    await this.prisma.order.update({
+      where: { id: order.id },
+      data: {
+        status: next,
+        ...(trackingCode ? { trackingCode } : {}),
+        timeline: [...timeline, { status: next, at: new Date().toISOString(), note }] as object,
+      },
+    });
+    if (next !== order.status) {
+      this.audit.record({
+        category: AuditCategory.ORDER,
+        action: "order.status_changed",
+        target: { type: "order", id: order.number },
+        data: { from: order.status, to: next, source: "fulfillment", trackingCode },
+      });
+    }
+  }
+
+  private async appendTimeline(orderId: string, status: OrderStatus | null, note: string) {
+    const order = await this.prisma.order.findUniqueOrThrow({ where: { id: orderId }, select: { status: true, timeline: true } });
+    const timeline = (Array.isArray(order.timeline) ? order.timeline : []) as TimelineEvent[];
+    await this.prisma.order.update({
+      where: { id: orderId },
+      data: { timeline: [...timeline, { status: status ?? order.status, at: new Date().toISOString(), note }] as object },
     });
   }
 }

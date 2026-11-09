@@ -16,10 +16,9 @@ const ROTATE = process.argv.includes("--rotate");
 /** --rotate: regrava com a chave atual o que foi cifrado com a chave derivada antiga */
 async function rotate() {
   let count = 0;
-  for (const user of await prisma.user.findMany({ select: { id: true, document: true, twoFactorSecret: true } })) {
+  for (const user of await prisma.user.findMany({ select: { id: true, document: true } })) {
     const data: Record<string, string> = {};
     if (user.document && needsRotation(user.document)) data.document = encrypt(decrypt(user.document));
-    if (user.twoFactorSecret && needsRotation(user.twoFactorSecret)) data.twoFactorSecret = encrypt(decrypt(user.twoFactorSecret));
     if (Object.keys(data).length) {
       await prisma.user.update({ where: { id: user.id }, data });
       count++;
@@ -56,20 +55,10 @@ async function main() {
     }
   }
 
-  const twoFactor = await prisma.user.findMany({
-    where: { twoFactorSecret: { not: null }, NOT: { twoFactorSecret: { startsWith: ENCRYPTED_PREFIX } } },
-    select: { id: true, twoFactorSecret: true },
-  });
-  for (const user of twoFactor) {
-    if (user.twoFactorSecret) {
-      await prisma.user.update({ where: { id: user.id }, data: { twoFactorSecret: encrypt(user.twoFactorSecret) } });
-    }
-  }
 
   console.log("🔐 Dados cifrados em repouso:", {
     cpfsDeUsuarios: users.length,
     cpfsDePedidos: orders.length,
-    segredos2fa: twoFactor.length,
   });
 }
 

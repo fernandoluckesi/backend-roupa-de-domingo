@@ -234,7 +234,7 @@ export class MercadoPagoService {
       items.push({
         id: "SHIPPING",
         title: `Frete — ${input.shippingLabel}`,
-        description: "Entrega via parceiro de estamparia",
+        description: "Entrega pelos Correios",
         category_id: "services",
         quantity: 1,
         currency_id: "BRL",

@@ -18,16 +18,13 @@ export const DATA_SHARING = [
     data: ["nome", "e-mail", "CPF", "valor e itens do pedido"],
   },
   {
-    recipient: "Printful Inc.",
-    country: "Estados Unidos (transferência internacional, LGPD art. 33)",
-    purpose: "Produzir e entregar os produtos",
+    recipient: "Empresa Brasileira de Correios e Telégrafos (Correios)",
+    country: "Brasil",
+    purpose: "Entregar os produtos",
     data: [
       "nome do destinatário",
       "endereço de entrega",
-      "telefone",
-      "e-mail",
-      "CPF (exigido para envio ao Brasil)",
-      "itens do pedido",
+      "conteúdo e valor declarado do pacote",
     ],
   },
   {
@@ -85,7 +82,6 @@ export class UsersService {
         privacyVersion: true,
         marketingOptIn: true,
         marketingConsentAt: true,
-        twoFactorEnabled: true,
         addresses: true,
         orders: {
           orderBy: { createdAt: "desc" },
@@ -94,7 +90,7 @@ export class UsersService {
             payment: {
               select: { status: true, method: true, installments: true, amountCents: true, paidAt: true, provider: true },
             },
-            fulfillment: { select: { status: true, trackingCode: true, trackingUrl: true, sentAt: true } },
+            fulfillment: { select: { status: true, trackingCode: true, trackingUrl: true, serviceCode: true, shippedAt: true, deliveredAt: true } },
             invoice: { select: { number: true, series: true, accessKey: true, issuedAt: true, status: true } },
             returns: true,
           },
@@ -196,8 +192,6 @@ export class UsersService {
           passwordHash: unusablePassword,
           marketingOptIn: false,
           marketingConsentAt: null,
-          twoFactorEnabled: false,
-          twoFactorSecret: null,
           tokenVersion: { increment: 1 },
           deletedAt: new Date(),
         },

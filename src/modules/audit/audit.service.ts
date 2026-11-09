@@ -83,7 +83,7 @@ export class AuditService implements OnModuleInit, OnModuleDestroy {
     if (!req) return { type: AuditActorType.SYSTEM };
     const user = req.user;
     if (!user) {
-      // Sem login numa rota de webhook = chamada de parceiro (pagamento, estamparia)
+      // Sem login numa rota de webhook = chamada de parceiro (ex.: Mercado Pago)
       const path = String(req.originalUrl ?? req.url ?? "").split("?")[0];
       return /\/webhooks?(\/|$)/.test(path) ? { type: AuditActorType.PROVIDER } : { type: AuditActorType.ANONYMOUS };
     }

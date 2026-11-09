@@ -124,10 +124,15 @@ export class LoginDto {
   @MaxLength(72)
   password: string;
 
-  @ApiPropertyOptional({ description: "Codigo TOTP de 6 digitos (contas com 2FA ativo)" })
+  @ApiPropertyOptional({ description: "Codigo de 6 digitos enviado por e-mail (segunda etapa do login de admin)" })
   @IsOptional()
   @Matches(/^\d{6}$/, { message: "O código de verificação tem 6 dígitos." })
-  otp?: string;
+  code?: string;
+
+  @ApiPropertyOptional({ description: "Pede um novo codigo de login mesmo que o anterior ainda valha" })
+  @IsOptional()
+  @IsBoolean()
+  resendCode?: boolean;
 
   @ApiPropertyOptional({
     description: "Id da sessao anonima para merge do carrinho",
@@ -235,10 +240,4 @@ export class EmailChangeDto {
   @ApiProperty({ example: "123456", description: "Codigo enviado ao e-mail novo em POST /auth/email/change/code" })
   @Matches(CODE_PATTERN, { message: CODE_MESSAGE })
   code: string;
-}
-
-export class OtpDto {
-  @ApiProperty({ example: "123456" })
-  @Matches(/^\d{6}$/, { message: "O código de verificação tem 6 dígitos." })
-  otp: string;
 }

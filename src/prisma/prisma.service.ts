@@ -8,7 +8,7 @@ import { PrismaClient } from "@prisma/client";
 import { decrypt, encrypt, isEncrypted } from "../common/utils/crypto.util";
 
 /** Campos cifrados em repouso (AES-256-GCM). Ver common/utils/crypto.util.ts */
-export const ENCRYPTED_FIELDS = new Set(["document", "customerDocument", "twoFactorSecret"]);
+export const ENCRYPTED_FIELDS = new Set(["document", "customerDocument"]);
 
 const WRITE_ACTIONS = new Set(["create", "createMany", "update", "updateMany", "upsert"]);
 

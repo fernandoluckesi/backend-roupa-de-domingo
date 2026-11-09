@@ -36,7 +36,9 @@ const ORDER_INCLUDE = {
       status: true,
       trackingCode: true,
       trackingUrl: true,
-      sentAt: true,
+      shippedAt: true,
+      deliveredAt: true,
+      serviceCode: true,
     },
   },
   coupon: { select: { code: true, description: true } },
@@ -116,7 +118,7 @@ export class OrdersService {
     }
 
     const { totals, items } = cartSnapshot;
-    // Mesma cotacao usada nos totais do carrinho (evita uma segunda chamada a Printful)
+    // Mesma cotacao usada nos totais do carrinho
     const shippingOption = cartSnapshot.shipping.selected;
     if (!shippingOption) {
       throw new BadRequestException("Nao foi possivel cotar o frete para esse CEP.");
@@ -311,7 +313,7 @@ export class OrdersService {
         data: { reason: "not_pending", status: order.status },
       });
       throw new BadRequestException(
-        "Só é possível cancelar pedidos que ainda não foram pagos. Depois disso, a estampa já está rodando.",
+        "Só é possível cancelar pedidos que ainda não foram pagos. Depois disso, ele já entrou na fila de produção.",
       );
     }
 
@@ -374,7 +376,7 @@ export class OrdersService {
     const statusLabels: Record<string, string> = {
       PENDING: "Aguardando pagamento",
       PAID: "Pagamento aprovado",
-      IN_PRODUCTION: "Em produção na estamparia",
+      IN_PRODUCTION: "Em produção",
       SHIPPED: "Enviado",
       DELIVERED: "Entregue",
       CANCELLED: "Cancelado",

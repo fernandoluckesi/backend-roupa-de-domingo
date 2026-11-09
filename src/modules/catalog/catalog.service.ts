@@ -22,7 +22,7 @@ const PRODUCT_LIST_SELECT = {
     take: 2,
     select: { url: true, alt: true, color: true },
   },
-  // Só variantes à venda: as desativadas pelo catalog:sync (ex.: cor que saiu da Printful) não aparecem
+  // Só variantes à venda: as desativadas pelo catalog:sync (ex.: cor que saiu de linha) não aparecem
   variants: {
     where: { isAvailable: true },
     select: {
@@ -217,7 +217,6 @@ export class CatalogService {
         tags: dto.tags ?? [],
         isFeatured: dto.isFeatured ?? false,
         isSecret: dto.isSecret ?? false,
-        printProviderSku: dto.printProviderSku,
         variants: { create: dto.variants },
         images: {
           create: (dto.images ?? []).map((image, i) => ({

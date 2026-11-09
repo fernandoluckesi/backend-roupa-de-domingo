@@ -90,9 +90,14 @@ export class MailService {
     to: string,
     name: string,
     code: string,
-    purpose: "register" | "email-change" | "password-change" | "password-reset",
+    purpose: "register" | "email-change" | "password-change" | "password-reset" | "login",
   ) {
     const copy = {
+      login: {
+        subject: `${code} é o seu código de acesso ao backoffice`,
+        intro: "Use o código abaixo para entrar no backoffice da Roupa de Domingo:",
+        ignore: `Se não foi você, alguém sabe a sua senha: troque agora em ${this.frontendUrl}/esqueci-a-senha.`,
+      },
       register: {
         subject: `${code} é o seu código de confirmação`,
         intro: "Use o código abaixo para confirmar o seu cadastro na Roupa de Domingo:",
@@ -220,6 +225,25 @@ export class MailService {
         "",
         `O pagamento do pedido ${orderNumber} foi aprovado. Agora ele vai para a produção.`,
         `Acompanhe: ${this.frontendUrl}/conta/pedidos/${orderNumber}`,
+        this.footer(),
+      ].join("\n"),
+    });
+  }
+
+  sendOrderShipped(to: string, name: string, data: { orderNumber: string; trackingCode: string; trackingUrl: string; serviceCode: string | null; estimatedDays: number }) {
+    return this.send({
+      to,
+      subject: `Pedido ${data.orderNumber} postado nos Correios`,
+      text: [
+        `Oi, ${name}.`,
+        "",
+        `O pedido ${data.orderNumber} foi postado nos Correios${data.serviceCode ? ` (${data.serviceCode})` : ""}. Agora é com o carteiro.`,
+        "",
+        `Código de rastreio: ${data.trackingCode}`,
+        `Rastreie: ${data.trackingUrl}`,
+        `Prazo estimado de transporte: até ${data.estimatedDays} dias.`,
+        "",
+        `Acompanhe o pedido: ${this.frontendUrl}/conta/pedidos/${data.orderNumber}`,
         this.footer(),
       ].join("\n"),
     });

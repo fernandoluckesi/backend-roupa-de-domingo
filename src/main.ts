@@ -73,7 +73,6 @@ async function bootstrap(): Promise<void> {
       "Content-Type",
       "Authorization",
       "x-session-id",
-      "x-print-signature",
       "x-requested-with",
     ],
     exposedHeaders: ["X-Powered-By-Domingo", "X-Easter-Eggs-Total"],
@@ -96,7 +95,7 @@ async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle("Roupa de Domingo API")
     .setDescription(
-      "API da loja de camisetas, canecas e capas com humor acido e dropshipping de estamparia. " +
+      "API da loja de camisetas, canecas e capas com humor acido, producao propria e envio pelos Correios. " +
         "Sim, existem easter eggs aqui tambem. Nao, nao vamos dizer onde.",
     )
     .setVersion("1.0.0")
@@ -126,7 +125,9 @@ async function bootstrap(): Promise<void> {
   logger.log(`API em http://localhost:${port}/${apiPrefix}`);
   logger.log(swaggerEnabled ? `Docs em http://localhost:${port}/${apiPrefix}/docs` : "Swagger desativado (producao)");
   logger.log(`Driver de pagamento: ${config.get("payment.driver")}`);
-  logger.log(`Provider de estamparia: ${config.get("print.provider")}`);
+  if (!config.get<string>("sender.zipCode")) {
+    logger.warn("Endereco do remetente (SENDER_*) nao configurado: as etiquetas saem sem remetente.");
+  }
 }
 
 void bootstrap();

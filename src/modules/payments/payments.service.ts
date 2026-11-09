@@ -371,9 +371,9 @@ export class PaymentsService {
       await this.invoices.issueForOrder(order.id).catch((error) => {
         this.logger.error(`Emissao de nota falhou: ${(error as Error).message}`);
       });
-      // Falha na estamparia nao deve derrubar a confirmacao do pagamento
-      await this.fulfillment.dispatchOrder(order.id).catch((error) => {
-        this.logger.error(`dispatchOrder falhou: ${(error as Error).message}`);
+      // Entra na fila de producao do backoffice; falha aqui nao derruba a confirmacao do pagamento
+      await this.fulfillment.enqueue(order.id).catch((error) => {
+        this.logger.error(`Fila de producao falhou para ${order.number}: ${(error as Error).message}`);
       });
     }
   }

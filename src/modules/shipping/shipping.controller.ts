@@ -43,7 +43,7 @@ class QuoteShippingDto {
 
   @ApiPropertyOptional({
     description:
-      "Variante do produto (pagina de produto). Com ela, peso, subtotal e cotacao real da Printful vem do catalogo",
+      "Variante do produto (pagina de produto). Com ela, peso e subtotal vem do catalogo",
   })
   @IsOptional()
   @IsUUID()
@@ -68,23 +68,21 @@ export class ShippingController {
   @Post("quote")
   @ApiOperation({
     summary:
-      "Cota frete por CEP. Com variantId usa o catalogo (e a Printful, se a variante existir la)",
+      "Cota frete por CEP (Correios, tabela por regiao). Com variantId usa peso e preco do catalogo",
   })
   async quote(@Body() dto: QuoteShippingDto) {
     let weightGrams = dto.weightGrams ?? 300;
     let subtotalCents = dto.subtotalCents ?? 0;
-    let items: { providerVariantId: string | null; quantity: number }[] = [];
 
     if (dto.variantId) {
       const variant = await this.prisma.productVariant.findUnique({
         where: { id: dto.variantId },
-        select: { priceCents: true, weightGrams: true, printProviderVariantId: true },
+        select: { priceCents: true, weightGrams: true },
       });
       if (!variant) throw new NotFoundException("Variante nao encontrada.");
       const quantity = dto.quantity ?? 1;
       weightGrams = variant.weightGrams * quantity;
       subtotalCents = variant.priceCents * quantity;
-      items = [{ providerVariantId: variant.printProviderVariantId, quantity }];
     }
 
     return {
@@ -94,7 +92,6 @@ export class ShippingController {
         dto.zipCode,
         weightGrams,
         subtotalCents,
-        items,
       ),
     };
   }

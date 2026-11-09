@@ -3,7 +3,7 @@ import { Logger } from "@nestjs/common";
 
 /**
  * Criptografia em repouso (AES-256-GCM) para dados pessoais de alto risco:
- * CPF (User.document, Order.customerDocument) e segredo do 2FA.
+ * CPF (User.document, Order.customerDocument).
  *
  * Formato gravado: "enc:v1:<iv b64>:<tag b64>:<cifrado b64>". Valores sem o
  * prefixo sao legado em texto puro: continuam legiveis e sao cifrados pelo

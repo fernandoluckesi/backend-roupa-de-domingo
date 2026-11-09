@@ -20,7 +20,6 @@ import {
   EmailChangeDto,
   EmailDto,
   LoginDto,
-  OtpDto,
   PasswordCodeDto,
   RegisterDto,
   ResetPasswordDto,
@@ -29,7 +28,7 @@ import {
 import { JwtAuthGuard, OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
 import { AuditCategory } from "@prisma/client";
 import { AuditService } from "../audit/audit.service";
-import { CurrentUser } from "../../common/decorators/current-user.decorator";
+import { AuthUser, CurrentUser } from "../../common/decorators/current-user.decorator";
 
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
 
@@ -115,8 +114,10 @@ export class AuthController {
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: "Dados do usuario autenticado" })
-  me(@CurrentUser("id") userId: string) {
-    return this.auth.me(userId);
+  async me(@CurrentUser() user: AuthUser) {
+    // Com o codigo desligado (dev), toda sessao vale para a area de admin
+    const required = this.config.get<boolean>("security.adminLoginCodeRequired", true);
+    return { ...(await this.auth.me(user.id)), loginCodeVerified: !required || Boolean(user.loginCodeVerified) };
   }
 
   @Post("password/code")
@@ -199,34 +200,5 @@ export class AuthController {
   @ApiOperation({ summary: "Redefine a senha com e-mail + codigo (ou token dos links antigos)" })
   resetPassword(@Body() dto: ResetPasswordDto) {
     return this.auth.resetPassword(dto);
-  }
-
-  @Post("2fa/setup")
-  @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Gera o segredo TOTP (mostre o otpauthUrl como QR code)" })
-  setupTwoFactor(@CurrentUser("id") userId: string) {
-    return this.auth.setupTwoFactor(userId);
-  }
-
-  @Post("2fa/enable")
-  @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Ativa o 2FA confirmando um codigo" })
-  enableTwoFactor(@CurrentUser("id") userId: string, @Body() dto: OtpDto) {
-    return this.auth.enableTwoFactor(userId, dto.otp);
-  }
-
-  @Post("2fa/disable")
-  @HttpCode(200)
-  @UseGuards(JwtAuthGuard)
-  @Throttle({ default: { limit: 5, ttl: 60_000 } })
-  @ApiBearerAuth()
-  @ApiOperation({ summary: "Desativa o 2FA (exige um codigo valido)" })
-  disableTwoFactor(@CurrentUser("id") userId: string, @Body() dto: OtpDto) {
-    return this.auth.disableTwoFactor(userId, dto.otp);
   }
 }

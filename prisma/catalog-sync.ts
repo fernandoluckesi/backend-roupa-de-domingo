@@ -54,7 +54,6 @@ async function main() {
         ...data,
         rating: p.rating,
         ratingCount: p.ratingCount,
-        printProviderSku: `RD-${p.slug.toUpperCase().slice(0, 18)}`,
       },
       update: data,
     });
@@ -77,7 +76,6 @@ async function main() {
         model: v.model ?? null,
         priceCents: v.priceCents,
         weightGrams: v.weightGrams,
-        printProviderVariantId: v.printProviderVariantId ?? null,
         isAvailable: true,
       };
       await prisma.productVariant.upsert({
