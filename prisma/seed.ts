@@ -244,6 +244,7 @@ async function main() {
         shortDescription: p.shortDescription,
         description: p.description,
         humor: p.humor,
+        gender: p.gender,
         basePriceCents: p.basePriceCents,
         categoryId: categoryMap.get(p.category)!,
         tags: p.tags,

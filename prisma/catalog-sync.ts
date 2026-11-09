@@ -40,6 +40,7 @@ async function main() {
       shortDescription: p.shortDescription,
       description: p.description,
       humor: p.humor,
+      gender: p.gender,
       basePriceCents: p.basePriceCents,
       categoryId: categoryIds.get(p.category)!,
       tags: p.tags,
@@ -93,6 +94,18 @@ async function main() {
     variantsDisabled += disabled.count;
   }
 
+  // Produto que saiu de prisma/catalog.ts (ex.: capas de celular) e desativado em
+  // vez de apagado: order_items referencia as variantes de pedidos antigos.
+  const catalogSlugs = PRODUCTS.map((p) => p.slug);
+  const retiredProducts = await prisma.product.updateMany({
+    where: { slug: { notIn: catalogSlugs }, isActive: true },
+    data: { isActive: false },
+  });
+  await prisma.productVariant.updateMany({
+    where: { product: { slug: { notIn: catalogSlugs } }, isAvailable: true },
+    data: { isAvailable: false },
+  });
+
   // Easter eggs aposentados: somem da contagem sem apagar descobertas antigas
   const retiredEggs = await prisma.easterEgg.updateMany({
     where: { code: { in: ["CONSOLE_CURIOSO"] }, isActive: true },
@@ -108,6 +121,7 @@ async function main() {
   console.log("🔄 Catalogo sincronizado:", {
     categorias: CATEGORIES.length,
     produtos: PRODUCTS.length,
+    produtosDescontinuados: retiredProducts.count,
     variantes: variantsUpserted,
     variantesDesativadas: variantsDisabled,
     itensDeCarrinhoRemovidos: staleCartItems.count,

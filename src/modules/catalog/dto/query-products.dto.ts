@@ -1,5 +1,5 @@
 import { ApiPropertyOptional } from "@nestjs/swagger";
-import { Humor } from "@prisma/client";
+import { Gender, Humor } from "@prisma/client";
 import { Transform } from "class-transformer";
 import {
   IsArray,
@@ -33,6 +33,18 @@ export class QueryProductsDto {
   @IsArray()
   @IsEnum(Humor, { each: true })
   humor?: Humor[];
+
+  @ApiPropertyOptional({
+    description:
+      "Publico-alvo separado por virgula. MASCULINO e FEMININO incluem as pecas UNISSEX automaticamente.",
+    enum: Gender,
+    isArray: true,
+  })
+  @IsOptional()
+  @Transform(toList)
+  @IsArray()
+  @IsEnum(Gender, { each: true })
+  gender?: Gender[];
 
   @ApiPropertyOptional({ description: "Busca em nome, descricao e tags" })
   @IsOptional()

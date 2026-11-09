@@ -69,6 +69,12 @@ export class CatalogController {
     return this.catalog.listHumors();
   }
 
+  @Get("genders")
+  @ApiOperation({ summary: "Lista os publicos-alvo usados como filtro" })
+  genders() {
+    return this.catalog.listGenders();
+  }
+
   // ------------------------------------------------------------ admin
 
   @Post("admin/products")

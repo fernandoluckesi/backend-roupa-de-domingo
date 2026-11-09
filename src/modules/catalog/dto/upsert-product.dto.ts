@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from "@nestjs/swagger";
-import { Humor } from "@prisma/client";
+import { Gender, Humor } from "@prisma/client";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -80,6 +80,15 @@ export class CreateProductDto {
   @ApiProperty({ enum: Humor })
   @IsEnum(Humor)
   humor: Humor;
+
+  @ApiPropertyOptional({
+    enum: Gender,
+    default: Gender.UNISSEX,
+    description: "Publico-alvo. UNISSEX aparece em todos os filtros de genero.",
+  })
+  @IsOptional()
+  @IsEnum(Gender)
+  gender?: Gender;
 
   @ApiProperty({ description: "Preco base em centavos" })
   @IsInt()

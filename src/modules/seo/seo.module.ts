@@ -11,8 +11,8 @@ const jsonForScript = (value: unknown) => JSON.stringify(value).replace(/</g, "\
 
 /** Rotas publicas estaticas que entram no sitemap. */
 const STATIC_PAGES: { path: string; changefreq: string; priority: string; title: string; description: string }[] = [
-  { path: "/", changefreq: "daily", priority: "1.0", title: "Roupa de Domingo — estampas com humor ácido", description: "Camisetas, moletons, canecas, capas de celular e garrafas com estampas de humor ácido. Produção sob demanda e entrega para todo o Brasil." },
-  { path: "/catalogo", changefreq: "daily", priority: "0.9", title: "Catálogo completo | Roupa de Domingo", description: "Todas as estampas de humor ácido em camisetas, moletons, canecas, capas e garrafas." },
+  { path: "/", changefreq: "daily", priority: "1.0", title: "Roupa de Domingo — estampas com humor ácido", description: "Camisetas, moletons, canecas e garrafas com estampas de humor ácido. Produção sob demanda e entrega para todo o Brasil." },
+  { path: "/catalogo", changefreq: "daily", priority: "0.9", title: "Catálogo completo | Roupa de Domingo", description: "Todas as estampas de humor ácido em camisetas, moletons, canecas e garrafas." },
   { path: "/guia-de-tamanhos", changefreq: "monthly", priority: "0.6", title: "Guia de tamanhos | Roupa de Domingo", description: "Tabela de medidas, composição do tecido e cuidados de lavagem de cada peça." },
   { path: "/entrega", changefreq: "monthly", priority: "0.5", title: "Entrega e prazos | Roupa de Domingo", description: "Como funcionam a produção sob demanda, o frete e o rastreio dos pedidos." },
   { path: "/pagamentos", changefreq: "monthly", priority: "0.4", title: "Pagamentos | Roupa de Domingo", description: "Meios de pagamento, parcelamento, segurança e reembolso." },

@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from "@nestjs/common";
-import { Prisma } from "@prisma/client";
+import { Gender, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { QueryProductsDto } from "./dto/query-products.dto";
 import { CreateProductDto, UpdateProductDto } from "./dto/upsert-product.dto";
@@ -10,6 +10,7 @@ const PRODUCT_LIST_SELECT = {
   name: true,
   shortDescription: true,
   humor: true,
+  gender: true,
   basePriceCents: true,
   tags: true,
   isFeatured: true,
@@ -63,6 +64,17 @@ export class CatalogService {
       ...(canSeeSecret ? {} : { isSecret: false }),
       ...(query.category?.length ? { category: { slug: { in: query.category } } } : {}),
       ...(query.humor?.length ? { humor: { in: query.humor } } : {}),
+      // Masculino e feminino somam as pecas unissex: caneca, garrafa e modelagem
+      // sem corte especifico servem para qualquer pessoa. Sem filtro = tudo.
+      ...(query.gender?.length
+        ? {
+            gender: {
+              in: query.gender.includes(Gender.UNISSEX)
+                ? query.gender
+                : [...query.gender, Gender.UNISSEX],
+            },
+          }
+        : {}),
       ...(query.tags?.length ? { tags: { hasSome: query.tags } } : {}),
       ...(query.minPrice || query.maxPrice
         ? {
@@ -158,7 +170,13 @@ export class CatalogService {
 
   listCategories() {
     return this.prisma.category.findMany({
-      where: { slug: { not: "secretos" } },
+      // Categoria descontinuada (ex.: capas de celular) permanece no banco por
+      // causa da FK dos produtos desativados, mas sai do site quando nao tem
+      // mais nenhum produto a venda.
+      where: {
+        slug: { not: "secretos" },
+        products: { some: { isActive: true, isSecret: false } },
+      },
       orderBy: { position: "asc" },
       include: {
         _count: {
@@ -182,19 +200,43 @@ export class CatalogService {
         description: "Dói porque é verdade.",
       },
       {
-        value: "ABSURDO",
-        label: "Absurdo",
-        description: "Nenhum sentido, muito charme.",
-      },
-      {
-        value: "PASSIVO_AGRESSIVO",
-        label: "Passivo-agressivo",
-        description: "Diz sem dizer.",
-      },
-      {
         value: "MEMES",
         label: "Memes",
         description: "Internet em forma de estampa.",
+      },
+      {
+        value: "PARA_CASAIS",
+        label: "Para casais",
+        description: "A dois, com indireta inclusa.",
+      },
+      {
+        value: "POLITICO",
+        label: "Político",
+        description: "Opinião vestível. Discuta no almoço.",
+      },
+    ];
+  }
+
+  /**
+   * Opcoes do filtro de genero. UNISSEX e o "qualquer": nao restringe nada.
+   * Escolher MASCULINO ou FEMININO soma as pecas unissex (ver findMany).
+   */
+  listGenders() {
+    return [
+      {
+        value: "UNISSEX",
+        label: "Qualquer",
+        description: "Tudo que a loja tem, sem recorte de público.",
+      },
+      {
+        value: "MASCULINO",
+        label: "Masculino",
+        description: "Modelagem masculina e as peças que servem para todos.",
+      },
+      {
+        value: "FEMININO",
+        label: "Feminino",
+        description: "Modelagem feminina e as peças que servem para todos.",
       },
     ];
   }
@@ -212,6 +254,7 @@ export class CatalogService {
         shortDescription: dto.shortDescription,
         description: dto.description,
         humor: dto.humor,
+        gender: dto.gender,
         basePriceCents: dto.basePriceCents,
         categoryId: category.id,
         tags: dto.tags ?? [],

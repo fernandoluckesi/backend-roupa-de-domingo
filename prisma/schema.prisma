@@ -18,9 +18,18 @@ enum Humor {
   ACIDO
   SARCASTICO
   EXISTENCIAL
-  ABSURDO
-  PASSIVO_AGRESSIVO
   MEMES
+  PARA_CASAIS
+  POLITICO
+}
+
+/// Publico-alvo da peca. UNISSEX e o padrao: objetos (canecas, garrafas) e
+/// modelagens sem corte especifico servem para qualquer pessoa, e por isso
+/// aparecem junto de MASCULINO e de FEMININO na filtragem.
+enum Gender {
+  UNISSEX
+  MASCULINO
+  FEMININO
 }
 
 enum CouponType {
@@ -145,6 +154,7 @@ model Product {
   shortDescription String
   description      String
   humor            Humor    @default(ACIDO)
+  gender           Gender   @default(UNISSEX)
   basePriceCents   Int
   categoryId       String
   tags             String[] @default([])
@@ -162,6 +172,7 @@ model Product {
 
   @@index([categoryId])
   @@index([humor])
+  @@index([gender])
   @@map("products")
 }
 

@@ -3,7 +3,7 @@
  * Producao e envio sao da propria loja: o SKU identifica a peca na lista de producao do backoffice.
  * Imagens: mockups servidos pelo frontend em /products (artes de impressao em /designs).
  */
-import { Humor } from "@prisma/client";
+import { Gender, Humor } from "@prisma/client";
 
 export type VariantSeed = {
   sku: string;
@@ -29,6 +29,8 @@ export type ProductSeed = {
   shortDescription: string;
   description: string;
   humor: Humor;
+  /** Publico-alvo. UNISSEX aparece junto de MASCULINO e de FEMININO na busca. */
+  gender: Gender;
   basePriceCents: number;
   category: string;
   tags: string[];
@@ -70,13 +72,6 @@ export const CATEGORIES = [
     position: 2,
   },
   {
-    slug: "capas-de-celular",
-    name: "Capas de Celular",
-    emoji: "📱",
-    description: "Protege o aparelho. Não protege suas decisões.",
-    position: 3,
-  },
-  {
     slug: "moletons",
     name: "Moletons",
     emoji: "🧥",
@@ -107,6 +102,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTG na frente. Ideal para quem quer parecer simpático sem se comprometer. Lavar do lado avesso, como suas intenções.",
     humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "sarcasmo", "presente", "best-seller"],
@@ -139,6 +135,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       'Para aquele dia em que você responde "tudo ótimo" três vezes antes das 9h. Modelagem reta, gola reforçada, autoestima opcional.',
     humor: Humor.EXISTENCIAL,
+    gender: Gender.FEMININO,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "existencial", "terapia", "segunda-feira"],
@@ -171,6 +168,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "A camiseta que seu RH precisava ler antes da contratação. Tecido respirável para reuniões que poderiam ser um e-mail.",
     humor: Humor.SARCASTICO,
+    gender: Gender.MASCULINO,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "trabalho", "corporativo", "home-office"],
@@ -203,6 +201,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Camiseta branca 100% algodão fio penteado, impressão DTG na frente. Estampada por nós depois da compra e enviada pelos Correios.",
     humor: Humor.EXISTENCIAL,
+    gender: Gender.UNISSEX,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "colecao-assinatura", "domingo", "producao-real"],
@@ -219,6 +218,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Nossa peça manifesto. Homenageia aquele vazio específico entre o almoço de família e a segunda-feira. Algodão macio, melancolia inclusa.",
     humor: Humor.EXISTENCIAL,
+    gender: Gender.UNISSEX,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "manifesto", "domingo", "colecao-assinatura"],
@@ -250,7 +250,8 @@ export const PRODUCTS: ProductSeed[] = [
     shortDescription: "Passivo-agressivo em 4 palavras e um parêntese.",
     description:
       "Para quem resolve conflito guardando mágoa com juros compostos. Estampa resistente a 50 lavagens e a pedidos de desculpas.",
-    humor: Humor.PASSIVO_AGRESSIVO,
+    humor: Humor.PARA_CASAIS,
+    gender: Gender.UNISSEX,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "passivo-agressivo", "relacionamento"],
@@ -276,12 +277,73 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
+    slug: "camiseta-combinamos-de-nao-brigar",
+    name: "Combinamos de não brigar em público",
+    shortDescription: "Spoiler: a camiseta está falando mais alto.",
+    description:
+      "Camiseta 100% algodão fio penteado para o casal que resolve tudo com olhar. Funciona melhor em par, mas serve sozinha para quem quer avisar com antecedência.",
+    humor: Humor.PARA_CASAIS,
+    gender: Gender.UNISSEX,
+    basePriceCents: 8990,
+    category: "camisetas",
+    tags: ["camiseta", "casal", "para-casais", "presente"],
+    rating: 4.7,
+    ratingCount: 128,
+    images: [
+      { url: "/products/camiseta-nao-foi-nada-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-nao-foi-nada-3.jpg", color: "Branca" },
+    ],
+    variants: [
+      { sku: "CAM-COMBI-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-COMBI-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
+    ],
+  },
+  {
+    slug: "camiseta-voto-e-secreto-opiniao-nao",
+    name: "Meu voto é secreto, minha opinião não",
+    shortDescription: "Para o almoço de domingo que vira debate.",
+    description:
+      "Camiseta 100% algodão fio penteado. Não diz em quem você votou, só avisa que você vai falar sobre isso de qualquer forma. Ideal para reuniões de família com sobremesa tensa.",
+    humor: Humor.POLITICO,
+    gender: Gender.UNISSEX,
+    basePriceCents: 8990,
+    category: "camisetas",
+    tags: ["camiseta", "politico", "opiniao", "familia"],
+    rating: 4.5,
+    ratingCount: 186,
+    images: [
+      { url: "/products/camiseta-sorria-e-de-graca-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-sorria-e-de-graca-3.jpg", color: "Branca" },
+    ],
+    variants: [
+      { sku: "CAM-VOTO-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
+      { sku: "CAM-VOTO-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
+    ],
+  },
+  {
     slug: "caneca-primeiro-cafe",
     name: "Antes do café eu não assino contrato",
     shortDescription: "Aviso legal em cerâmica.",
     description:
       "Caneca de cerâmica branca com impressão sublimática. Suporta micro-ondas, lava-louças e sua personalidade matinal.",
     humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "cafe", "escritorio", "best-seller"],
@@ -298,12 +360,34 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
+    slug: "caneca-grupo-da-familia-no-zap",
+    name: "Li tudo no grupo da família e não respondi",
+    shortDescription: "Cerâmica neutra para opinião que não é.",
+    description:
+      "Caneca de cerâmica branca com impressão sublimática. Aguenta micro-ondas, lava-louças e aquele áudio de cinco minutos sobre política às sete da manhã.",
+    humor: Humor.POLITICO,
+    gender: Gender.UNISSEX,
+    basePriceCents: 6990,
+    category: "canecas",
+    tags: ["caneca", "politico", "familia", "whatsapp"],
+    rating: 4.6,
+    ratingCount: 203,
+    images: [
+      { url: "/products/caneca-reuniao-email-1.jpg", color: "Branca" },
+      { url: "/products/caneca-reuniao-email-2.jpg", color: "Branca" },
+    ],
+    variants: [
+      { sku: "CAN-GRUPO-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
+    ],
+  },
+  {
     slug: "caneca-reuniao-email",
     name: "Isso podia ser um e-mail",
     shortDescription: "Diga sem dizer, em toda call com câmera aberta.",
     description:
       "A caneca mais produtiva do mercado: economiza em média 4 reuniões por semana. Resultado não garantido, mas a intenção é clara.",
     humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "trabalho", "reuniao", "home-office"],
@@ -325,7 +409,8 @@ export const PRODUCTS: ProductSeed[] = [
     shortDescription: "O presente de amigo oculto que cria histórico.",
     description:
       "Perfeita para aquele gestor que confunde liderança com reunião às 18h de sexta. Vem em embalagem neutra para negação plausível.",
-    humor: Humor.PASSIVO_AGRESSIVO,
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "presente", "amigo-oculto", "trabalho"],
@@ -346,7 +431,8 @@ export const PRODUCTS: ProductSeed[] = [
     shortDescription: "Capacidade: 325ml de rancor bem quente.",
     description:
       "Clássico do gênero, revisado. Mantém a bebida na temperatura exata do seu ressentimento por cerca de 20 minutos.",
-    humor: Humor.ABSURDO,
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "absurdo", "classico"],
@@ -362,150 +448,13 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
-    slug: "capa-visto-e-nao-respondido",
-    name: "Visto e não respondido",
-    shortDescription: "Sua política de comunicação, agora em policarbonato.",
-    description:
-      "Capa rígida com borda emborrachada e impressão UV. Protege contra quedas de até 1,5m e contra expectativas alheias.",
-    humor: Humor.PASSIVO_AGRESSIVO,
-    basePriceCents: 9990,
-    category: "capas-de-celular",
-    tags: ["capa", "celular", "passivo-agressivo", "best-seller"],
-    isFeatured: true,
-    rating: 4.8,
-    ratingCount: 389,
-    images: [
-      "/products/capa-visto-e-nao-respondido-1.jpg",
-      "/products/capa-visto-e-nao-respondido-2.jpg",
-    ],
-    variants: [
-      { sku: "CAP-VISTO-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP15PRO", model: "iPhone 15 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP15", model: "iPhone 15", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP16PROMAX", model: "iPhone 16 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP16PRO", model: "iPhone 16 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP16", model: "iPhone 16", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP17PROMAX", model: "iPhone 17 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP17PRO", model: "iPhone 17 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-IP17", model: "iPhone 17", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-GALAXYS25ULTRA", model: "Galaxy S25 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-GALAXYS25", model: "Galaxy S25", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-GALAXYS23", model: "Galaxy S23", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-GALAXYS24ULTRA", model: "Galaxy S24 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-VISTO-GALAXYS24", model: "Galaxy S24", priceCents: 9990, weightGrams: 60 },
-    ],
-  },
-  {
-    slug: "capa-bateria-social-2",
-    name: "Bateria social: 2%",
-    shortDescription: "Ninguém precisa perguntar se você quer sair.",
-    description:
-      'Capa com acabamento fosco antidigital. Comunica seu limite social antes de qualquer convite para "um rolê rápido".',
-    humor: Humor.EXISTENCIAL,
-    basePriceCents: 9990,
-    category: "capas-de-celular",
-    tags: ["capa", "celular", "introvertido", "existencial"],
-    isFeatured: true,
-    rating: 4.9,
-    ratingCount: 512,
-    images: [
-      "/products/capa-bateria-social-2-1.jpg",
-      "/products/capa-bateria-social-2-2.jpg",
-    ],
-    variants: [
-      { sku: "CAP-BATERIA-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP15PRO", model: "iPhone 15 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP15", model: "iPhone 15", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP16PROMAX", model: "iPhone 16 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP16PRO", model: "iPhone 16 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP16", model: "iPhone 16", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP17PROMAX", model: "iPhone 17 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP17PRO", model: "iPhone 17 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-IP17", model: "iPhone 17", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-GALAXYS25ULTRA", model: "Galaxy S25 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-GALAXYS25", model: "Galaxy S25", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-GALAXYS23", model: "Galaxy S23", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-GALAXYS24ULTRA", model: "Galaxy S24 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-BATERIA-GALAXYS24", model: "Galaxy S24", priceCents: 9990, weightGrams: 60 },
-    ],
-  },
-  {
-    slug: "capa-rolando-por-nada",
-    name: "Rolando a tela por nada específico",
-    shortDescription: "Autoconsciência não cura, mas estampa bem.",
-    description:
-      "Capa flexível TPU com impressão em alta definição. Acompanha a honestidade que seu tempo de tela merece.",
-    humor: Humor.ACIDO,
-    basePriceCents: 9990,
-    category: "capas-de-celular",
-    tags: ["capa", "celular", "internet", "acido"],
-    rating: 4.6,
-    ratingCount: 143,
-    images: [
-      "/products/capa-rolando-por-nada-1.jpg",
-      "/products/capa-rolando-por-nada-2.jpg",
-    ],
-    variants: [
-      { sku: "CAP-ROLANDO-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP15PRO", model: "iPhone 15 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP15", model: "iPhone 15", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP16PROMAX", model: "iPhone 16 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP16PRO", model: "iPhone 16 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP16", model: "iPhone 16", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP17PROMAX", model: "iPhone 17 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP17PRO", model: "iPhone 17 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-IP17", model: "iPhone 17", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-GALAXYS25ULTRA", model: "Galaxy S25 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-GALAXYS25", model: "Galaxy S25", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-GALAXYS23", model: "Galaxy S23", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-GALAXYS24ULTRA", model: "Galaxy S24 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-ROLANDO-GALAXYS24", model: "Galaxy S24", priceCents: 9990, weightGrams: 60 },
-    ],
-  },
-  {
-    slug: "capa-ja-vou-sair-de-casa",
-    name: '"Já estou saindo" (ainda deitado)',
-    shortDescription: "A mentira mais democrática do Brasil.",
-    description:
-      "Capa resistente com proteção de câmera elevada. Para quem calcula o trajeto, mas não levanta.",
-    humor: Humor.SARCASTICO,
-    basePriceCents: 9990,
-    category: "capas-de-celular",
-    tags: ["capa", "celular", "atraso", "sarcasmo"],
-    rating: 4.7,
-    ratingCount: 208,
-    images: [
-      "/products/capa-ja-vou-sair-de-casa-1.jpg",
-      "/products/capa-ja-vou-sair-de-casa-2.jpg",
-    ],
-    variants: [
-      { sku: "CAP-SAINDO-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP15PRO", model: "iPhone 15 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP15", model: "iPhone 15", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP16PROMAX", model: "iPhone 16 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP16PRO", model: "iPhone 16 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP16", model: "iPhone 16", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP17PROMAX", model: "iPhone 17 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP17PRO", model: "iPhone 17 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-IP17", model: "iPhone 17", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-GALAXYS25ULTRA", model: "Galaxy S25 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-GALAXYS25", model: "Galaxy S25", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-GALAXYS23", model: "Galaxy S23", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-GALAXYS24ULTRA", model: "Galaxy S24 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-SAINDO-GALAXYS24", model: "Galaxy S24", priceCents: 9990, weightGrams: 60 },
-    ],
-  },
-  {
     slug: "camiseta-voce-nao-devia-estar-aqui",
     name: "Você não devia estar aqui",
     shortDescription: "Peça secreta. Encontrada, não comprada.",
     description:
       "Edição limitada que não aparece no catálogo normal. Se você está lendo isto, descobriu easter eggs suficientes para merecer uma camiseta que ninguém vai entender. Exatamente o ponto.",
-    humor: Humor.ABSURDO,
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
     basePriceCents: 11990,
     category: "secretos",
     tags: ["camiseta", "secreto", "easter-egg", "edicao-limitada"],
@@ -539,6 +488,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Recomendado para aniversários, reuniões de condomínio e qualquer convite que comece com 'é rapidinho'.",
     humor: Humor.SARCASTICO,
+    gender: Gender.FEMININO,
     basePriceCents: 21990,
     category: "moletons",
     tags: ["moletom", "introversao", "capuz", "frio"],
@@ -571,6 +521,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Quentinho o bastante para enfrentar a segunda-feira, ou pelo menos para fingir.",
     humor: Humor.EXISTENCIAL,
+    gender: Gender.UNISSEX,
     basePriceCents: 21990,
     category: "moletons",
     tags: ["moletom", "domingo", "segunda-feira", "ansiedade"],
@@ -602,7 +553,8 @@ export const PRODUCTS: ProductSeed[] = [
     shortDescription: "Dois litros por dia e nenhuma melhora.",
     description:
       "Garrafa térmica de aço inox com parede dupla, 500 ml. Mantém a água gelada por horas. A disposição, infelizmente, não acompanha.",
-    humor: Humor.ABSURDO,
+    humor: Humor.EXISTENCIAL,
+    gender: Gender.UNISSEX,
     basePriceCents: 21990,
     category: "garrafas",
     tags: ["garrafa", "agua", "cansaco", "academia"],
@@ -626,7 +578,8 @@ export const PRODUCTS: ProductSeed[] = [
     shortDescription: "Cada gole é uma resposta que você não deu.",
     description:
       "Garrafa térmica de aço inox com parede dupla, 500 ml. Ideal para reuniões: enquanto você bebe, ninguém espera que você fale.",
-    humor: Humor.PASSIVO_AGRESSIVO,
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
     basePriceCents: 21990,
     category: "garrafas",
     tags: ["garrafa", "agua", "trabalho", "reuniao"],
@@ -651,6 +604,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Camiseta 100% algodão com estampa DTG. Para quem responde tudo com uma fileira de K e uma lágrima discreta no canto do olho.",
     humor: Humor.MEMES,
+    gender: Gender.UNISSEX,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "memes", "internet", "risada"],
@@ -683,6 +637,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Camiseta 100% algodão com estampa DTG. Para quem começa a semana já contando os minutos e não vê problema nenhum nisso.",
     humor: Humor.MEMES,
+    gender: Gender.MASCULINO,
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "memes", "sextou", "trabalho"],
@@ -715,6 +670,7 @@ export const PRODUCTS: ProductSeed[] = [
     description:
       "Caneca de cerâmica branca de 325 ml com a frase nos dois lados (destro e canhoto). Vai ao micro-ondas e à lava-louças. A dor continua igual.",
     humor: Humor.MEMES,
+    gender: Gender.UNISSEX,
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "memes", "cafe", "conselho"],
@@ -731,47 +687,13 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
-    slug: "capa-erro-404-vontade",
-    name: "Erro 404: vontade não encontrada",
-    shortDescription: "O servidor da disposição está fora do ar.",
-    description:
-      "Capa transparente resistente com acabamento brilhante. Avisa a todos, antes do convite, que a página da vontade foi removida ou nunca existiu.",
-    humor: Humor.MEMES,
-    basePriceCents: 9990,
-    category: "capas-de-celular",
-    tags: ["capa", "celular", "memes", "preguica"],
-    isFeatured: true,
-    rating: 4.8,
-    ratingCount: 19,
-    images: [
-      "/products/capa-erro-404-vontade-1.jpg",
-      "/products/capa-erro-404-vontade-2.jpg",
-    ],
-    variants: [
-      { sku: "CAP-404-IP13", model: "iPhone 13", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP14", model: "iPhone 14", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP15PRO", model: "iPhone 15 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP15", model: "iPhone 15", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP16PROMAX", model: "iPhone 16 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP16PRO", model: "iPhone 16 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP16", model: "iPhone 16", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP17PROMAX", model: "iPhone 17 Pro Max", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP17PRO", model: "iPhone 17 Pro", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-IP17", model: "iPhone 17", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-GALAXYS25ULTRA", model: "Galaxy S25 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-GALAXYS25", model: "Galaxy S25", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-GALAXYS23", model: "Galaxy S23", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-GALAXYS24ULTRA", model: "Galaxy S24 Ultra", priceCents: 9990, weightGrams: 60 },
-      { sku: "CAP-404-GALAXYS24", model: "Galaxy S24", priceCents: 9990, weightGrams: 60 },
-    ],
-  },
-  {
     slug: "moletom-audio-de-7-minutos",
     name: "Mandei áudio de 7 minutos (ouve no 2x)",
     shortDescription: "Para quem não sabe resumir e tem orgulho disso.",
     description:
       "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Quentinho o bastante para gravar mais um áudio enquanto espera o ônibus.",
     humor: Humor.MEMES,
+    gender: Gender.UNISSEX,
     basePriceCents: 21990,
     category: "moletons",
     tags: ["moletom", "memes", "audio", "whatsapp"],

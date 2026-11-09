@@ -97,7 +97,7 @@ async function bootstrap(): Promise<void> {
   const swaggerConfig = new DocumentBuilder()
     .setTitle("Roupa de Domingo API")
     .setDescription(
-      "API da loja de camisetas, canecas e capas com humor acido, producao propria e envio pelos Correios. " +
+      "API da loja de camisetas, canecas e garrafas com humor acido, producao propria e envio pelos Correios. " +
         "Sim, existem easter eggs aqui tambem. Nao, nao vamos dizer onde.",
     )
     .setVersion("1.0.0")
