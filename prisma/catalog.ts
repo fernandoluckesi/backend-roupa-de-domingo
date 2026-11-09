@@ -56,6 +56,86 @@ function whiteShirtVariants(prefix: string, priceCents: number): VariantSeed[] {
   }));
 }
 
+/** Sigla da cor usada no SKU. */
+const COLOR_CODE: Record<string, string> = {
+  Preta: "PT",
+  Branca: "BR",
+  Marinho: "MA",
+};
+
+/** Camiseta nas cores informadas, em todos os tamanhos. */
+function shirtVariants(
+  prefix: string,
+  priceCents: number,
+  colors: string[] = ["Preta", "Branca"],
+): VariantSeed[] {
+  return colors.flatMap((color) =>
+    SHIRT_SIZES.map((size) => ({
+      sku: `${prefix}-${COLOR_CODE[color]}-${size}`,
+      size,
+      color,
+      priceCents,
+      weightGrams: 250,
+    })),
+  );
+}
+
+/** Moletom canguru nas cores informadas, em todos os tamanhos. */
+function hoodieVariants(
+  prefix: string,
+  priceCents: number,
+  colors: string[] = ["Preta", "Marinho"],
+): VariantSeed[] {
+  return colors.flatMap((color) =>
+    SHIRT_SIZES.map((size) => ({
+      sku: `${prefix}-${COLOR_CODE[color]}-${size}`,
+      size,
+      color,
+      priceCents,
+      weightGrams: 650,
+    })),
+  );
+}
+
+/** Caneca de ceramica 325 ml: tamanho unico. */
+function mugVariants(prefix: string, priceCents: number): VariantSeed[] {
+  return [
+    {
+      sku: `${prefix}-325`,
+      size: "325ml",
+      color: "Branca",
+      priceCents,
+      weightGrams: 450,
+    },
+  ];
+}
+
+/** Garrafa termica 500 ml, uma variante por cor. */
+function bottleVariants(
+  prefix: string,
+  priceCents: number,
+  colors: string[] = ["Preta", "Branca"],
+): VariantSeed[] {
+  return colors.map((color) => ({
+    sku: `${prefix}-${COLOR_CODE[color]}`,
+    size: "500ml",
+    color,
+    priceCents,
+    weightGrams: 400,
+  }));
+}
+
+/**
+ * Preco padrao por categoria, para novas frases entrarem alinhadas com o
+ * catalogo existente em vez de cada bloco repetir o numero.
+ */
+const PRICE = {
+  camisetas: 8990,
+  canecas: 6990,
+  moletons: 21990,
+  garrafas: 21990,
+} as const;
+
 export const CATEGORIES = [
   {
     slug: "camisetas",
@@ -305,6 +385,263 @@ export const PRODUCTS: ProductSeed[] = [
       { sku: "CAM-COMBI-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
       { sku: "CAM-COMBI-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
     ],
+  },
+  {
+    // Vitrine da home: ratingCount alto para entrar no top 8 de findFeatured
+    slug: "camiseta-nao-sou-airton-senna",
+    name: "Gata, não sou Airton Senna mas quero me acabar nas suas curvas",
+    shortDescription: "Cantada de pista molhada, impressa em algodão.",
+    description:
+      "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTG na frente. Para quem acelera na conversa e freia na hora de assumir. Resultado em pista não garantido; vergonha alheia, sim.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.camisetas,
+    category: "camisetas",
+    tags: ["camiseta", "cantada", "paquera", "destaque"],
+    isFeatured: true,
+    rating: 4.7,
+    ratingCount: 268,
+    images: [
+      { url: "/products/camiseta-domingo-eterno-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-domingo-eterno-2.jpg", color: "Preta" },
+      { url: "/products/camiseta-domingo-eterno-3.jpg", color: "Branca" },
+      { url: "/products/camiseta-domingo-eterno-4.jpg", color: "Branca" },
+    ],
+    variants: shirtVariants("CAM-SENNA", PRICE.camisetas),
+  },
+
+  // --- "Tão natural quanto a luz do poste" nas quatro categorias ---
+  {
+    slug: "camiseta-natural-quanto-luz-do-poste",
+    name: "Tão natural quanto a luz do poste",
+    shortDescription: "Espontaneidade de lâmpada de rua: liga no automático.",
+    description:
+      "Camiseta 100% algodão fio penteado com estampa DTG na frente. Para quem é autêntico do mesmo jeito que iluminação pública é aconchegante. Combina com sinceridade não solicitada.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.camisetas,
+    category: "camisetas",
+    tags: ["camiseta", "sarcasmo", "ironia", "unissex"],
+    rating: 4.6,
+    ratingCount: 74,
+    images: [
+      { url: "/products/camiseta-trabalho-em-equipe-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-trabalho-em-equipe-3.jpg", color: "Branca" },
+    ],
+    variants: shirtVariants("CAM-POSTE", PRICE.camisetas),
+  },
+  {
+    slug: "caneca-natural-quanto-luz-do-poste",
+    name: "Tão natural quanto a luz do poste",
+    shortDescription: "Para o café que também finge ser artesanal.",
+    description:
+      "Caneca de cerâmica branca com impressão sublimática, 325 ml. Vai ao micro-ondas e à lava-louças. A naturalidade é discutível; a resistência não.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.canecas,
+    category: "canecas",
+    tags: ["caneca", "sarcasmo", "ironia", "unissex"],
+    rating: 4.6,
+    ratingCount: 58,
+    images: [
+      { url: "/products/caneca-reuniao-email-1.jpg", color: "Branca" },
+      { url: "/products/caneca-reuniao-email-2.jpg", color: "Branca" },
+    ],
+    variants: mugVariants("CAN-POSTE", PRICE.canecas),
+  },
+  {
+    slug: "moletom-natural-quanto-luz-do-poste",
+    name: "Tão natural quanto a luz do poste",
+    shortDescription: "Capuz para a sua espontaneidade de 60 watts.",
+    description:
+      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Esquenta de verdade, ao contrário da sua naturalidade.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.moletons,
+    category: "moletons",
+    tags: ["moletom", "sarcasmo", "ironia", "unissex"],
+    rating: 4.7,
+    ratingCount: 31,
+    images: [
+      { url: "/products/moletom-domingo-18h-1.jpg", color: "Preta" },
+      { url: "/products/moletom-domingo-18h-3.jpg", color: "Marinho" },
+    ],
+    variants: hoodieVariants("MOL-POSTE", PRICE.moletons),
+  },
+  {
+    slug: "garrafa-natural-quanto-luz-do-poste",
+    name: "Tão natural quanto a luz do poste",
+    shortDescription: "Hidratação com a mesma sutileza de um refletor.",
+    description:
+      "Garrafa térmica de aço inox com parede dupla, 500 ml. Mantém a água gelada por horas e a ironia por tempo indeterminado.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.garrafas,
+    category: "garrafas",
+    tags: ["garrafa", "sarcasmo", "ironia", "unissex"],
+    rating: 4.6,
+    ratingCount: 19,
+    images: [
+      { url: "/products/garrafa-hidratado-e-cansado-1.jpg", color: "Preta" },
+      { url: "/products/garrafa-hidratado-e-cansado-3.jpg", color: "Branca" },
+    ],
+    variants: bottleVariants("GAR-POSTE", PRICE.garrafas),
+  },
+
+  // --- "Mais preguiçoso do que o desenhista da bandeira do Japão" ---
+  {
+    slug: "camiseta-desenhista-da-bandeira-do-japao",
+    name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
+    shortDescription: "Um círculo e pronto. Projeto entregue.",
+    description:
+      "Camiseta 100% algodão fio penteado com estampa DTG na frente. Homenagem a quem entende que o mínimo viável já é o suficiente. Lavar do lado avesso, se der vontade.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.camisetas,
+    category: "camisetas",
+    tags: ["camiseta", "preguica", "design", "unissex"],
+    rating: 4.8,
+    ratingCount: 112,
+    images: [
+      { url: "/products/camiseta-kkkkkkkkk-chorei-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-kkkkkkkkk-chorei-3.jpg", color: "Branca" },
+    ],
+    variants: shirtVariants("CAM-JAPAO", PRICE.camisetas),
+  },
+  {
+    slug: "caneca-desenhista-da-bandeira-do-japao",
+    name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
+    shortDescription: "Café redondo, esforço mínimo.",
+    description:
+      "Caneca de cerâmica branca com impressão sublimática, 325 ml. O círculo vermelho combina com a sua produtividade antes das dez da manhã.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.canecas,
+    category: "canecas",
+    tags: ["caneca", "preguica", "design", "unissex"],
+    rating: 4.8,
+    ratingCount: 96,
+    images: [
+      { url: "/products/caneca-primeiro-cafe-1.jpg", color: "Branca" },
+      { url: "/products/caneca-primeiro-cafe-2.jpg", color: "Branca" },
+    ],
+    variants: mugVariants("CAN-JAPAO", PRICE.canecas),
+  },
+  {
+    slug: "moletom-desenhista-da-bandeira-do-japao",
+    name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
+    shortDescription: "Conforto com esforço criativo de um círculo.",
+    description:
+      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Para dias em que fazer o básico já parece bastante.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.moletons,
+    category: "moletons",
+    tags: ["moletom", "preguica", "design", "unissex"],
+    rating: 4.8,
+    ratingCount: 27,
+    images: [
+      { url: "/products/moletom-audio-de-7-minutos-1.jpg", color: "Preta" },
+      { url: "/products/moletom-audio-de-7-minutos-3.jpg", color: "Marinho" },
+    ],
+    variants: hoodieVariants("MOL-JAPAO", PRICE.moletons),
+  },
+  {
+    slug: "garrafa-desenhista-da-bandeira-do-japao",
+    name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
+    shortDescription: "Bebe água e não desenha mais nada.",
+    description:
+      "Garrafa térmica de aço inox com parede dupla, 500 ml. Design sóbrio, como manda a inspiração de quem já terminou o trabalho.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.garrafas,
+    category: "garrafas",
+    tags: ["garrafa", "preguica", "design", "unissex"],
+    rating: 4.7,
+    ratingCount: 15,
+    images: [
+      { url: "/products/garrafa-bebendo-agua-para-nao-responder-1.jpg", color: "Preta" },
+      { url: "/products/garrafa-bebendo-agua-para-nao-responder-3.jpg", color: "Branca" },
+    ],
+    variants: bottleVariants("GAR-JAPAO", PRICE.garrafas),
+  },
+
+  // --- "Minha paciência está mais curta que coice de porco" ---
+  {
+    slug: "camiseta-paciencia-coice-de-porco",
+    name: "Minha paciência está mais curta que coice de porco",
+    shortDescription: "Aviso prévio em algodão.",
+    description:
+      "Camiseta 100% algodão fio penteado com estampa DTG na frente. Serve como comunicado oficial para colegas, parentes e qualquer pessoa que comece a frase com 'só uma perguntinha'.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.camisetas,
+    category: "camisetas",
+    tags: ["camiseta", "paciencia", "aviso", "unissex"],
+    rating: 4.9,
+    ratingCount: 143,
+    images: [
+      { url: "/products/camiseta-estou-bem-mentira-1.jpg", color: "Preta" },
+      { url: "/products/camiseta-estou-bem-mentira-3.jpg", color: "Branca" },
+    ],
+    variants: shirtVariants("CAM-COICE", PRICE.camisetas),
+  },
+  {
+    slug: "caneca-paciencia-coice-de-porco",
+    name: "Minha paciência está mais curta que coice de porco",
+    shortDescription: "Leia antes de puxar assunto na copa.",
+    description:
+      "Caneca de cerâmica branca com impressão sublimática, 325 ml. Funciona como sinalização de segurança no ambiente de trabalho.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.canecas,
+    category: "canecas",
+    tags: ["caneca", "paciencia", "aviso", "trabalho"],
+    rating: 4.9,
+    ratingCount: 121,
+    images: [
+      { url: "/products/caneca-aceita-que-doi-menos-1.jpg", color: "Branca" },
+      { url: "/products/caneca-aceita-que-doi-menos-2.jpg", color: "Branca" },
+    ],
+    variants: mugVariants("CAN-COICE", PRICE.canecas),
+  },
+  {
+    slug: "moletom-paciencia-coice-de-porco",
+    name: "Minha paciência está mais curta que coice de porco",
+    shortDescription: "Capuz para encurtar a conversa junto.",
+    description:
+      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. O capuz existe para quando o aviso da estampa não for suficiente.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.moletons,
+    category: "moletons",
+    tags: ["moletom", "paciencia", "aviso", "unissex"],
+    rating: 4.8,
+    ratingCount: 24,
+    images: [
+      { url: "/products/moletom-socialmente-indisponivel-1.jpg", color: "Preta" },
+      { url: "/products/moletom-socialmente-indisponivel-3.jpg", color: "Marinho" },
+    ],
+    variants: hoodieVariants("MOL-COICE", PRICE.moletons),
+  },
+  {
+    slug: "garrafa-paciencia-coice-de-porco",
+    name: "Minha paciência está mais curta que coice de porco",
+    shortDescription: "Hidrate-se antes de responder.",
+    description:
+      "Garrafa térmica de aço inox com parede dupla, 500 ml. Beber água não aumenta a paciência, mas ocupa a boca enquanto você pensa.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    basePriceCents: PRICE.garrafas,
+    category: "garrafas",
+    tags: ["garrafa", "paciencia", "aviso", "unissex"],
+    rating: 4.8,
+    ratingCount: 17,
+    images: [
+      { url: "/products/garrafa-hidratado-e-cansado-2.jpg", color: "Preta" },
+      { url: "/products/garrafa-hidratado-e-cansado-4.jpg", color: "Branca" },
+    ],
+    variants: bottleVariants("GAR-COICE", PRICE.garrafas),
   },
   {
     slug: "camiseta-voto-e-secreto-opiniao-nao",
