@@ -127,6 +127,16 @@ const EASTER_EGGS = [
     rewardCode: null,
   },
   {
+    code: "QR_CODE_SEGREDO",
+    title: "Leitor de Etiqueta",
+    hint: "Aponte a câmera para o QR Code impresso na embalagem.",
+    message:
+      "Você escaneou um QR Code esperando um segredo e recebeu uma loja de camiseta. A curiosidade foi recompensada com um troféu e nenhuma revelação.",
+    trigger: "scan-qr-code",
+    points: 15,
+    rewardCode: null,
+  },
+  {
     code: "PRODUTO_SECRETO",
     title: "Chave do Porão",
     hint: "Encontre quatro segredos e a loja abre uma gaveta escondida.",

@@ -15,6 +15,24 @@ import { CATEGORIES, PRODUCTS, imageFields } from "./catalog";
 
 const prisma = new PrismaClient();
 
+/**
+ * Easter eggs criados depois da carga inicial do banco. Mantidos aqui (e nao
+ * importados de seed.ts, que executa main() no import) para que um deploy em
+ * banco existente receba o registro via `npm run catalog:sync`.
+ */
+const NEW_EASTER_EGGS = [
+  {
+    code: "QR_CODE_SEGREDO",
+    title: "Leitor de Etiqueta",
+    hint: "Aponte a câmera para o QR Code impresso na embalagem.",
+    message:
+      "Você escaneou um QR Code esperando um segredo e recebeu uma loja de camiseta. A curiosidade foi recompensada com um troféu e nenhuma revelação.",
+    // Sem cupom de recompensa: o premio e o trofeu e a decepcao.
+    trigger: "scan-qr-code",
+    points: 15,
+  },
+];
+
 async function main() {
   const categoryIds = new Map<string, string>();
   for (const cat of CATEGORIES) {
@@ -112,6 +130,27 @@ async function main() {
     data: { isActive: false },
   });
 
+  // Easter eggs adicionados depois da carga inicial. O seed so roda em banco
+  // vazio, entao sem este upsert o discover() falharia em producao.
+  // Nao importamos a lista de seed.ts de proposito: aquele arquivo executa
+  // main() no import e apagaria os dados.
+  let eggsUpserted = 0;
+  for (const egg of NEW_EASTER_EGGS) {
+    await prisma.easterEgg.upsert({
+      where: { code: egg.code },
+      create: egg,
+      update: {
+        title: egg.title,
+        hint: egg.hint,
+        message: egg.message,
+        trigger: egg.trigger,
+        points: egg.points,
+        isActive: true,
+      },
+    });
+    eggsUpserted++;
+  }
+
   // Itens de carrinho apontando para variantes desativadas sairiam do carrinho no checkout com erro:
   // remove-os agora para o cliente nao ser surpreendido.
   const staleCartItems = await prisma.cartItem.deleteMany({
@@ -124,6 +163,7 @@ async function main() {
     produtosDescontinuados: retiredProducts.count,
     variantes: variantsUpserted,
     variantesDesativadas: variantsDisabled,
+    easterEggsGarantidos: eggsUpserted,
     itensDeCarrinhoRemovidos: staleCartItems.count,
     easterEggsAposentados: retiredEggs.count,
   });
