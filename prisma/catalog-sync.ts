@@ -30,6 +30,10 @@ const NEW_EASTER_EGGS = [
     // Sem cupom de recompensa: o premio e o trofeu e a decepcao.
     trigger: "scan-qr-code",
     points: 15,
+    // Desativado: a tela /segredo nao dispara mais o discover(), porque a
+    // notificacao de troféu estragava a piada. Inativo nao entra no total,
+    // entao o rank "Lenda do Domingo" continua alcancavel.
+    isActive: false,
   },
 ];
 
@@ -136,17 +140,11 @@ async function main() {
   // main() no import e apagaria os dados.
   let eggsUpserted = 0;
   for (const egg of NEW_EASTER_EGGS) {
+    const { isActive, ...fields } = egg;
     await prisma.easterEgg.upsert({
       where: { code: egg.code },
-      create: egg,
-      update: {
-        title: egg.title,
-        hint: egg.hint,
-        message: egg.message,
-        trigger: egg.trigger,
-        points: egg.points,
-        isActive: true,
-      },
+      create: { ...fields, isActive },
+      update: { ...fields, isActive },
     });
     eggsUpserted++;
   }
