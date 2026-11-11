@@ -18,6 +18,7 @@ import {
   ConfirmRegistrationDto,
   EmailChangeCodeDto,
   EmailChangeDto,
+  EmailCodeDto,
   EmailDto,
   LoginDto,
   PasswordCodeDto,
@@ -190,6 +191,16 @@ export class AuthController {
   @ApiOperation({ summary: "Envia o codigo de redefinicao de senha" })
   forgotPassword(@Body() dto: EmailDto) {
     return this.auth.forgotPassword(dto.email);
+  }
+
+  @Post("password/code/verify")
+  @HttpCode(200)
+  @Throttle({ default: { limit: 10, ttl: 15 * 60_000 } })
+  @ApiOperation({
+    summary: "Confere o codigo de redefinicao sem consumi-lo (etapa 1 de 2)",
+  })
+  verifyPasswordCode(@Body() dto: EmailCodeDto) {
+    return this.auth.verifyPasswordCode(dto);
   }
 
   @Post("password/reset")

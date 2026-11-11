@@ -23,6 +23,7 @@ import { maskEmail } from "../../common/utils/privacy.util";
 import {
   ChangePasswordDto,
   ConfirmRegistrationDto,
+  EmailCodeDto,
   LoginDto,
   RegisterDto,
   ResetPasswordDto,
@@ -381,6 +382,22 @@ export class AuthService {
     };
   }
 
+  /**
+   * Confere o codigo de redefinicao SEM consumi-lo, para o frontend liberar a
+   * etapa da senha nova. O codigo continua valido para o reset em seguida.
+   *
+   * Erra de proposito com a mesma mensagem de codigo invalido quando a conta
+   * nao existe: a tela de "esqueci a senha" nao deve revelar quem e cadastrado.
+   */
+  async verifyPasswordCode(dto: EmailCodeDto) {
+    const email = dto.email.toLowerCase().trim();
+    const user = await this.prisma.user.findUnique({ where: { email } });
+    if (!user || user.deletedAt) throw new BadRequestException(INVALID_CODE);
+
+    await this.peekCode(user.id, "password-reset", dto.code);
+    return { valid: true };
+  }
+
   async resetPassword(dto: ResetPasswordDto) {
     let userId: string;
     if (dto.email && dto.code) {
@@ -446,6 +463,39 @@ export class AuthService {
   }
 
   /** Confere o codigo mais recente da conta; erro conta tentativa e invalida no limite. */
+  /**
+   * Valida o codigo sem marcar `usedAt`: usado para liberar a proxima etapa de
+   * um fluxo em dois passos. Tentativa errada conta igual ao consumo, senao
+   * este endpoint viraria um caminho livre para forca bruta.
+   */
+  private async peekCode(userId: string, purpose: CodePurpose, code: string) {
+    const type = CODE_TYPE[purpose];
+    const record = await this.prisma.authToken.findFirst({
+      where: { userId, type, usedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: "desc" },
+    });
+    if (!record || record.attempts >= CODE_MAX_ATTEMPTS) {
+      throw new BadRequestException(INVALID_CODE);
+    }
+
+    const expected = Buffer.from(record.tokenHash, "hex");
+    const received = Buffer.from(this.codeHash(userId, type, code), "hex");
+    if (expected.length !== received.length || !timingSafeEqual(expected, received)) {
+      const attempts = record.attempts + 1;
+      await this.prisma.authToken.update({ where: { id: record.id }, data: { attempts } });
+      this.track(attempts >= CODE_MAX_ATTEMPTS ? "auth.code.locked" : "auth.code.failed", { id: userId }, {
+        failure: true,
+        data: { purpose, attempts, maxAttempts: CODE_MAX_ATTEMPTS, peek: true },
+      });
+      if (attempts >= CODE_MAX_ATTEMPTS) {
+        throw new BadRequestException("Muitas tentativas erradas. Peça um novo código.");
+      }
+      throw new BadRequestException(INVALID_CODE);
+    }
+
+    return record;
+  }
+
   private async consumeCode(userId: string, purpose: CodePurpose, code: string) {
     const type = CODE_TYPE[purpose];
     const record = await this.prisma.authToken.findFirst({
