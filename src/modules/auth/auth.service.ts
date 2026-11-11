@@ -99,9 +99,13 @@ export class AuthService {
       });
     }
     if (exists) {
-      throw new ConflictException(
-        "Esse e-mail ja esta cadastrado. Tente lembrar a senha antes de tentar esquecer o problema.",
-      );
+      // Codigo nomeado para o frontend ligar a mensagem ao campo de e-mail
+      // sem precisar comparar texto.
+      throw new ConflictException({
+        message:
+          "Esse e-mail já está cadastrado. Tente lembrar a senha antes de tentar esquecer o problema.",
+        error: "EMAIL_TAKEN",
+      });
     }
 
     const now = new Date();
