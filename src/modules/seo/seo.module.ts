@@ -11,8 +11,8 @@ const jsonForScript = (value: unknown) => JSON.stringify(value).replace(/</g, "\
 
 /** Rotas publicas estaticas que entram no sitemap. */
 const STATIC_PAGES: { path: string; changefreq: string; priority: string; title: string; description: string }[] = [
-  { path: "/", changefreq: "daily", priority: "1.0", title: "Roupa de Domingo — estampas com humor ácido", description: "Camisetas, moletons, canecas e garrafas com estampas de humor ácido. Produção sob demanda e entrega para todo o Brasil." },
-  { path: "/catalogo", changefreq: "daily", priority: "0.9", title: "Catálogo completo | Roupa de Domingo", description: "Todas as estampas de humor ácido em camisetas, moletons, canecas e garrafas." },
+  { path: "/", changefreq: "daily", priority: "1.0", title: "Roupa de Domingo — camisetas engraçadas e estampas com humor ácido", description: "Camisetas engraçadas, moletons, canecas e garrafas com estampas de humor ácido. Produção própria e entrega para todo o Brasil." },
+  { path: "/catalogo", changefreq: "daily", priority: "0.9", title: "Camisetas engraçadas, moletons e canecas — catálogo | Roupa de Domingo", description: "Camisetas engraçadas, moletons, canecas e garrafas com estampas de humor ácido. Presente criativo com entrega para todo o Brasil." },
   { path: "/guia-de-tamanhos", changefreq: "monthly", priority: "0.6", title: "Guia de tamanhos | Roupa de Domingo", description: "Tabela de medidas, composição do tecido e cuidados de lavagem de cada peça." },
   { path: "/entrega", changefreq: "monthly", priority: "0.5", title: "Entrega e prazos | Roupa de Domingo", description: "Como funcionam a produção sob demanda, o frete e o rastreio dos pedidos." },
   { path: "/pagamentos", changefreq: "monthly", priority: "0.4", title: "Pagamentos | Roupa de Domingo", description: "Meios de pagamento, parcelamento, segurança e reembolso." },
@@ -25,7 +25,7 @@ const STATIC_PAGES: { path: string; changefreq: string; priority: string; title:
 ];
 
 /** Rotas privadas: nunca indexar. */
-const PRIVATE_PREFIXES = ["/conta", "/checkout", "/carrinho", "/pagamento", "/entrar", "/cadastro", "/esqueci-a-senha", "/redefinir-senha", "/verificar-email", "/trofeus"];
+const PRIVATE_PREFIXES = ["/conta", "/checkout", "/carrinho", "/pagamento", "/entrar", "/cadastro", "/esqueci-a-senha", "/redefinir-senha", "/verificar-email", "/confirmar-cadastro", "/trofeus", "/segredo", "/tchau"];
 
 @Injectable()
 export class SeoService {
@@ -136,13 +136,22 @@ export class SeoService {
     }
 
     if (path === "/") {
-      jsonLd.push({
-        "@context": "https://schema.org",
-        "@type": "Organization",
-        name: "Roupa de Domingo",
-        url: site,
-        logo: `${site}/icons/icon-512.png`,
-      });
+      jsonLd.push(
+        {
+          "@context": "https://schema.org",
+          "@type": "Organization",
+          name: "Roupa de Domingo",
+          url: site,
+          logo: `${site}/icons/icon-512.png`,
+        },
+        {
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          name: "Roupa de Domingo",
+          url: site,
+          inLanguage: "pt-BR",
+        },
+      );
     }
 
     const canonical = `${site}${path === "/" ? "/" : path}`;
