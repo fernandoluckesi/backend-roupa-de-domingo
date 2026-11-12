@@ -214,6 +214,11 @@ export class CatalogService {
         label: "Político",
         description: "Opinião vestível. Discuta no almoço.",
       },
+      {
+        value: "NERD",
+        label: "Nerd",
+        description: "Piada que só compila na sua cabeça.",
+      },
     ];
   }
 

@@ -4,6 +4,7 @@
  * Imagens: mockups servidos pelo frontend em /products (artes de impressao em /designs).
  */
 import { Gender, Humor } from "@prisma/client";
+import { PHRASES, type Phrase } from "./catalog-phrases";
 
 export type VariantSeed = {
   sku: string;
@@ -1057,3 +1058,88 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
 ];
+
+// ---------------------------------------------------------------- coleção de frases
+
+/** Texto do produto por categoria; a piada da frase (pitch) fecha a descrição. */
+const MATERIAL: Record<"camisetas" | "moletons" | "canecas" | "garrafas", string> = {
+  camisetas: "Camiseta 100% algodão fio penteado com estampa DTG na frente.",
+  moletons: "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente.",
+  canecas: "Caneca de cerâmica branca com impressão sublimática, 325 ml. Vai ao micro-ondas e à lava-louças.",
+  garrafas: "Garrafa térmica de aço inox com parede dupla, 500 ml.",
+};
+
+/** Produtos de cada frase: peças com modelagem para M/F, objetos só na versão unissex. */
+function phraseProducts(phrase: Phrase): ProductSeed[] {
+  const kinds =
+    phrase.gender === Gender.UNISSEX
+      ? (["camisetas", "canecas", "garrafas"] as const)
+      : (["camisetas", "moletons"] as const);
+
+  return (kinds as readonly (keyof typeof MATERIAL)[]).map((category): ProductSeed => {
+    const prefix = { camisetas: "camiseta", moletons: "moletom", canecas: "caneca", garrafas: "garrafa" }[category];
+    const slug = `${prefix}-${phrase.key}`;
+    const img = (n: number) => `/products/${slug}-${n}.jpg`;
+    const base = {
+      slug,
+      name: phrase.name,
+      shortDescription: phrase.short,
+      description: `${MATERIAL[category]} ${phrase.pitch}`,
+      humor: phrase.humor,
+      gender: phrase.gender,
+      basePriceCents: PRICE[category],
+      category,
+      tags: [prefix, ...phrase.tags],
+      rating: 0,
+      ratingCount: 0,
+    };
+    switch (category) {
+      case "camisetas":
+        return {
+          ...base,
+          images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Branca" }],
+          variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas),
+        };
+      case "moletons":
+        return {
+          ...base,
+          images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Marinho" }],
+          variants: hoodieVariants(`MOL-${phrase.code}`, PRICE.moletons),
+        };
+      case "canecas":
+        return { ...base, images: [img(1)], variants: mugVariants(`CAN-${phrase.code}`, PRICE.canecas) };
+      case "garrafas":
+        return {
+          ...base,
+          images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Branca" }],
+          variants: bottleVariants(`GAR-${phrase.code}`, PRICE.garrafas),
+        };
+    }
+  });
+}
+
+PRODUCTS.push(...PHRASES.flatMap(phraseProducts));
+
+/**
+ * Camisetas pretas e brancas: fotos com modelo (scripts/artwork/model-mockup.js), uma cor por
+ * foto. Masculina usa o modelo, feminina a modelo e unissex os dois. Preta vem primeiro.
+ */
+const SHIRT_MODELS: Record<Gender, string[]> = {
+  [Gender.MASCULINO]: ["m"],
+  [Gender.FEMININO]: ["f"],
+  [Gender.UNISSEX]: ["m", "f"],
+};
+const SHIRT_COLORS = [
+  { color: "Preta", file: "preta" },
+  { color: "Branca", file: "branca" },
+];
+
+for (const product of PRODUCTS) {
+  // Pelo slug: a camiseta secreta fica na categoria "secretos"
+  if (!product.slug.startsWith("camiseta-")) continue;
+  const colors = new Set(product.variants.map((v) => v.color));
+  if (!SHIRT_COLORS.every((c) => colors.has(c.color))) continue;
+  product.images = SHIRT_COLORS.flatMap(({ color, file }) =>
+    SHIRT_MODELS[product.gender].map((model) => ({ url: `/products/${product.slug}-${model}-${file}.jpg`, color })),
+  );
+}

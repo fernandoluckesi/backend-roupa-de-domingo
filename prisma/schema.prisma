@@ -21,6 +21,7 @@ enum Humor {
   MEMES
   PARA_CASAIS
   POLITICO
+  NERD
 }
 
 /// Publico-alvo da peca. UNISSEX e o padrao: objetos (canecas, garrafas) e
