@@ -1,20 +1,28 @@
 // Bloco de texto das estampas de frase: linhas grandes (lines) e, embaixo, a linha de apoio (small).
 //
-// A linha de apoio tem 60% da altura das linhas grandes (50% maior que os 40% originais, para ler
-// melhor) e o mesmo peso em todas as saidas (arte de
-// impressao e fotos do site). Quando ela e mais larga que a maior linha grande, quebra em mais
-// linhas, para nao obrigar a estampa inteira a diminuir.
+// Tipografia da marca (fonts.js): a frase principal em Titan One, maiuscula, e a linha de apoio,
+// que fecha a piada, em Pacifico, cursiva e minuscula (o catalogo guarda tudo em maiusculas e a
+// conversao e feita aqui). A linha de apoio tem 75% da altura das linhas grandes (Pacifico tem
+// letras baixas) e, quando e mais larga que a maior linha grande, quebra em mais linhas para nao
+// obrigar a estampa a diminuir.
 //
 // Usado por render.js, mockup.js e model-mockup.js.
+const { FONTS } = require("./fonts");
+
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const SIZE = 200;
-const SMALL = SIZE * 0.6;
+const SMALL = SIZE * 0.75;
+// Linhas grandes um pouco mais juntas: Titan One tem acentos altos e o bloco fica compacto
+const LINE = SIZE * 1.05;
+
+/** Linha de apoio em minusculas (Pacifico em maiusculas fica ilegivel). */
+const punchline = (text) => text.toLocaleLowerCase("pt-BR");
 
 const mainText = (line, y, fill) =>
-  `<text x="0" y="${y}" text-anchor="middle" font-family="Archivo Black" font-size="${SIZE}" fill="${fill}" letter-spacing="-4">${esc(line)}</text>`;
+  `<text x="0" y="${y}" text-anchor="middle" font-family="${FONTS.HEADLINE}" font-size="${SIZE}" fill="${fill}">${esc(line)}</text>`;
 const smallText = (line, y, fill) =>
-  `<text x="0" y="${y}" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="${SMALL}" fill="${fill}">${esc(line)}</text>`;
+  `<text x="0" y="${y}" text-anchor="middle" font-family="${FONTS.PUNCHLINE}" font-size="${SMALL}" fill="${fill}">${esc(line)}</text>`;
 
 /** Quebra o texto de apoio em linhas que cabem em maxWidth (uma palavra sozinha nunca e cortada). */
 function wrapSmall(text, maxWidth, width) {
@@ -39,23 +47,22 @@ function wrapSmall(text, maxWidth, width) {
  */
 function textBlock(p, fill, measure) {
   const lines = p.lines.map((line) => line.trim());
-  let y = 0;
+  let y = SIZE - LINE;
   let out = "";
   for (const line of lines) {
-    y += SIZE;
+    y += LINE;
     out += mainText(line, y, fill);
   }
   if (p.small) {
     const mainWidth = Math.max(...lines.map((line) => measure(mainText(line, SIZE, fill)).width));
-    const rows = wrapSmall(p.small, mainWidth, (text) => measure(smallText(text, SIZE, fill)).width);
-    y += SMALL * 0.2;
+    const rows = wrapSmall(punchline(p.small), mainWidth, (text) => measure(smallText(text, SIZE, fill)).width);
+    y += SMALL * 0.25;
     for (const row of rows) {
-      y += SMALL;
+      y += SMALL * 1.15;
       out += smallText(row, y, fill);
-      y += SMALL * 0.08;
     }
   }
   return out;
 }
 
-module.exports = { textBlock };
+module.exports = { textBlock, punchline };

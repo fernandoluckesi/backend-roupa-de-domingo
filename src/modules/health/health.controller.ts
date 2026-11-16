@@ -34,7 +34,7 @@ export class HealthController {
       statusCode: 418,
       message: "Sou um bule. Nao faco cafe, nem milagre.",
       sugestao: "Mas vendemos uma caneca que combina com sua frustracao.",
-      produto: "/api/products/caneca-primeiro-cafe",
+      produto: "/api/products/caneca-aceita-que-doi-menos",
     };
   }
 }

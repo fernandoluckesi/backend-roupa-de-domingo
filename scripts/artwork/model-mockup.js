@@ -12,6 +12,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
+const { FONTS, FONT_FILES } = require("./fonts");
 const { PNG } = require("pngjs");
 const { fitList } = require("./list-layout");
 const { textBlock: textBlockSvg } = require("./text-block");
@@ -23,10 +24,6 @@ const [modelsDir, outDir, ...slugs] = process.argv.slice(2);
 const only = new Set(slugs);
 fs.mkdirSync(outDir, { recursive: true });
 
-const FONT_FILES = [
-  path.join(__dirname, "fonts", "ArchivoBlack-Regular.ttf"),
-  path.join(__dirname, "fonts", "SpaceGrotesk-var.ttf"),
-];
 const INK = { dark: "#141414", light: "#F5F5F0" };
 // Cor dos numeros da estampa-lista (list-layout.js)
 const ACCENT = { dark: "#141414", light: "#D9FF3F" };
@@ -78,7 +75,7 @@ const MODELS = {
 const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
 
 const render = (svg) =>
-  new Resvg(svg, { font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "Archivo Black" } });
+  new Resvg(svg, { font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: FONTS.HEADLINE } });
 
 function bbox(inner) {
   const W = 8000;
@@ -130,7 +127,7 @@ function artFor(p, shot) {
   const area = shot.listArt;
   const inner =
     p.layout === "image"
-      ? imageBlock(p, INK[shot.ink])
+      ? imageBlock(p, INK[shot.ink], bbox)
       : fitList(p, { ink: INK[shot.ink], accent: ACCENT[shot.ink] }, area, bbox).inner;
   const b = bbox(inner);
   const s = Math.min(area[2] / b.width, area[3] / b.height);

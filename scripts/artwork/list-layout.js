@@ -6,10 +6,12 @@
 //
 // Usado por render.js (arte de impressao), mockup.js e model-mockup.js (fotos do site).
 
+const { FONTS } = require("./fonts");
+
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const TITLE = 140;
-const SUBTITLE = 58;
+const SUBTITLE = 90;
 const BODY = 64;
 const NUMBER_COLUMN = 140;
 const LINE = BODY * 1.22;
@@ -36,21 +38,21 @@ function listBlock(p, { ink, accent }, wrapChars) {
   let y = TITLE;
   let out = "";
   for (const line of p.lines) {
-    out += `<text x="0" y="${y}" font-family="Archivo Black" font-size="${TITLE}" letter-spacing="-3" fill="${ink}">${esc(line)}</text>`;
+    out += `<text x="0" y="${y}" font-family="${FONTS.HEADLINE}" font-size="${TITLE}" fill="${ink}">${esc(line)}</text>`;
     y += TITLE;
   }
   y -= TITLE; // y volta para a linha de base do ultimo titulo
   if (p.small) {
     y += SUBTITLE * 1.7;
-    out += `<text x="0" y="${y}" font-family="Space Grotesk" font-weight="700" font-size="${SUBTITLE}" letter-spacing="4" fill="${ink}">${esc(p.small)}</text>`;
+    out += `<text x="0" y="${y}" font-family="${FONTS.PUNCHLINE}" font-size="${SUBTITLE}" fill="${ink}">${esc(punchline(p.small))}</text>`;
   }
   y += BODY * 1.6;
   p.items.forEach((item, i) => {
     const number = String(i + 1).padStart(2, "0");
-    out += `<text x="0" y="${y}" font-family="Archivo Black" font-size="${BODY}" fill="${accent}">${number}</text>`;
+    out += `<text x="0" y="${y}" font-family="${FONTS.HEADLINE}" font-size="${BODY}" fill="${accent}">${number}</text>`;
     const lines = wrap(`“${item}”`, wrapChars);
     lines.forEach((line, j) => {
-      out += `<text x="${NUMBER_COLUMN}" y="${y + j * LINE}" font-family="Space Grotesk" font-weight="500" font-size="${BODY}" fill="${ink}">${esc(line)}</text>`;
+      out += `<text x="${NUMBER_COLUMN}" y="${y + j * LINE}" font-family="${FONTS.TEXT}" font-size="${BODY}" fill="${ink}">${esc(line)}</text>`;
     });
     y += lines.length * LINE + ITEM_GAP;
   });
@@ -71,5 +73,7 @@ function fitList(p, colors, [, , w, h], measure) {
   }
   return best;
 }
+
+const { punchline } = require("./text-block");
 
 module.exports = { fitList };

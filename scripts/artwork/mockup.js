@@ -16,6 +16,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
+const { FONTS, FONT_FILES } = require("./fonts");
 const { PNG } = require("pngjs");
 const { fitList } = require("./list-layout");
 const { textBlock: textBlockSvg } = require("./text-block");
@@ -28,10 +29,6 @@ const outDir = process.argv[2];
 const only = new Set(process.argv.slice(3));
 fs.mkdirSync(outDir, { recursive: true });
 
-const FONT_FILES = [
-  path.join(__dirname, "fonts", "ArchivoBlack-Regular.ttf"),
-  path.join(__dirname, "fonts", "SpaceGrotesk-var.ttf"),
-];
 const INK = { dark: "#141414", light: "#F5F5F0" };
 // Cor dos numeros da estampa-lista (list-layout.js)
 const ACCENT = { dark: "#141414", light: "#D9FF3F" };
@@ -97,7 +94,7 @@ const VARIANTS = {
 const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
 
 const render = (svg) =>
-  new Resvg(svg, { font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "Archivo Black" } });
+  new Resvg(svg, { font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: FONTS.HEADLINE } });
 
 function bbox(inner) {
   const W = 6000;
@@ -135,7 +132,7 @@ function mockup(p, v) {
     p.layout === "list" && v.listArt
       ? placeBlock(fitList(p, { ink: INK[v.ink], accent: ACCENT[v.ink] }, area, bbox).inner, area, Infinity)
       : p.layout === "image"
-        ? placeBlock(imageBlock(p, INK[v.ink]), area, Infinity)
+        ? placeBlock(imageBlock(p, INK[v.ink], bbox), area, Infinity)
         : placeBlock(textBlock(p, v.ink), area, v.maxScale);
   // Estampa sozinha (fundo transparente), aplicada na peca acompanhando dobras e sombras
   let overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">${art}</svg>`).render().pixels;

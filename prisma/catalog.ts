@@ -128,10 +128,10 @@ function bottleVariants(
  * catalogo existente em vez de cada bloco repetir o numero.
  */
 const PRICE = {
-  camisetas: 10990,
-  canecas: 6990,
-  moletons: 15990,
-  garrafas: 7990,
+  camisetas: 9990,
+  canecas: 6490,
+  moletons: 14490,
+  garrafas: 6990,
 } as const;
 
 export const CATEGORIES = [
@@ -173,196 +173,6 @@ export const CATEGORIES = [
 ];
 
 export const PRODUCTS: ProductSeed[] = [
-  {
-    slug: "camiseta-sorria-e-de-graca",
-    name: "Sorria, é de graça (o resto não)",
-    shortDescription: "A gentileza é gratuita. A camiseta, infelizmente, não.",
-    description:
-      "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTF na frente. Ideal para quem quer parecer simpático sem se comprometer. Lavar do lado avesso, como suas intenções.",
-    humor: Humor.ACIDO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "sarcasmo", "presente", "best-seller"],
-    rating: 4.8,
-    ratingCount: 312,
-    images: [
-      { url: "/products/camiseta-sorria-e-de-graca-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-sorria-e-de-graca-2.jpg", color: "Preta" },
-      { url: "/products/camiseta-sorria-e-de-graca-3.jpg", color: "Branca" },
-      { url: "/products/camiseta-sorria-e-de-graca-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-SORRIA-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SORRIA-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
-  {
-    slug: "camiseta-estou-bem-mentira",
-    name: "Estou bem (mentira estampada)",
-    shortDescription: "Duas palavras, uma vida inteira de negação.",
-    description:
-      'Para aquele dia em que você responde "tudo ótimo" três vezes antes das 9h. Modelagem reta, gola reforçada, autoestima opcional.',
-    humor: Humor.EXISTENCIAL,
-    gender: Gender.FEMININO,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "existencial", "terapia", "segunda-feira"],
-    rating: 4.9,
-    ratingCount: 487,
-    images: [
-      { url: "/products/camiseta-estou-bem-mentira-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-estou-bem-mentira-2.jpg", color: "Preta" },
-      { url: "/products/camiseta-estou-bem-mentira-3.jpg", color: "Branca" },
-      { url: "/products/camiseta-estou-bem-mentira-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-BEM-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-BEM-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
-  {
-    slug: "camiseta-trabalho-em-equipe",
-    name: "Trabalho bem em equipe (sozinho)",
-    shortDescription: "Currículo honesto, finalmente.",
-    description:
-      "A camiseta que seu RH precisava ler antes da contratação. Tecido respirável para reuniões que poderiam ser um e-mail.",
-    humor: Humor.SARCASTICO,
-    gender: Gender.MASCULINO,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "trabalho", "corporativo", "home-office"],
-    rating: 4.7,
-    ratingCount: 221,
-    images: [
-      { url: "/products/camiseta-trabalho-em-equipe-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-trabalho-em-equipe-2.jpg", color: "Preta" },
-      { url: "/products/camiseta-trabalho-em-equipe-3.jpg", color: "Branca" },
-      { url: "/products/camiseta-trabalho-em-equipe-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-EQUIPE-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-EQUIPE-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
-  {
-    slug: "camiseta-domingo-eterno",
-    name: "Domingo é uma sensação, não um dia",
-    shortDescription: "A ansiedade das 18h de domingo, agora vestível.",
-    description:
-      "Nossa peça manifesto. Homenageia aquele vazio específico entre o almoço de família e a segunda-feira. Algodão macio, melancolia inclusa.",
-    humor: Humor.EXISTENCIAL,
-    gender: Gender.UNISSEX,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "manifesto", "domingo", "colecao-assinatura"],
-    rating: 5,
-    ratingCount: 158,
-    images: [
-      { url: "/products/camiseta-domingo-eterno-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-domingo-eterno-2.jpg", color: "Preta" },
-      { url: "/products/camiseta-domingo-eterno-3.jpg", color: "Branca" },
-      { url: "/products/camiseta-domingo-eterno-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-DOMINGO-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-DOMINGO-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
-  {
-    slug: "camiseta-nao-foi-nada",
-    name: '"Não foi nada" (era tudo)',
-    shortDescription: "Passivo-agressivo em 4 palavras e um parêntese.",
-    description:
-      "Para quem resolve conflito guardando mágoa com juros compostos. Estampa resistente a 50 lavagens e a pedidos de desculpas.",
-    humor: Humor.PARA_CASAIS,
-    gender: Gender.UNISSEX,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "passivo-agressivo", "relacionamento"],
-    rating: 4.6,
-    ratingCount: 94,
-    images: [
-      { url: "/products/camiseta-nao-foi-nada-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-nao-foi-nada-2.jpg", color: "Preta" },
-      { url: "/products/camiseta-nao-foi-nada-3.jpg", color: "Branca" },
-      { url: "/products/camiseta-nao-foi-nada-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-NADA-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-NADA-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
-  {
-    slug: "camiseta-combinamos-de-nao-brigar",
-    name: "Combinamos de não brigar em público",
-    shortDescription: "Spoiler: a camiseta está falando mais alto.",
-    description:
-      "Camiseta 100% algodão fio penteado para o casal que resolve tudo com olhar. Funciona melhor em par, mas serve sozinha para quem quer avisar com antecedência.",
-    humor: Humor.PARA_CASAIS,
-    gender: Gender.UNISSEX,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "casal", "para-casais", "presente"],
-    rating: 4.7,
-    ratingCount: 128,
-    images: [
-      { url: "/products/camiseta-nao-foi-nada-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-nao-foi-nada-3.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-COMBI-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-COMBI-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
   {
     // Vitrine da home: ratingCount alto para entrar no top 8 de findFeatured
     slug: "camiseta-nao-sou-airton-senna",
@@ -650,115 +460,6 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
-    slug: "caneca-primeiro-cafe",
-    name: "Antes do café eu não assino contrato",
-    shortDescription: "Aviso legal em cerâmica.",
-    description:
-      "Caneca em cinco modelos: branca, preta, mágica (preta quando fria), térmica e com alça de coração. Suporta micro-ondas, lava-louças e sua personalidade matinal.",
-    humor: Humor.ACIDO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 6990,
-    category: "canecas",
-    tags: ["caneca", "cafe", "escritorio", "best-seller"],
-    rating: 4.9,
-    ratingCount: 603,
-    images: [
-      { url: "/products/caneca-primeiro-cafe-1.jpg", color: "Branca" },
-      { url: "/products/caneca-primeiro-cafe-2.jpg", color: "Branca" },
-      { url: "/products/caneca-primeiro-cafe-3.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAN-CAFE-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
-    ],
-  },
-  {
-    slug: "caneca-grupo-da-familia-no-zap",
-    name: "Li tudo no grupo da família e não respondi",
-    shortDescription: "Cerâmica neutra para opinião que não é.",
-    description:
-      "Caneca em cinco modelos: branca, preta, mágica (preta quando fria), térmica e com alça de coração. Aguenta micro-ondas, lava-louças e aquele áudio de cinco minutos sobre política às sete da manhã.",
-    humor: Humor.POLITICO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 6990,
-    category: "canecas",
-    tags: ["caneca", "politico", "familia", "whatsapp"],
-    rating: 4.6,
-    ratingCount: 203,
-    images: [
-      { url: "/products/caneca-reuniao-email-1.jpg", color: "Branca" },
-      { url: "/products/caneca-reuniao-email-2.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAN-GRUPO-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
-    ],
-  },
-  {
-    slug: "caneca-reuniao-email",
-    name: "Isso podia ser um e-mail",
-    shortDescription: "Diga sem dizer, em toda call com câmera aberta.",
-    description:
-      "A caneca mais produtiva do mercado: economiza em média 4 reuniões por semana. Resultado não garantido, mas a intenção é clara.",
-    humor: Humor.SARCASTICO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 6990,
-    category: "canecas",
-    tags: ["caneca", "trabalho", "reuniao", "home-office"],
-    rating: 4.8,
-    ratingCount: 441,
-    images: [
-      { url: "/products/caneca-reuniao-email-1.jpg", color: "Branca" },
-      { url: "/products/caneca-reuniao-email-2.jpg", color: "Branca" },
-      { url: "/products/caneca-reuniao-email-3.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAN-EMAIL-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
-    ],
-  },
-  {
-    slug: "caneca-chefe-do-ano",
-    name: "Chefe do ano (votação com 1 voto)",
-    shortDescription: "O presente de amigo oculto que cria histórico.",
-    description:
-      "Perfeita para aquele gestor que confunde liderança com reunião às 18h de sexta. Vem em embalagem neutra para negação plausível.",
-    humor: Humor.SARCASTICO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 6990,
-    category: "canecas",
-    tags: ["caneca", "presente", "amigo-oculto", "trabalho"],
-    rating: 4.5,
-    ratingCount: 177,
-    images: [
-      { url: "/products/caneca-chefe-do-ano-1.jpg", color: "Branca" },
-      { url: "/products/caneca-chefe-do-ano-2.jpg", color: "Branca" },
-      { url: "/products/caneca-chefe-do-ano-3.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAN-CHEFE-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
-    ],
-  },
-  {
-    slug: "caneca-lagrimas-dos-meus-inimigos",
-    name: "Lágrimas dos meus inimigos (sem açúcar)",
-    shortDescription: "Capacidade: 325ml de rancor bem quente.",
-    description:
-      "Clássico do gênero, revisado. Mantém a bebida na temperatura exata do seu ressentimento por cerca de 20 minutos.",
-    humor: Humor.ACIDO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 6990,
-    category: "canecas",
-    tags: ["caneca", "absurdo", "classico"],
-    rating: 4.7,
-    ratingCount: 265,
-    images: [
-      { url: "/products/caneca-lagrimas-dos-meus-inimigos-1.jpg", color: "Branca" },
-      { url: "/products/caneca-lagrimas-dos-meus-inimigos-2.jpg", color: "Branca" },
-      { url: "/products/caneca-lagrimas-dos-meus-inimigos-3.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAN-LAGRIMAS-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
-    ],
-  },
-  {
     slug: "camiseta-voce-nao-devia-estar-aqui",
     name: "Você não devia estar aqui",
     shortDescription: "Peça secreta. Encontrada, não comprada.",
@@ -825,86 +526,6 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
-    slug: "moletom-domingo-18h",
-    name: "Domingo, 18h. Pronto para o pânico",
-    shortDescription: "A abertura do Fantástico, agora com capuz.",
-    description:
-      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Quentinho o bastante para enfrentar a segunda-feira, ou pelo menos para fingir.",
-    humor: Humor.EXISTENCIAL,
-    gender: Gender.UNISSEX,
-    basePriceCents: 21990,
-    category: "moletons",
-    tags: ["moletom", "domingo", "segunda-feira", "ansiedade"],
-    rating: 4.8,
-    ratingCount: 9,
-    images: [
-      { url: "/products/moletom-domingo-18h-1.jpg", color: "Preta" },
-      { url: "/products/moletom-domingo-18h-2.jpg", color: "Preta" },
-      { url: "/products/moletom-domingo-18h-3.jpg", color: "Marinho" },
-      { url: "/products/moletom-domingo-18h-4.jpg", color: "Marinho" },
-    ],
-    variants: [
-      { sku: "MOL-18H-PT-XGG", size: "XGG", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-PT-G", size: "G", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-PT-M", size: "M", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-PT-P", size: "P", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-PT-GG", size: "GG", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-MA-XGG", size: "XGG", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-MA-G", size: "G", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-MA-M", size: "M", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-MA-P", size: "P", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-18H-MA-GG", size: "GG", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-    ],
-  },
-  {
-    slug: "garrafa-hidratado-e-cansado",
-    name: "Hidratado e ainda assim cansado",
-    shortDescription: "Dois litros por dia e nenhuma melhora.",
-    description:
-      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Mantém a água gelada por horas. A disposição, infelizmente, não acompanha.",
-    humor: Humor.EXISTENCIAL,
-    gender: Gender.UNISSEX,
-    basePriceCents: 21990,
-    category: "garrafas",
-    tags: ["garrafa", "agua", "cansaco", "academia"],
-    rating: 4.7,
-    ratingCount: 8,
-    images: [
-      { url: "/products/garrafa-hidratado-e-cansado-1.jpg", color: "Preta" },
-      { url: "/products/garrafa-hidratado-e-cansado-2.jpg", color: "Preta" },
-      { url: "/products/garrafa-hidratado-e-cansado-3.jpg", color: "Branca" },
-      { url: "/products/garrafa-hidratado-e-cansado-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "GAR-CANSADO-PT", size: "500ml", color: "Preta", priceCents: 21990, weightGrams: 400 },
-      { sku: "GAR-CANSADO-BR", size: "500ml", color: "Branca", priceCents: 21990, weightGrams: 400 },
-    ],
-  },
-  {
-    slug: "garrafa-bebendo-agua-para-nao-responder",
-    name: "Bebendo água para não responder",
-    shortDescription: "Cada gole é uma resposta que você não deu.",
-    description:
-      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Ideal para reuniões: enquanto você bebe, ninguém espera que você fale.",
-    humor: Humor.SARCASTICO,
-    gender: Gender.UNISSEX,
-    basePriceCents: 21990,
-    category: "garrafas",
-    tags: ["garrafa", "agua", "trabalho", "reuniao"],
-    rating: 4.9,
-    ratingCount: 6,
-    images: [
-      { url: "/products/garrafa-bebendo-agua-para-nao-responder-1.jpg", color: "Preta" },
-      { url: "/products/garrafa-bebendo-agua-para-nao-responder-2.jpg", color: "Preta" },
-      { url: "/products/garrafa-bebendo-agua-para-nao-responder-3.jpg", color: "Branca" },
-      { url: "/products/garrafa-bebendo-agua-para-nao-responder-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "GAR-AGUA-PT", size: "500ml", color: "Preta", priceCents: 21990, weightGrams: 400 },
-      { sku: "GAR-AGUA-BR", size: "500ml", color: "Branca", priceCents: 21990, weightGrams: 400 },
-    ],
-  },
-  {
     slug: "camiseta-kkkkkkkkk-chorei",
     name: "KKKKKKKKK (chorei)",
     shortDescription: "A risada que todo mundo digita e ninguém dá de verdade.",
@@ -937,38 +558,6 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
-    slug: "camiseta-sextou-e-terca",
-    name: "Sextou (é terça)",
-    shortDescription: "O espírito de sexta, com dois dias de antecedência.",
-    description:
-      "Camiseta 100% algodão com estampa DTG. Para quem começa a semana já contando os minutos e não vê problema nenhum nisso.",
-    humor: Humor.MEMES,
-    gender: Gender.MASCULINO,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "memes", "sextou", "trabalho"],
-    rating: 4.8,
-    ratingCount: 31,
-    images: [
-      { url: "/products/camiseta-sextou-e-terca-1.jpg", color: "Preta" },
-      { url: "/products/camiseta-sextou-e-terca-2.jpg", color: "Preta" },
-      { url: "/products/camiseta-sextou-e-terca-3.jpg", color: "Branca" },
-      { url: "/products/camiseta-sextou-e-terca-4.jpg", color: "Branca" },
-    ],
-    variants: [
-      { sku: "CAM-SEXTOU-PT-G", size: "G", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-PT-GG", size: "GG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-PT-M", size: "M", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-PT-P", size: "P", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-PT-XGG", size: "XGG", color: "Preta", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-BR-G", size: "G", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-BR-GG", size: "GG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-BR-M", size: "M", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-BR-P", size: "P", color: "Branca", priceCents: 8990, weightGrams: 250 },
-      { sku: "CAM-SEXTOU-BR-XGG", size: "XGG", color: "Branca", priceCents: 8990, weightGrams: 250 },
-    ],
-  },
-  {
     slug: "caneca-aceita-que-doi-menos",
     name: "Aceita que dói menos (dói igual)",
     shortDescription: "O conselho que todo mundo dá e ninguém consegue seguir.",
@@ -987,39 +576,7 @@ export const PRODUCTS: ProductSeed[] = [
       { url: "/products/caneca-aceita-que-doi-menos-3.jpg", color: "Branca" },
     ],
     variants: [
-      { sku: "CAN-ACEITA-325", size: "325ml", color: "Branca", priceCents: 6990, weightGrams: 450 },
-    ],
-  },
-  {
-    slug: "moletom-audio-de-7-minutos",
-    name: "Mandei áudio de 7 minutos (ouve no 2x)",
-    shortDescription: "Para quem não sabe resumir e tem orgulho disso.",
-    description:
-      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Quentinho o bastante para gravar mais um áudio enquanto espera o ônibus.",
-    humor: Humor.MEMES,
-    gender: Gender.UNISSEX,
-    basePriceCents: 21990,
-    category: "moletons",
-    tags: ["moletom", "memes", "audio", "whatsapp"],
-    rating: 4.9,
-    ratingCount: 11,
-    images: [
-      { url: "/products/moletom-audio-de-7-minutos-1.jpg", color: "Preta" },
-      { url: "/products/moletom-audio-de-7-minutos-2.jpg", color: "Preta" },
-      { url: "/products/moletom-audio-de-7-minutos-3.jpg", color: "Marinho" },
-      { url: "/products/moletom-audio-de-7-minutos-4.jpg", color: "Marinho" },
-    ],
-    variants: [
-      { sku: "MOL-AUDIO-PT-XGG", size: "XGG", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-PT-G", size: "G", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-PT-M", size: "M", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-PT-P", size: "P", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-PT-GG", size: "GG", color: "Preta", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-MA-XGG", size: "XGG", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-MA-G", size: "G", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-MA-M", size: "M", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-MA-P", size: "P", color: "Marinho", priceCents: 21990, weightGrams: 650 },
-      { sku: "MOL-AUDIO-MA-GG", size: "GG", color: "Marinho", priceCents: 21990, weightGrams: 650 },
+      { sku: "CAN-ACEITA-325", size: "325ml", color: "Branca", priceCents: 6490, weightGrams: 450 },
     ],
   },
 ];
@@ -1116,53 +673,56 @@ for (const product of PRODUCTS) {
 // ---------------------------------------------------------------- linha do fornecedor (Pikarrucha)
 
 /**
- * Preços de venda por peça, a partir da proposta comercial da Pikarrucha (modelos 1 e 2:
- * produção sob demanda, já com a taxa de R$ 10 por produto de embalar e postar; estampa A4 frente).
+ * Preços de venda por peça, a partir da proposta comercial da Pikarrucha (modelo 1: produção sob
+ * demanda e envio ao cliente; estampa A4 frente; camisetas de poliéster ficam de fora).
  *
- * Conta usada: lucro = preço − custo − embalagem − 6% de imposto (Simples) − 5% de taxa de pagamento.
- * A margem líquida mínima buscada é 15% do preço; todos ficam entre 16% e 22%.
+ * Conta usada: lucro = preço − custo da peça − embalagem − tecnologia − 6% de imposto (Simples)
+ * − 5% de taxa de pagamento. Meta: margem líquida média de 10%, sem sair da faixa de mercado.
+ * - embalagem: a proposta deixa a embalagem de envio por conta da loja (envelope, caixa, proteção);
+ * - tecnologia: R$ 1,50 por pedido (hospedagem, domínio e serviços ≈ R$ 150/mês ÷ 100 pedidos).
  *
- *   peça                     custo  embalagem  preço    lucro   margem
- *   camiseta de algodão      73,00    4,00     109,90   20,81   18,9%
- *   camiseta oversized       70,00    4,00     109,90   23,81   21,7%
- *   moletom canguru         105,00    6,00     159,90   31,31   19,6%
- *   moletom gola careca     100,00    6,00     154,90   31,86   20,6%
- *   caneca branca            45,00    5,00      69,90   12,21   17,5%
- *   caneca preta             60,00    5,00      89,90   15,01   16,7%
- *   caneca mágica preta      55,00    5,00      84,90   15,56   18,3%
- *   caneca alça de coração   55,00    5,00      84,90   15,56   18,3%
- *   caneca térmica           85,00    5,00     129,90   25,61   19,7%
- *   garrafa Queta Soft       50,00    4,00      79,90   17,11   21,4%
- *   garrafa Norton           60,00    4,00      89,90   16,01   17,8%
+ *   peça                     custo  embalagem  empate   preço    lucro   margem
+ *   camiseta de algodão      73,00    4,00      88,20    99,90   10,41   10,4%
+ *   camiseta oversized       70,00    4,00      84,83    99,90   13,41   13,4%
+ *   moletom canguru         105,00    6,00     126,40   144,90   16,46   11,4%
+ *   moletom gola careca     100,00    6,00     120,79   134,90   12,56    9,3%
+ *   caneca branca            45,00    5,00      57,87    64,90    6,26    9,6%
+ *   caneca preta             60,00    5,00      74,72    84,90    9,06   10,7%
+ *   caneca mágica preta      55,00    5,00      69,10    77,90    7,83   10,1%
+ *   caneca alça de coração   55,00    5,00      69,10    77,90    7,83   10,1%
+ *   caneca térmica           85,00    5,00     102,81   114,90   10,76    9,4%
+ *   garrafa Queta Soft       50,00    4,00      62,36    69,90    6,71    9,6%
+ *   garrafa Norton           60,00    3,00      72,47    82,90    9,28   11,2%   (já vem em caixa kraft)
+ *                                                               média  10,5%
  *
  * Tamanhos especiais (EXG, G1, G2, G3): o fornecedor cobra R$ 5 a mais e a loja R$ 10 a mais.
  *
- * Imposto, taxa de pagamento e embalagem são estimativas: ajuste aqui se os números reais mudarem.
- * O frete é cobrado do cliente à parte.
+ * Imposto, taxa de pagamento, embalagem e tecnologia são estimativas: ajuste aqui se os números
+ * reais mudarem. O frete é cobrado do cliente à parte.
  */
 const RETAIL = {
-  camiseta: 10990,
-  oversized: 10990,
-  moletomCanguru: 15990,
-  moletomGolaCareca: 15490,
+  camiseta: 9990,
+  oversized: 9990,
+  moletomCanguru: 14490,
+  moletomGolaCareca: 13490,
 } as const;
 
 /** Modelos de caneca: a "cor" da variante é o modelo, e a página troca a foto ao escolher. */
 const MUG_MODELS = [
-  { color: "Branca", file: "branca", code: "BR", priceCents: 6990, weightGrams: 450 },
-  { color: "Preta", file: "preta", code: "PT", priceCents: 8990, weightGrams: 450 },
-  { color: "Mágica preta", file: "magica", code: "MAG", priceCents: 8490, weightGrams: 450 },
-  { color: "Térmica preta", file: "termica", code: "TER", priceCents: 12990, weightGrams: 400 },
-  { color: "Alça de coração", file: "coracao", code: "COR", priceCents: 8490, weightGrams: 450 },
+  { color: "Branca", file: "branca", code: "BR", priceCents: 6490, weightGrams: 450 },
+  { color: "Preta", file: "preta", code: "PT", priceCents: 8490, weightGrams: 450 },
+  { color: "Mágica preta", file: "magica", code: "MAG", priceCents: 7790, weightGrams: 450 },
+  { color: "Térmica preta", file: "termica", code: "TER", priceCents: 11490, weightGrams: 400 },
+  { color: "Alça de coração", file: "coracao", code: "COR", priceCents: 7790, weightGrams: 450 },
 ];
 
 /** Garrafas: Queta Soft 550 ml nas cores do fornecedor e Norton 570 ml (só preta). */
 const BOTTLE_MODELS = [
-  { color: "Queta Soft preta", file: "queta-preta", code: "QS-PT", priceCents: 7990, weightGrams: 250 },
-  { color: "Queta Soft branca", file: "queta-branca", code: "QS-BR", priceCents: 7990, weightGrams: 250 },
-  { color: "Queta Soft roxa", file: "queta-roxa", code: "QS-RX", priceCents: 7990, weightGrams: 250 },
-  { color: "Queta Soft azul", file: "queta-azul", code: "QS-AZ", priceCents: 7990, weightGrams: 250 },
-  { color: "Norton térmica preta", file: "norton", code: "NT-PT", priceCents: 8990, weightGrams: 450 },
+  { color: "Queta Soft preta", file: "queta-preta", code: "QS-PT", priceCents: 6990, weightGrams: 250 },
+  { color: "Queta Soft branca", file: "queta-branca", code: "QS-BR", priceCents: 6990, weightGrams: 250 },
+  { color: "Queta Soft roxa", file: "queta-roxa", code: "QS-RX", priceCents: 6990, weightGrams: 250 },
+  { color: "Queta Soft azul", file: "queta-azul", code: "QS-AZ", priceCents: 6990, weightGrams: 250 },
+  { color: "Norton térmica preta", file: "norton", code: "NT-PT", priceCents: 8290, weightGrams: 450 },
 ];
 
 /** Moletons (canguru e gola careca): a mesma foto para masculino e feminino, uma por cor. */

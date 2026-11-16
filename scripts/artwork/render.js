@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
+const { FONTS, FONT_FILES } = require("./fonts");
 const { fitList } = require("./list-layout");
 const { textBlock: textBlockSvg } = require("./text-block");
 const { imageBlock } = require("./image-layout");
@@ -11,10 +12,6 @@ const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"),
 const outDir = process.argv[2];
 fs.mkdirSync(outDir, { recursive: true });
 
-const FONT_FILES = [
-  path.join(__dirname, "fonts", "ArchivoBlack-Regular.ttf"),
-  path.join(__dirname, "fonts", "SpaceGrotesk-var.ttf"),
-];
 const INK = { dark: "#141414", light: "#F5F5F0" };
 // Cor dos numeros da estampa-lista (list-layout.js)
 const ACCENT = { dark: "#141414", light: "#D9FF3F" };
@@ -25,7 +22,7 @@ const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
 
 function render(svg) {
   return new Resvg(svg, {
-    font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: "Archivo Black" },
+    font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: FONTS.HEADLINE },
   });
 }
 
@@ -59,7 +56,7 @@ for (const p of catalog.products) {
       const inner = isList
         ? fitList(p, { ink: INK[ink], accent: ACCENT[ink] }, [0, 0, a[2] * w, a[3] * h], bbox).inner
         : isImage
-          ? imageBlock(p, INK[ink])
+          ? imageBlock(p, INK[ink], bbox)
           : textBlock(p, ink);
       let body;
       if (t.wrap) {

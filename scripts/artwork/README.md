@@ -8,7 +8,24 @@ Os arquivos gerados vão para `frontend/public/designs`. São esses que a equipe
 
 Rode a partir de uma pasta temporária que tenha:
 - o pacote `@resvg/resvg-js` instalado;
-- as fontes Archivo Black e Space Grotesk em `fonts/` (Google Fonts, licença OFL).
+- as fontes de `fonts.js` copiadas para `fonts/`. Os arquivos e as licenças ficam em
+  `frontend/scripts/brand/fonts`.
+
+## Tipografia das estampas
+
+A mesma em todas as artes, como marca registrada da loja (`fonts.js`). Todas são Google Fonts com
+licença SIL OFL, que libera o uso comercial.
+
+| Uso | Fonte | Onde |
+| --- | ----- | ---- |
+| Frase principal | Titan One, em maiúsculas | `lines` |
+| Frase de baixo, que fecha a piada | Pacifico, em minúsculas (convertidas no script) | `small` |
+| Texto corrido da estampa-lista | Space Grotesk Medium | `items` |
+| Legenda de meme com personagem | Bangers | `caption` |
+
+O Space Grotesk é um arquivo estático (`SpaceGrotesk-Medium.ttf`, do pacote `@fontsource`): com a
+fonte variável o resvg ignora o peso e desenha a versão fina. A família gravada no arquivo é
+"Space Grotesk Light Medium", e é esse o nome usado em `fonts.js`.
 
 | Arquivo | Função |
 | ------- | ------ |
@@ -59,6 +76,10 @@ Uma entrada com `"layout": "image"` e `image` (ex.: "Eu prefiro morrer do que pe
 `image-layout.js`. O desenho fica em `images/`, em PNG com fundo branco. Ele é tratado como arte de uma
 cor só: o branco vira transparente e o traço recebe a cor da tinta (escura em peça clara, clara em
 peça escura). Usa a mesma área alta da estampa-lista (`listArea` / `listArt`) e precisa do pacote `pngjs`.
+
+A legenda dos memes usa sempre a fonte padrão de meme (Bangers). Se o desenho já vem com texto,
+`erase` apaga esses retângulos (em pixels do desenho) e `caption` escreve a legenda de novo:
+`{ "lines": [...], "box": [x, y, largura, altura] }`, com a caixa também em pixels do desenho.
 
 ## Depois de mudar o catálogo
 
