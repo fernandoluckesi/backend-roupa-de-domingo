@@ -1,6 +1,7 @@
 // Bloco de texto das estampas de frase: linhas grandes (lines) e, embaixo, a linha de apoio (small).
 //
-// A linha de apoio tem 80% da altura das linhas grandes e o mesmo peso em todas as saidas (arte de
+// A linha de apoio tem 60% da altura das linhas grandes (50% maior que os 40% originais, para ler
+// melhor) e o mesmo peso em todas as saidas (arte de
 // impressao e fotos do site). Quando ela e mais larga que a maior linha grande, quebra em mais
 // linhas, para nao obrigar a estampa inteira a diminuir.
 //
@@ -8,7 +9,7 @@
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const SIZE = 200;
-const SMALL = SIZE * 0.8;
+const SMALL = SIZE * 0.6;
 
 const mainText = (line, y, fill) =>
   `<text x="0" y="${y}" text-anchor="middle" font-family="Archivo Black" font-size="${SIZE}" fill="${fill}" letter-spacing="-4">${esc(line)}</text>`;

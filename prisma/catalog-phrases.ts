@@ -41,7 +41,7 @@ const THIRTEEN_QUOTES = [
   "Se tá caro, não compra.",
   "Se o cara é corintiano, tudo bem.",
   "E lá eu encontro com uma mulherzinha...",
-  "Um dos países mais respeitados do mundo no crime organizado.",
+  "Temos quase 30 milhões de pessoas com problema de desequilíbrio de parafuso...",
   "Ainda bem que a natureza criou o monstro do coronavírus.",
   "O conceito de democracia é relativo.",
   "Que monstro vai sair do ventre dessa menina?",

@@ -21,6 +21,7 @@ const { fitList } = require("./list-layout");
 const { textBlock: textBlockSvg } = require("./text-block");
 const { imageBlock } = require("./image-layout");
 const { blendPrint } = require("./fabric-blend");
+const { wrapCylinder } = require("./cylinder");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"), "utf8"));
 const outDir = process.argv[2];
@@ -72,19 +73,22 @@ const VARIANTS = {
       maxScale: 0.24,
     }),
   ],
+  // Superficies cilindricas: a arte e montada aberta (art.x/art.w medidos ao longo da superficie,
+  // centrados no eixo) e depois enrolada no cilindro (cylinder.js). cylinder: eixo cx, raio r
+  // (metade da largura do corpo na foto) e tilt (altura / largura da elipse da boca).
   caneca: [
-    { name: (k) => `caneca-${k}-branca`, base: "caneca-branca.png", ink: "dark", art: [400, 300, 340, 400], maxScale: 0.42 },
-    { name: (k) => `caneca-${k}-preta`, base: "caneca-preta.png", ink: "light", art: [415, 300, 330, 400], maxScale: 0.42 },
-    { name: (k) => `caneca-${k}-magica`, base: "caneca-magica.png", ink: "light", art: [415, 300, 330, 400], maxScale: 0.42 },
-    { name: (k) => `caneca-${k}-termica`, base: "caneca-termica.png", ink: "light", art: [425, 345, 330, 340], maxScale: 0.42 },
-    { name: (k) => `caneca-${k}-coracao`, base: "caneca-coracao.png", ink: "dark", art: [255, 300, 340, 400], maxScale: 0.42 },
+    { name: (k) => `caneca-${k}-branca`, base: "caneca-branca.png", ink: "dark", art: [0, 300, 360, 400], maxScale: 0.42, cylinder: { cx: 560, r: 235, tilt: 0.11 } },
+    { name: (k) => `caneca-${k}-preta`, base: "caneca-preta.png", ink: "light", art: [0, 300, 360, 400], maxScale: 0.42, cylinder: { cx: 562, r: 240, tilt: 0.11 } },
+    { name: (k) => `caneca-${k}-magica`, base: "caneca-magica.png", ink: "light", art: [0, 300, 350, 400], maxScale: 0.42, cylinder: { cx: 579, r: 229, tilt: 0.11 } },
+    { name: (k) => `caneca-${k}-termica`, base: "caneca-termica.png", ink: "light", art: [0, 345, 350, 340], maxScale: 0.42, cylinder: { cx: 577, r: 232, tilt: 0.1 } },
+    { name: (k) => `caneca-${k}-coracao`, base: "caneca-coracao.png", ink: "dark", art: [0, 300, 345, 400], maxScale: 0.42, cylinder: { cx: 420, r: 223, tilt: 0.11 } },
   ],
   garrafa: [
-    { name: (k) => `garrafa-${k}-queta-preta`, base: "garrafa-queta-preta.png", ink: "light", art: [425, 480, 195, 300], maxScale: 0.2 },
-    { name: (k) => `garrafa-${k}-queta-branca`, base: "garrafa-queta-branca.png", ink: "dark", art: [425, 480, 195, 300], maxScale: 0.2 },
-    { name: (k) => `garrafa-${k}-queta-roxa`, base: "garrafa-queta-roxa.png", ink: "light", art: [425, 480, 195, 300], maxScale: 0.2 },
-    { name: (k) => `garrafa-${k}-queta-azul`, base: "garrafa-queta-azul.png", ink: "light", art: [425, 480, 195, 300], maxScale: 0.2 },
-    { name: (k) => `garrafa-${k}-norton`, base: "garrafa-norton.png", ink: "light", art: [400, 490, 180, 300], maxScale: 0.2 },
+    { name: (k) => `garrafa-${k}-queta-preta`, base: "garrafa-queta-preta.png", ink: "light", art: [0, 480, 200, 300], maxScale: 0.2, cylinder: { cx: 524, r: 120, tilt: 0.08 } },
+    { name: (k) => `garrafa-${k}-queta-branca`, base: "garrafa-queta-branca.png", ink: "dark", art: [0, 480, 200, 300], maxScale: 0.2, cylinder: { cx: 521, r: 120, tilt: 0.08 } },
+    { name: (k) => `garrafa-${k}-queta-roxa`, base: "garrafa-queta-roxa.png", ink: "light", art: [0, 480, 200, 300], maxScale: 0.2, cylinder: { cx: 524, r: 120, tilt: 0.08 } },
+    { name: (k) => `garrafa-${k}-queta-azul`, base: "garrafa-queta-azul.png", ink: "light", art: [0, 480, 200, 300], maxScale: 0.2, cylinder: { cx: 524, r: 120, tilt: 0.08 } },
+    { name: (k) => `garrafa-${k}-norton`, base: "garrafa-norton.png", ink: "light", art: [0, 490, 190, 300], maxScale: 0.2, cylinder: { cx: 492, r: 121, tilt: 0.08 } },
   ],
 };
 
@@ -123,7 +127,10 @@ function basePixels(file) {
 
 function mockup(p, v) {
   const tall = (p.layout === "list" || p.layout === "image") && v.listArt;
-  const area = tall ? v.listArt : v.art;
+  const cyl = v.cylinder;
+  let area = tall ? v.listArt : v.art;
+  // No cilindro a arte aberta fica centrada no eixo
+  if (cyl) area = [cyl.cx - area[2] / 2, area[1], area[2], area[3]];
   const art =
     p.layout === "list" && v.listArt
       ? placeBlock(fitList(p, { ink: INK[v.ink], accent: ACCENT[v.ink] }, area, bbox).inner, area, Infinity)
@@ -131,9 +138,16 @@ function mockup(p, v) {
         ? placeBlock(imageBlock(p, INK[v.ink]), area, Infinity)
         : placeBlock(textBlock(p, v.ink), area, v.maxScale);
   // Estampa sozinha (fundo transparente), aplicada na peca acompanhando dobras e sombras
-  const overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">${art}</svg>`).render().pixels;
+  let overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">${art}</svg>`).render().pixels;
+  let region = area;
+  if (cyl) {
+    overlay = wrapCylinder(overlay, SIZE, SIZE, cyl);
+    // Enrolada, a estampa ocupa a largura do corpo e sobe um pouco nas bordas
+    const lift = Math.ceil(cyl.tilt * cyl.r);
+    region = [cyl.cx - cyl.r, area[1] - lift, 2 * cyl.r, area[3] + lift];
+  }
   const pixels = Buffer.from(basePixels(v.base));
-  blendPrint(pixels, overlay, SIZE, SIZE, area, v.ink === "dark" ? "light" : "dark");
+  blendPrint(pixels, overlay, SIZE, SIZE, region, v.ink === "dark" ? "light" : "dark", { rigid: Boolean(cyl) });
   const png = new PNG({ width: SIZE, height: SIZE });
   pixels.copy(png.data);
   return PNG.sync.write(png);

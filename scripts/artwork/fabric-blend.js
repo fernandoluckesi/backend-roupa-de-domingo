@@ -36,8 +36,10 @@ function boxBlur(src, w, h, r) {
  * base: RGBA (Buffer, sem pre-multiplicacao) da foto, alterado no lugar.
  * overlay: RGBA pre-multiplicado (pixels do resvg) com so a estampa, mesmo tamanho da foto.
  * region: [x, y, w, h] onde a estampa esta. fabric: "light" (branco) ou "dark" (preto, marinho).
+ * rigid: superficie dura (caneca, garrafa): sem o deslocamento das dobras do tecido.
  */
-function blendPrint(base, overlay, W, H, region, fabric) {
+function blendPrint(base, overlay, W, H, region, fabric, { rigid = false } = {}) {
+  const bend = rigid ? 0 : 0.25;
   const pad = 16;
   const x0 = clamp(Math.floor(region[0] - pad), 0, W - 1);
   const y0 = clamp(Math.floor(region[1] - pad), 0, H - 1);
@@ -80,8 +82,8 @@ function blendPrint(base, overlay, W, H, region, fabric) {
       // A estampa "escorrega" para o lado escuro da dobra, como tecido que afunda
       const gx = (folds[k + 1] - folds[k - 1]) / 2;
       const gy = (folds[k + w] - folds[k - w]) / 2;
-      const px = x + x0 - clamp(gx * 0.25, -2.5, 2.5);
-      const py = y + y0 - clamp(gy * 0.25, -2.5, 2.5);
+      const px = x + x0 - clamp(gx * bend, -2.5, 2.5);
+      const py = y + y0 - clamp(gy * bend, -2.5, 2.5);
       const ink = sample(px, py);
       if (!ink) continue;
 
