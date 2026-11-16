@@ -3,6 +3,7 @@
 const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
+const { fitList } = require("./list-layout");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"), "utf8"));
 const outDir = process.argv[2];
@@ -66,8 +67,12 @@ for (const p of catalog.products) {
   const t = catalog.types[p.type];
   for (const ink of t.inks) {
     for (const [fileKey, [w, h]] of Object.entries(t.files)) {
-      const inner = textBlock(p, ink);
-      const a = t.area;
+      // Estampa-lista: area propria do tipo (listArea) e quebra de linha escolhida para caber
+      const isList = p.layout === "list";
+      const a = (isList && t.listArea) || t.area;
+      const inner = isList
+        ? fitList(p, { ink: INK[ink], accent: ACCENT[ink] }, [0, 0, a[2] * w, a[3] * h], bbox).inner
+        : textBlock(p, ink);
       let body;
       if (t.wrap) {
         // Caneca: a frase aparece dos dois lados (destro e canhoto)

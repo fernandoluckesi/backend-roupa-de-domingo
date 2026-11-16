@@ -36,6 +36,14 @@ aplica a frase no mesmo tamanho e separa cada cor numa foto quadrada:
 `prisma/catalog.ts` escolhe as fotos pelo gênero: masculina usa `m`, feminina usa `f` e
 unissex usa as duas. Se trocar as fotos-base, ajuste as coordenadas em `MODELS`.
 
+## Estampa-lista (várias frases)
+
+Uma entrada com `"layout": "list"` e `items` (ex.: "As 13 melhores frases já ditas") usa o
+`list-layout.js`. O título vem de `lines` e o subtítulo de `small`; as frases são numeradas e
+alinhadas à esquerda. O script testa várias larguras de quebra de linha e fica com a que deixa a
+letra maior na área. A área é a `listArea` do tipo (arte de impressão) e `listArt`/`listErase`
+nas fotos (`mockup.js` e `model-mockup.js`).
+
 ## Depois de mudar o catálogo
 
 1. Atualize `prisma/catalog.ts` (produtos, variantes e imagens) e faça o commit.

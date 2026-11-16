@@ -4,7 +4,7 @@
 // antiga e aplica a frase nova com a mesma tipografia das artes:
 // - cada coluna da area apagada e refeita interpolando a cor da linha logo acima com a
 //   da linha logo abaixo (mantem sombra e curvatura sem emenda);
-// - quando ha um trecho limpo do mesmo tecido (texture), a textura dele e somada por cima.
+// - a frase e aplicada no tecido acompanhando dobras e sombras (fabric-blend.js).
 //
 // Uso: node mockup.js <pasta products> [slug...]
 //   Sem slugs: gera para todo produto do catalog.json que ainda nao tem <slug>-1.jpg.
@@ -13,6 +13,8 @@ const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
 const { PNG } = require("pngjs");
+const { fitList } = require("./list-layout");
+const { blendPrint } = require("./fabric-blend");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"), "utf8"));
 const productsDir = process.argv[2];
@@ -29,7 +31,6 @@ const SIZE = 1000;
 /**
  * Fotos-base por tipo (coordenadas na foto 1000x1000):
  * - erase: [x, y, w, h] que cobre a estampa antiga, com folga;
- * - texture: y de um trecho limpo do mesmo tamanho, nas mesmas colunas (opcional);
  * - art: retangulo onde a frase nova e encaixada; maxScale limita o tamanho da letra.
  */
 const BASES = {
@@ -42,6 +43,8 @@ const BASES = {
     erase: [330, 250, 330, 146],
     art: [345, 258, 305, 130],
     maxScale: 0.22,
+    // Estampa-lista: do peito ate o bolso canguru
+    listArt: [312, 252, 376, 370],
   },
   caneca: {
     shots: [{ n: 1, file: "caneca-chefe-do-ano-1.jpg", ink: "dark" }],
@@ -94,13 +97,18 @@ function placeBlock(inner, [ax, ay, aw, ah], maxScale) {
   return `<g transform="translate(${tx},${ty}) scale(${s})">${inner}</g>`;
 }
 
-/** Foto-base sem a estampa antiga, em PNG (decodificada pelo proprio resvg). */
+/** Foto-base sem a estampa antiga (RGBA), decodificada pelo proprio resvg. */
 const cleanCache = new Map();
-function cleanPhoto(file, base) {
+function cleanPixels(file, base) {
   if (cleanCache.has(file)) return cleanCache.get(file);
   const jpeg = fs.readFileSync(path.join(productsDir, file)).toString("base64");
   const px = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}"><image href="data:image/jpeg;base64,${jpeg}" width="${SIZE}" height="${SIZE}"/></svg>`).render().pixels;
-  const at = (x, y, c) => px[(y * SIZE + x) * 4 + c];
+  // Media de 9 pixels na horizontal: evita listras verticais ao interpolar
+  const at = (x, y, c) => {
+    let sum = 0;
+    for (let dx = -4; dx <= 4; dx++) sum += px[(y * SIZE + Math.min(SIZE - 1, Math.max(0, x + dx))) * 4 + c];
+    return sum / 9;
+  };
   const [ex, ey, ew, eh] = base.erase;
   const top = ey - 1, bottom = ey + eh;
   const out = Buffer.from(px);
@@ -108,32 +116,34 @@ function cleanPhoto(file, base) {
     for (let y = ey; y < bottom; y++) {
       const t = (y - top) / (bottom - top);
       for (let c = 0; c < 3; c++) {
-        let v = at(x, top, c) * (1 - t) + at(x, bottom, c) * t;
-        if (base.texture != null) {
-          // Textura: desvio do trecho limpo em relacao a propria interpolacao
-          const sy = base.texture + (y - ey);
-          const st = base.texture - 1, sb = base.texture + eh;
-          const ts = (sy - st) / (sb - st);
-          v += at(x, sy, c) - (at(x, st, c) * (1 - ts) + at(x, sb, c) * ts);
-        }
+        const v = at(x, top, c) * (1 - t) + at(x, bottom, c) * t;
         out[(y * SIZE + x) * 4 + c] = Math.max(0, Math.min(255, Math.round(v)));
       }
     }
   }
-  const png = new PNG({ width: SIZE, height: SIZE });
-  out.copy(png.data);
-  const b64 = PNG.sync.write(png).toString("base64");
-  cleanCache.set(file, b64);
-  return b64;
+  cleanCache.set(file, out);
+  return out;
+}
+
+function bbox(inner) {
+  const W = 6000;
+  const b = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${W}"><g transform="translate(${W / 2},500)">${inner}</g></svg>`).getBBox();
+  return { x: b.x - W / 2, y: b.y - 500, width: b.width, height: b.height };
 }
 
 function mockup(p, base, shot) {
-  const photo = cleanPhoto(shot.file, base);
-  const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">
-    <image href="data:image/png;base64,${photo}" width="${SIZE}" height="${SIZE}"/>
-    ${placeBlock(textBlock(p, shot.ink), base.art, base.maxScale)}
-  </svg>`;
-  return render(svg).render().asPng();
+  const isList = p.layout === "list" && base.listArt;
+  const area = isList ? base.listArt : base.art;
+  const art = isList
+    ? placeBlock(fitList(p, { ink: INK[shot.ink], accent: ACCENT[shot.ink] }, area, bbox).inner, area, Infinity)
+    : placeBlock(textBlock(p, shot.ink), area, base.maxScale);
+  // Estampa sozinha (fundo transparente), aplicada no tecido acompanhando dobras e sombras
+  const overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">${art}</svg>`).render().pixels;
+  const pixels = Buffer.from(cleanPixels(shot.file, base));
+  blendPrint(pixels, overlay, SIZE, SIZE, area, shot.ink === "dark" ? "light" : "dark");
+  const png = new PNG({ width: SIZE, height: SIZE });
+  pixels.copy(png.data);
+  return PNG.sync.write(png);
 }
 
 let count = 0;

@@ -13,6 +13,8 @@ const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
 const { PNG } = require("pngjs");
+const { fitList } = require("./list-layout");
+const { blendPrint } = require("./fabric-blend");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"), "utf8"));
 const [modelsDir, outDir, ...slugs] = process.argv.slice(2);
@@ -41,8 +43,14 @@ const MODELS = {
     width: 1280,
     height: 853,
     shots: {
-      branca: { crop: [0, 640], erase: [243, 370, 242, 202], art: [249, 376, 230, 190], refWidth: 178, ink: "dark" },
-      preta: { crop: [640, 640], erase: [880, 369, 242, 202], art: [886, 375, 230, 190], refWidth: 174, ink: "light" },
+      branca: {
+        crop: [0, 640], erase: [243, 370, 242, 202], art: [249, 376, 230, 190], refWidth: 178, ink: "dark",
+        listArt: [241, 368, 246, 396],
+      },
+      preta: {
+        crop: [640, 640], erase: [880, 369, 242, 202], art: [886, 375, 230, 190], refWidth: 174, ink: "light",
+        listArt: [878, 367, 246, 396],
+      },
     },
   },
   f: {
@@ -50,8 +58,14 @@ const MODELS = {
     width: 1280,
     height: 853,
     shots: {
-      branca: { crop: [0, 640], erase: [259, 376, 242, 192], art: [265, 382, 230, 180], refWidth: 167, ink: "dark" },
-      preta: { crop: [640, 640], erase: [829, 378, 242, 192], art: [835, 384, 230, 180], refWidth: 167, ink: "light" },
+      branca: {
+        crop: [0, 640], erase: [259, 376, 242, 192], art: [265, 382, 230, 180], refWidth: 167, ink: "dark",
+        listArt: [261, 376, 238, 280],
+      },
+      preta: {
+        crop: [640, 640], erase: [829, 378, 242, 192], art: [835, 384, 230, 180], refWidth: 167, ink: "light",
+        listArt: [831, 378, 238, 280],
+      },
     },
   },
 };
@@ -97,9 +111,9 @@ function placeBlock(inner, shot) {
   return `<g transform="translate(${tx},${ty}) scale(${s})">${inner}</g>`;
 }
 
-/** Foto-base sem as estampas de exemplo, em PNG base64. */
+/** Foto-base sem as estampas de exemplo (RGBA). So a area da estampa de exemplo e refeita. */
 const cleanCache = new Map();
-function cleanPhoto(model) {
+function cleanPixels(model) {
   if (cleanCache.has(model.file)) return cleanCache.get(model.file);
   const { width: W, height: H } = model;
   const jpeg = fs.readFileSync(path.join(modelsDir, model.file)).toString("base64");
@@ -118,21 +132,41 @@ function cleanPhoto(model) {
       }
     }
   }
-  const png = new PNG({ width: W, height: H });
-  out.copy(png.data);
-  const b64 = PNG.sync.write(png).toString("base64");
-  cleanCache.set(model.file, b64);
-  return b64;
+  cleanCache.set(model.file, out);
+  return out;
+}
+
+/** Estampa (grupo SVG em coordenadas da foto) e a area que ela ocupa. */
+function artFor(p, shot) {
+  if (p.layout !== "list") return { art: placeBlock(textBlock(p, shot.ink), shot), area: shot.art };
+  // Estampa-lista: area mais alta no peito, quebra de linha escolhida para a letra ficar maior
+  const area = shot.listArt;
+  const { inner } = fitList(p, { ink: INK[shot.ink], accent: ACCENT[shot.ink] }, area, bbox);
+  const b = bbox(inner);
+  const s = Math.min(area[2] / b.width, area[3] / b.height);
+  const tx = area[0] + area[2] / 2 - (b.x + b.width / 2) * s;
+  const ty = area[1] + area[3] / 2 - (b.y + b.height / 2) * s;
+  return { art: `<g transform="translate(${tx},${ty}) scale(${s})">${inner}</g>`, area };
 }
 
 function photo(p, model, shot) {
+  const { width: W, height: H } = model;
   const [cx, cw] = shot.crop;
-  const w = Math.round((OUT * cw) / model.height);
+  const w = Math.round((OUT * cw) / H);
+
+  // Estampa sozinha (fundo transparente) e aplicada no tecido acompanhando dobras e sombras
+  const { art, area } = artFor(p, shot);
+  const overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">${art}</svg>`).render().pixels;
+  const pixels = Buffer.from(cleanPixels(model));
+  blendPrint(pixels, overlay, W, H, area, shot.ink === "dark" ? "light" : "dark");
+  const png = new PNG({ width: W, height: H });
+  pixels.copy(png.data);
+  const b64 = PNG.sync.write(png).toString("base64");
+
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${OUT}" height="${OUT}">
     <rect width="${OUT}" height="${OUT}" fill="${BACKGROUND}"/>
-    <svg x="${(OUT - w) / 2}" y="0" width="${w}" height="${OUT}" viewBox="${cx} 0 ${cw} ${model.height}">
-      <image href="data:image/png;base64,${cleanPhoto(model)}" width="${model.width}" height="${model.height}"/>
-      ${placeBlock(textBlock(p, shot.ink), shot)}
+    <svg x="${(OUT - w) / 2}" y="0" width="${w}" height="${OUT}" viewBox="${cx} 0 ${cw} ${H}">
+      <image href="data:image/png;base64,${b64}" width="${W}" height="${H}"/>
     </svg>
   </svg>`;
   return render(svg).render().asPng();

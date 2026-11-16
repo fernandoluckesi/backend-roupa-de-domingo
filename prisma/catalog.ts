@@ -1072,9 +1072,10 @@ const MATERIAL: Record<"camisetas" | "moletons" | "canecas" | "garrafas", string
 /** Produtos de cada frase: peças com modelagem para M/F, objetos só na versão unissex. */
 function phraseProducts(phrase: Phrase): ProductSeed[] {
   const kinds =
-    phrase.gender === Gender.UNISSEX
+    phrase.kinds ??
+    (phrase.gender === Gender.UNISSEX
       ? (["camisetas", "canecas", "garrafas"] as const)
-      : (["camisetas", "moletons"] as const);
+      : (["camisetas", "moletons"] as const));
 
   return (kinds as readonly (keyof typeof MATERIAL)[]).map((category): ProductSeed => {
     const prefix = { camisetas: "camiseta", moletons: "moletom", canecas: "caneca", garrafas: "garrafa" }[category];
@@ -1084,12 +1085,13 @@ function phraseProducts(phrase: Phrase): ProductSeed[] {
       slug,
       name: phrase.name,
       shortDescription: phrase.short,
-      description: `${MATERIAL[category]} ${phrase.pitch}`,
+      description: `${MATERIAL[category]} ${phrase.pitch}` + (phrase.details ? `\n\n${phrase.details}` : ""),
       humor: phrase.humor,
       gender: phrase.gender,
       basePriceCents: PRICE[category],
       category,
       tags: [prefix, ...phrase.tags],
+      isFeatured: phrase.isFeatured,
       rating: 0,
       ratingCount: 0,
     };

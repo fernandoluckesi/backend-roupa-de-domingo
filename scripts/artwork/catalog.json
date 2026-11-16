@@ -77,11 +77,13 @@
     { "slug": "moletom-nao-e-bagunca-e-sistema-de-arquivos", "type": "moletom", "lines": ["NÃO É BAGUNÇA, ", "É SISTEMA", "DE ARQUIVOS"], "small": "(SÓ EU ENTENDO)" },
     { "slug": "camiseta-ctrl-z-na-segunda-feira", "type": "camiseta", "lines": ["CTRL+Z NA", "SEGUNDA-FEIRA"], "small": "(TENTEI)" },
     { "slug": "caneca-ctrl-z-na-segunda-feira", "type": "caneca", "lines": ["CTRL+Z NA", "SEGUNDA-FEIRA"], "small": "(TENTEI)" },
-    { "slug": "garrafa-ctrl-z-na-segunda-feira", "type": "garrafa", "lines": ["CTRL+Z NA", "SEGUNDA-FEIRA"], "small": "(TENTEI)" }
+    { "slug": "garrafa-ctrl-z-na-segunda-feira", "type": "garrafa", "lines": ["CTRL+Z NA", "SEGUNDA-FEIRA"], "small": "(TENTEI)" },
+    { "slug": "camiseta-13-melhores-frases-ja-ditas", "type": "camiseta", "layout": "list", "lines": ["AS 13 MELHORES", "FRASES JÁ DITAS"], "small": "(CONTÉM IRONIA)", "items": ["Se tá caro, não compra.", "Se o cara é corintiano, tudo bem.", "E lá eu encontro com uma mulherzinha...", "Um dos países mais respeitados do mundo no crime organizado.", "Ainda bem que a natureza criou o monstro do coronavírus.", "O conceito de democracia é relativo.", "Que monstro vai sair do ventre dessa menina?", "Bandido rouba celular para tomar uma cervejinha.", "Os usuários são responsáveis pelos traficantes, que são vítimas dos usuários também.", "Não vou enganar o povo mais uma vez.", "Então ela vai batucar alguma coisa...", "Quando é que vai fechar a porteira, companheira?", "Não tem nesse país uma viva alma mais honesta do que eu."] },
+    { "slug": "moletom-13-melhores-frases-ja-ditas", "type": "moletom", "layout": "list", "lines": ["AS 13 MELHORES", "FRASES JÁ DITAS"], "small": "(CONTÉM IRONIA)", "items": ["Se tá caro, não compra.", "Se o cara é corintiano, tudo bem.", "E lá eu encontro com uma mulherzinha...", "Um dos países mais respeitados do mundo no crime organizado.", "Ainda bem que a natureza criou o monstro do coronavírus.", "O conceito de democracia é relativo.", "Que monstro vai sair do ventre dessa menina?", "Bandido rouba celular para tomar uma cervejinha.", "Os usuários são responsáveis pelos traficantes, que são vítimas dos usuários também.", "Não vou enganar o povo mais uma vez.", "Então ela vai batucar alguma coisa...", "Quando é que vai fechar a porteira, companheira?", "Não tem nesse país uma viva alma mais honesta do que eu."] }
   ],
   "types": {
-    "camiseta": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "area": [0.08, 0.06, 0.84, 0.42] },
-    "moletom": { "files": { "front": [1800, 2400] }, "inks": ["light"], "area": [0.1, 0.1, 0.8, 0.36] },
+    "camiseta": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "area": [0.08, 0.06, 0.84, 0.42], "listArea": [0.08, 0.05, 0.84, 0.8] },
+    "moletom": { "files": { "front": [1800, 2400] }, "inks": ["light"], "area": [0.1, 0.1, 0.8, 0.36], "listArea": [0.08, 0.06, 0.84, 0.5] },
     "caneca": { "files": { "default": [2700, 1050] }, "inks": ["dark"], "wrap": true, "area": [0.04, 0.1, 0.42, 0.8] },
     "capa": { "files": { "iphone": [879, 1830], "samsung": [936, 1950] }, "inks": ["dark"], "area": [0.12, 0.3, 0.76, 0.5] },
     "garrafa": { "files": { "default": [2557, 1582] }, "inks": ["dark", "light"], "area": [0.3, 0.12, 0.4, 0.76] }

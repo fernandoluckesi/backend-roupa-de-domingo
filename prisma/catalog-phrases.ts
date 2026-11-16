@@ -26,7 +26,29 @@ export type Phrase = {
   humor: Humor;
   gender: Gender;
   tags: string[];
+  /** Peças da frase, quando fogem do padrão por gênero */
+  kinds?: ("camisetas" | "moletons" | "canecas" | "garrafas")[];
+  isFeatured?: boolean;
+  /** Texto extra no fim da descrição (ex.: a lista de frases da estampa) */
+  details?: string;
 };
+
+/** Estampa-lista: as frases aparecem na arte e, por extenso, na descrição. */
+const THIRTEEN_QUOTES = [
+  "Se tá caro, não compra.",
+  "Se o cara é corintiano, tudo bem.",
+  "E lá eu encontro com uma mulherzinha...",
+  "Um dos países mais respeitados do mundo no crime organizado.",
+  "Ainda bem que a natureza criou o monstro do coronavírus.",
+  "O conceito de democracia é relativo.",
+  "Que monstro vai sair do ventre dessa menina?",
+  "Bandido rouba celular para tomar uma cervejinha.",
+  "Os usuários são responsáveis pelos traficantes, que são vítimas dos usuários também.",
+  "Não vou enganar o povo mais uma vez.",
+  "Então ela vai batucar alguma coisa...",
+  "Quando é que vai fechar a porteira, companheira?",
+  "Não tem nesse país uma viva alma mais honesta do que eu.",
+];
 
 export const PHRASES: Phrase[] = [
   // ------------------------------------------------------------ Ácido
@@ -251,5 +273,20 @@ export const PHRASES: Phrase[] = [
     humor: Humor.NERD,
     gender: Gender.UNISSEX,
     tags: ["nerd", "tecnologia", "segunda-feira", "unissex"],
+  },
+
+  // ------------------------------------------------------------ Político: estampa-lista
+  {
+    key: "13-melhores-frases-ja-ditas",
+    code: "13FRASES",
+    name: "As 13 melhores frases já ditas (contém ironia)",
+    short: "Uma coletânea histórica. Nem precisa dizer de quem.",
+    pitch: "Treze frases que entraram para a história, impressas inteiras, e legíveis, no peito.",
+    humor: Humor.POLITICO,
+    gender: Gender.UNISSEX,
+    tags: ["politica", "frases", "ironia", "unissex"],
+    kinds: ["camisetas", "moletons"],
+    isFeatured: true,
+    details: "Frases da estampa:\n" + THIRTEEN_QUOTES.map((q, i) => `${i + 1}. "${q}"`).join("\n"),
   },
 ];
