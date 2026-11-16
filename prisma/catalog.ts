@@ -46,17 +46,6 @@ export type ProductSeed = {
 
 const SHIRT_SIZES = ["P", "M", "G", "GG", "XGG"];
 
-/** Camiseta original (so branca), nos tamanhos da loja. */
-function whiteShirtVariants(prefix: string, priceCents: number): VariantSeed[] {
-  return SHIRT_SIZES.map((size) => ({
-    sku: `${prefix}-BR-${size}`,
-    size,
-    color: "Branca",
-    priceCents,
-    weightGrams: 250,
-  }));
-}
-
 /** Sigla da cor usada no SKU. */
 const COLOR_CODE: Record<string, string> = {
   Preta: "PT",
@@ -187,7 +176,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "sarcasmo", "presente", "best-seller"],
-    isFeatured: true,
     rating: 4.8,
     ratingCount: 312,
     images: [
@@ -220,7 +208,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "existencial", "terapia", "segunda-feira"],
-    isFeatured: true,
     rating: 4.9,
     ratingCount: 487,
     images: [
@@ -253,7 +240,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "trabalho", "corporativo", "home-office"],
-    isFeatured: true,
     rating: 4.7,
     ratingCount: 221,
     images: [
@@ -276,23 +262,6 @@ export const PRODUCTS: ProductSeed[] = [
     ],
   },
   {
-    slug: "camiseta-roupa-de-domingo",
-    name: "Roupa de Domingo (a original)",
-    shortDescription: "O nome da loja no peito. Estampada por nós, sob demanda.",
-    description:
-      "Camiseta branca 100% algodão fio penteado, impressão DTG na frente. Estampada por nós depois da compra e enviada pelos Correios.",
-    humor: Humor.EXISTENCIAL,
-    gender: Gender.UNISSEX,
-    basePriceCents: 8990,
-    category: "camisetas",
-    tags: ["camiseta", "colecao-assinatura", "domingo", "producao-real"],
-    isFeatured: true,
-    rating: 5,
-    ratingCount: 1,
-    images: ["/products/camiseta-roupa-de-domingo-1.png"],
-    variants: whiteShirtVariants("CAM-RD", 8990),
-  },
-  {
     slug: "camiseta-domingo-eterno",
     name: "Domingo é uma sensação, não um dia",
     shortDescription: "A ansiedade das 18h de domingo, agora vestível.",
@@ -303,7 +272,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "manifesto", "domingo", "colecao-assinatura"],
-    isFeatured: true,
     rating: 5,
     ratingCount: 158,
     images: [
@@ -399,7 +367,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: PRICE.camisetas,
     category: "camisetas",
     tags: ["camiseta", "cantada", "paquera", "destaque"],
-    isFeatured: true,
     rating: 4.7,
     ratingCount: 268,
     images: [
@@ -685,7 +652,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "cafe", "escritorio", "best-seller"],
-    isFeatured: true,
     rating: 4.9,
     ratingCount: 603,
     images: [
@@ -729,7 +695,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "trabalho", "reuniao", "home-office"],
-    isFeatured: true,
     rating: 4.8,
     ratingCount: 441,
     images: [
@@ -830,7 +795,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 21990,
     category: "moletons",
     tags: ["moletom", "introversao", "capuz", "frio"],
-    isFeatured: true,
     rating: 4.9,
     ratingCount: 12,
     images: [
@@ -863,7 +827,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 21990,
     category: "moletons",
     tags: ["moletom", "domingo", "segunda-feira", "ansiedade"],
-    isFeatured: false,
     rating: 4.8,
     ratingCount: 9,
     images: [
@@ -896,7 +859,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 21990,
     category: "garrafas",
     tags: ["garrafa", "agua", "cansaco", "academia"],
-    isFeatured: true,
     rating: 4.7,
     ratingCount: 8,
     images: [
@@ -921,7 +883,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 21990,
     category: "garrafas",
     tags: ["garrafa", "agua", "trabalho", "reuniao"],
-    isFeatured: false,
     rating: 4.9,
     ratingCount: 6,
     images: [
@@ -946,7 +907,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "memes", "internet", "risada"],
-    isFeatured: true,
     rating: 4.9,
     ratingCount: 23,
     images: [
@@ -979,7 +939,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 8990,
     category: "camisetas",
     tags: ["camiseta", "memes", "sextou", "trabalho"],
-    isFeatured: true,
     rating: 4.8,
     ratingCount: 31,
     images: [
@@ -1012,7 +971,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 6990,
     category: "canecas",
     tags: ["caneca", "memes", "cafe", "conselho"],
-    isFeatured: false,
     rating: 4.7,
     ratingCount: 14,
     images: [
@@ -1035,7 +993,6 @@ export const PRODUCTS: ProductSeed[] = [
     basePriceCents: 21990,
     category: "moletons",
     tags: ["moletom", "memes", "audio", "whatsapp"],
-    isFeatured: false,
     rating: 4.9,
     ratingCount: 11,
     images: [
@@ -1098,6 +1055,7 @@ function phraseProducts(phrase: Phrase): ProductSeed[] {
         return {
           ...base,
           images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Branca" }],
+          isFeatured: phrase.featured ?? false,
           variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas),
         };
       case "moletons":

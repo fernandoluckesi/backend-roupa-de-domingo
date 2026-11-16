@@ -130,8 +130,8 @@ export class CatalogService {
     return this.prisma.product.findMany({
       where: { isActive: true, isSecret: false, isFeatured: true },
       select: PRODUCT_LIST_SELECT,
-      orderBy: { ratingCount: "desc" },
-      take: 8,
+      orderBy: [{ ratingCount: "desc" }, { createdAt: "asc" }],
+      take: 12,
     });
   }
 

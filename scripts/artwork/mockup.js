@@ -23,7 +23,6 @@ const FONT_FILES = [
   path.join(__dirname, "fonts", "SpaceGrotesk-var.ttf"),
 ];
 const INK = { dark: "#141414", light: "#F5F5F0" };
-const ACCENT = { dark: "#141414", light: "#D9FF3F" };
 const SIZE = 1000;
 
 /**
@@ -75,8 +74,6 @@ function textBlock(p, ink) {
     out += `<text x="0" y="${y}" text-anchor="middle" font-family="Space Grotesk" font-weight="400" font-size="${size * 0.4}" fill="${INK[ink]}">${esc(p.small)}</text>`;
     y += size * 0.4;
   }
-  y += size * 0.5;
-  out += `<text x="0" y="${y}" text-anchor="middle" font-family="Space Grotesk" font-weight="400" font-size="${size * 0.22}" letter-spacing="12" fill="${ACCENT[ink]}">ROUPA DE DOMINGO</text>`;
   return out;
 }
 
