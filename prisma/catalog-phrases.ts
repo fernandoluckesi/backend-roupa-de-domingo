@@ -28,7 +28,30 @@ export type Phrase = {
   tags: string[];
   /** Camiseta da frase aparece na vitrine da home (destaque) */
   featured?: boolean;
+  /** Peças da frase, quando fogem do padrão por gênero */
+  kinds?: ("camisetas" | "moletons" | "canecas" | "garrafas")[];
+  /** Todas as peças da frase aparecem na vitrine da home (destaque) */
+  isFeatured?: boolean;
+  /** Texto extra no fim da descrição (ex.: a lista de frases da estampa) */
+  details?: string;
 };
+
+/** Estampa-lista: as frases aparecem na arte e, por extenso, na descrição. */
+const THIRTEEN_QUOTES = [
+  "Se tá caro, não compra.",
+  "Se o cara é corintiano, tudo bem.",
+  "E lá eu encontro com uma mulherzinha...",
+  "Um dos países mais respeitados do mundo no crime organizado.",
+  "Ainda bem que a natureza criou o monstro do coronavírus.",
+  "O conceito de democracia é relativo.",
+  "Que monstro vai sair do ventre dessa menina?",
+  "Bandido rouba celular para tomar uma cervejinha.",
+  "Os usuários são responsáveis pelos traficantes, que são vítimas dos usuários também.",
+  "Não vou enganar o povo mais uma vez.",
+  "Então ela vai batucar alguma coisa...",
+  "Quando é que vai fechar a porteira, companheira?",
+  "Não tem nesse país uma viva alma mais honesta do que eu.",
+];
 
 export const PHRASES: Phrase[] = [
   // ------------------------------------------------------------ Ácido
@@ -353,5 +376,113 @@ export const PHRASES: Phrase[] = [
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     tags: ["sarcasmo", "trabalho", "unissex"],
+  },
+
+  // ------------------------------------------------------------ Político: estampa-lista
+  {
+    key: "13-melhores-frases-ja-ditas",
+    code: "13FRASES",
+    name: "As 13 melhores frases já ditas (contém ironia)",
+    short: "Uma coletânea histórica. Nem precisa dizer de quem.",
+    pitch: "Treze frases que entraram para a história, impressas inteiras, e legíveis, no peito.",
+    humor: Humor.POLITICO,
+    gender: Gender.UNISSEX,
+    tags: ["politica", "frases", "ironia", "unissex"],
+    kinds: ["camisetas", "moletons"],
+    isFeatured: true,
+    details: "Frases da estampa:\n" + THIRTEEN_QUOTES.map((q, i) => `${i + 1}. "${q}"`).join("\n"),
+  },
+
+  // ------------------------------------------------------------ Coleção sem filtro, parte 2 (nov/2026)
+  {
+    key: "se-eu-gostasse-de-mimimi",
+    code: "MIMIMI",
+    name: "Se eu gostasse de mimimi eu comprava um gato gago",
+    short: "Reclamação aqui só com hora marcada.",
+    pitch: "Para quem tem paciência curta e nenhuma vaga para drama.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    tags: ["acido", "zoeira", "unissex"],
+  },
+  {
+    key: "pra-quem-tem-alzheimer-toda-festa-e-surpresa",
+    code: "FESTA",
+    name: "Pra quem tem Alzheimer toda festa é surpresa",
+    short: "Humor de mau gosto, com confete.",
+    pitch: "Humor ácido sem pedido de desculpas. Use por sua conta e risco.",
+    humor: Humor.ACIDO,
+    gender: Gender.UNISSEX,
+    tags: ["acido", "humor-negro", "unissex"],
+  },
+  {
+    key: "nunca-uma-melhoria",
+    code: "PIORA",
+    name: "Nunca uma melhoria. Sempre uma piora",
+    short: "Otimismo calibrado pela experiência.",
+    pitch: "Para quem já parou de perguntar se dá para piorar, porque sempre dá.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    tags: ["sarcasmo", "pessimismo", "unissex"],
+  },
+  {
+    key: "comunista-de-iphone",
+    code: "TOSA",
+    name: "Comunista de iPhone é igual tosa de porco: muito grito e pouco resultado",
+    short: "Revolução parcelada em 12 vezes.",
+    pitch: "Para o almoço de família em que alguém vai discordar, e alto.",
+    humor: Humor.POLITICO,
+    gender: Gender.UNISSEX,
+    tags: ["politica", "ironia", "unissex"],
+  },
+  {
+    key: "quando-chove-merda-nunca-e-garoa",
+    code: "GAROA",
+    name: "Quando chove merda nunca é garoa",
+    short: "Previsão do tempo para a semana toda.",
+    pitch: "Para as fases em que o problema vem em dupla, com juros e na segunda-feira.",
+    humor: Humor.EXISTENCIAL,
+    gender: Gender.UNISSEX,
+    tags: ["existencial", "palavrao", "unissex"],
+  },
+  {
+    key: "mais-inutil-que-feriado-no-domingo",
+    code: "FERIADO",
+    name: "Mais inútil que feriado no domingo",
+    short: "A maior injustiça do calendário.",
+    pitch: "Para aquela reunião, aquele colega e aquele feriado que caiu no dia errado.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    tags: ["sarcasmo", "feriado", "domingo", "unissex"],
+  },
+  {
+    key: "eu-prefiro-morrer-do-que-perder-a-vida",
+    code: "MORRER",
+    name: "Eu prefiro morrer do que perder a vida!",
+    short: "Estampa desenhada, com a frase mais lógica já dita.",
+    pitch: "Para quem toma decisões difíceis com absoluta convicção e nenhum sentido.",
+    humor: Humor.MEMES,
+    gender: Gender.UNISSEX,
+    tags: ["memes", "desenho", "nostalgia", "unissex"],
+    kinds: ["camisetas", "moletons", "canecas"],
+  },
+  {
+    key: "diferenca-de-um-soco-e-um-aluno-de-federal",
+    code: "SOCO",
+    name: "Qual a diferença de um soco e um aluno de uma Federal? O soco pode ser de direita",
+    short: "Piada de corredor de universidade, sem diploma.",
+    pitch: "Para o almoço de família em que alguém vai discordar, e alto.",
+    humor: Humor.POLITICO,
+    gender: Gender.UNISSEX,
+    tags: ["politica", "ironia", "universidade", "unissex"],
+  },
+  {
+    key: "mais-perdido-que-azeitona-na-boca-de-banguelo",
+    code: "AZEITONA",
+    name: "Mais perdido que azeitona na boca de banguelo",
+    short: "Sem rumo, sem apoio e rolando de um lado para o outro.",
+    pitch: "Para quem chegou na reunião, na festa ou na vida adulta sem saber o que está acontecendo.",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    tags: ["sarcasmo", "zoeira", "unissex"],
   },
 ];

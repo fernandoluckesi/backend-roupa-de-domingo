@@ -3,6 +3,9 @@
 const fs = require("fs");
 const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
+const { fitList } = require("./list-layout");
+const { textBlock: textBlockSvg } = require("./text-block");
+const { imageBlock } = require("./image-layout");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"), "utf8"));
 const outDir = process.argv[2];
@@ -13,26 +16,12 @@ const FONT_FILES = [
   path.join(__dirname, "fonts", "SpaceGrotesk-var.ttf"),
 ];
 const INK = { dark: "#141414", light: "#F5F5F0" };
+// Cor dos numeros da estampa-lista (list-layout.js)
+const ACCENT = { dark: "#141414", light: "#D9FF3F" };
 
-const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
-function textBlock(p, ink) {
-  // Bloco em coordenadas livres; depois e escalado para caber na area
-  const size = 200;
-  const lh = size * 1.0;
-  let y = size;
-  let out = "";
-  for (const line of p.lines) {
-    out += `<text x="0" y="${y}" text-anchor="middle" font-family="Archivo Black" font-size="${size}" fill="${INK[ink]}" letter-spacing="-4">${esc(line)}</text>`;
-    y += lh;
-  }
-  if (p.small) {
-    y += size * 0.05;
-    out += `<text x="0" y="${y}" text-anchor="middle" font-family="Space Grotesk" font-weight="700" font-size="${size * 0.42}" fill="${INK[ink]}">${esc(p.small)}</text>`;
-    y += size * 0.42;
-  }
-  return out;
-}
+/** Frase da estampa na cor da tinta (text-block.js). */
+const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
 
 function render(svg) {
   return new Resvg(svg, {
@@ -63,8 +52,15 @@ for (const p of catalog.products) {
   const t = catalog.types[p.type];
   for (const ink of t.inks) {
     for (const [fileKey, [w, h]] of Object.entries(t.files)) {
-      const inner = textBlock(p, ink);
-      const a = t.area;
+      // Estampa-lista: area propria do tipo (listArea) e quebra de linha escolhida para caber
+      const isList = p.layout === "list";
+      const isImage = p.layout === "image";
+      const a = ((isList || isImage) && t.listArea) || t.area;
+      const inner = isList
+        ? fitList(p, { ink: INK[ink], accent: ACCENT[ink] }, [0, 0, a[2] * w, a[3] * h], bbox).inner
+        : isImage
+          ? imageBlock(p, INK[ink])
+          : textBlock(p, ink);
       let body;
       if (t.wrap) {
         // Caneca: a frase aparece dos dois lados (destro e canhoto)

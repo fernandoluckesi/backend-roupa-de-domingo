@@ -17,13 +17,22 @@ Rode a partir de uma pasta temporária que tenha:
 
 ## Mockups do site
 
-`mockup.js <pasta products> [slug...]` gera as fotos de produto para o site a partir
-das fotos-base já existentes (camiseta, moletom, caneca e garrafa). Ele apaga a estampa
-antiga e aplica a frase nova. Sem slugs, gera só para os produtos sem `<slug>-1.jpg`.
-Precisa também do pacote `pngjs`.
+`mockup.js <pasta de saída> [slug...]` gera as fotos de produto das peças do fornecedor a partir das
+fotos-base em `bases/` (1000×1000, fundo branco, sem estampa; vieram do catálogo do fornecedor, com as
+cores extras recoloridas). Cada entrada do `catalog.json` gera todas as versões vendidas da estampa:
+
+| Entrada | Arquivos gerados |
+| ------- | ---------------- |
+| `camiseta-<frase>` | `oversized-<frase>` |
+| `moletom-<frase>` | `moletom-<frase>-<cinza\|preta\|branca>` e `moletom-gola-careca-<frase>-<cor>` |
+| `caneca-<frase>` | `caneca-<frase>-<branca\|preta\|magica\|termica\|coracao>` |
+| `garrafa-<frase>` | `garrafa-<frase>-<queta-preta\|queta-branca\|queta-roxa\|queta-azul\|norton>` |
+
+Sem slugs, gera tudo. Precisa também do pacote `pngjs`. Os produtos, as cores e os preços dessas
+versões são montados no fim de `prisma/catalog.ts` (linha do fornecedor).
 
 A saída é PNG. Converta para JPG (qualidade ~85) antes do commit, por exemplo com
-System.Drawing no PowerShell, e apague os PNGs.
+`sips -s format jpeg` no macOS, e apague os PNGs.
 
 ## Fotos das camisetas com modelo
 
@@ -35,6 +44,21 @@ aplica a frase no mesmo tamanho e separa cada cor numa foto quadrada:
 
 `prisma/catalog.ts` escolhe as fotos pelo gênero: masculina usa `m`, feminina usa `f` e
 unissex usa as duas. Se trocar as fotos-base, ajuste as coordenadas em `MODELS`.
+
+## Estampa-lista (várias frases)
+
+Uma entrada com `"layout": "list"` e `items` (ex.: "As 13 melhores frases já ditas") usa o
+`list-layout.js`. O título vem de `lines` e o subtítulo de `small`; as frases são numeradas e
+alinhadas à esquerda. O script testa várias larguras de quebra de linha e fica com a que deixa a
+letra maior na área. A área é a `listArea` do tipo (arte de impressão) e `listArt`/`listErase`
+nas fotos (`mockup.js` e `model-mockup.js`).
+
+## Estampa desenhada (imagem)
+
+Uma entrada com `"layout": "image"` e `image` (ex.: "Eu prefiro morrer do que perder a vida!") usa o
+`image-layout.js`. O desenho fica em `images/`, em PNG com fundo branco. Ele é tratado como arte de uma
+cor só: o branco vira transparente e o traço recebe a cor da tinta (escura em peça clara, clara em
+peça escura). Usa a mesma área alta da estampa-lista (`listArea` / `listArt`) e precisa do pacote `pngjs`.
 
 ## Depois de mudar o catálogo
 

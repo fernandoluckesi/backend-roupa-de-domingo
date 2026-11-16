@@ -44,13 +44,21 @@ export type ProductSeed = {
   variants: VariantSeed[];
 };
 
-const SHIRT_SIZES = ["P", "M", "G", "GG", "XGG"];
+/** Tamanhos do fornecedor: P a GG são padrão; EXG, G1, G2 e G3 são especiais. */
+const SHIRT_SIZES = ["P", "M", "G", "GG", "EXG", "G1", "G2", "G3"];
+const SPECIAL_SIZES = new Set(["EXG", "G1", "G2", "G3"]);
+/** O fornecedor cobra R$ 5 a mais por peça em tamanho especial; na loja o acréscimo é de R$ 10. */
+const SPECIAL_SIZE_EXTRA_CENTS = 1000;
+const sizePrice = (priceCents: number, size?: string) =>
+  priceCents + (size && SPECIAL_SIZES.has(size) ? SPECIAL_SIZE_EXTRA_CENTS : 0);
 
 /** Sigla da cor usada no SKU. */
 const COLOR_CODE: Record<string, string> = {
   Preta: "PT",
   Branca: "BR",
   Marinho: "MA",
+  Cinza: "CZ",
+  "Off-white": "OW",
 };
 
 /** Camiseta nas cores informadas, em todos os tamanhos. */
@@ -64,7 +72,7 @@ function shirtVariants(
       sku: `${prefix}-${COLOR_CODE[color]}-${size}`,
       size,
       color,
-      priceCents,
+      priceCents: sizePrice(priceCents, size),
       weightGrams: 250,
     })),
   );
@@ -81,7 +89,7 @@ function hoodieVariants(
       sku: `${prefix}-${COLOR_CODE[color]}-${size}`,
       size,
       color,
-      priceCents,
+      priceCents: sizePrice(priceCents, size),
       weightGrams: 650,
     })),
   );
@@ -120,10 +128,10 @@ function bottleVariants(
  * catalogo existente em vez de cada bloco repetir o numero.
  */
 const PRICE = {
-  camisetas: 8990,
+  camisetas: 10990,
   canecas: 6990,
-  moletons: 21990,
-  garrafas: 21990,
+  moletons: 15990,
+  garrafas: 7990,
 } as const;
 
 export const CATEGORIES = [
@@ -170,7 +178,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Sorria, é de graça (o resto não)",
     shortDescription: "A gentileza é gratuita. A camiseta, infelizmente, não.",
     description:
-      "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTG na frente. Ideal para quem quer parecer simpático sem se comprometer. Lavar do lado avesso, como suas intenções.",
+      "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTF na frente. Ideal para quem quer parecer simpático sem se comprometer. Lavar do lado avesso, como suas intenções.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: 8990,
@@ -361,7 +369,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Gata, não sou Airton Senna mas quero me acabar nas suas curvas",
     shortDescription: "Cantada de pista molhada, impressa em algodão.",
     description:
-      "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTG na frente. Para quem acelera na conversa e freia na hora de assumir. Resultado em pista não garantido; vergonha alheia, sim.",
+      "Camiseta 100% algodão fio penteado, produzida no Brasil, com estampa DTF na frente. Para quem acelera na conversa e freia na hora de assumir. Resultado em pista não garantido; vergonha alheia, sim.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.camisetas,
@@ -384,7 +392,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Tão natural quanto a luz do poste",
     shortDescription: "Espontaneidade de lâmpada de rua: liga no automático.",
     description:
-      "Camiseta 100% algodão fio penteado com estampa DTG na frente. Para quem é autêntico do mesmo jeito que iluminação pública é aconchegante. Combina com sinceridade não solicitada.",
+      "Camiseta 100% algodão fio penteado com estampa DTF na frente. Para quem é autêntico do mesmo jeito que iluminação pública é aconchegante. Combina com sinceridade não solicitada.",
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.camisetas,
@@ -403,7 +411,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Tão natural quanto a luz do poste",
     shortDescription: "Para o café que também finge ser artesanal.",
     description:
-      "Caneca de cerâmica branca com impressão sublimática, 325 ml. Vai ao micro-ondas e à lava-louças. A naturalidade é discutível; a resistência não.",
+      "Caneca em cinco modelos: branca, preta, mágica (preta quando fria), térmica e com alça de coração. A naturalidade é discutível; a resistência não.",
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.canecas,
@@ -422,7 +430,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Tão natural quanto a luz do poste",
     shortDescription: "Capuz para a sua espontaneidade de 60 watts.",
     description:
-      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Esquenta de verdade, ao contrário da sua naturalidade.",
+      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Esquenta de verdade, ao contrário da sua naturalidade.",
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.moletons,
@@ -441,7 +449,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Tão natural quanto a luz do poste",
     shortDescription: "Hidratação com a mesma sutileza de um refletor.",
     description:
-      "Garrafa térmica de aço inox com parede dupla, 500 ml. Mantém a água gelada por horas e a ironia por tempo indeterminado.",
+      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Mantém a água gelada por horas e a ironia por tempo indeterminado.",
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.garrafas,
@@ -462,7 +470,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
     shortDescription: "Um círculo e pronto. Projeto entregue.",
     description:
-      "Camiseta 100% algodão fio penteado com estampa DTG na frente. Homenagem a quem entende que o mínimo viável já é o suficiente. Lavar do lado avesso, se der vontade.",
+      "Camiseta 100% algodão fio penteado com estampa DTF na frente. Homenagem a quem entende que o mínimo viável já é o suficiente. Lavar do lado avesso, se der vontade.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.camisetas,
@@ -500,7 +508,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
     shortDescription: "Conforto com esforço criativo de um círculo.",
     description:
-      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Para dias em que fazer o básico já parece bastante.",
+      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Para dias em que fazer o básico já parece bastante.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.moletons,
@@ -519,7 +527,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Mais preguiçoso do que o desenhista da bandeira do Japão",
     shortDescription: "Bebe água e não desenha mais nada.",
     description:
-      "Garrafa térmica de aço inox com parede dupla, 500 ml. Design sóbrio, como manda a inspiração de quem já terminou o trabalho.",
+      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Design sóbrio, como manda a inspiração de quem já terminou o trabalho.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.garrafas,
@@ -540,7 +548,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Minha paciência está mais curta que coice de porco",
     shortDescription: "Aviso prévio em algodão.",
     description:
-      "Camiseta 100% algodão fio penteado com estampa DTG na frente. Serve como comunicado oficial para colegas, parentes e qualquer pessoa que comece a frase com 'só uma perguntinha'.",
+      "Camiseta 100% algodão fio penteado com estampa DTF na frente. Serve como comunicado oficial para colegas, parentes e qualquer pessoa que comece a frase com 'só uma perguntinha'.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.camisetas,
@@ -578,7 +586,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Minha paciência está mais curta que coice de porco",
     shortDescription: "Capuz para encurtar a conversa junto.",
     description:
-      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. O capuz existe para quando o aviso da estampa não for suficiente.",
+      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. O capuz existe para quando o aviso da estampa não for suficiente.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.moletons,
@@ -597,7 +605,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Minha paciência está mais curta que coice de porco",
     shortDescription: "Hidrate-se antes de responder.",
     description:
-      "Garrafa térmica de aço inox com parede dupla, 500 ml. Beber água não aumenta a paciência, mas ocupa a boca enquanto você pensa.",
+      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Beber água não aumenta a paciência, mas ocupa a boca enquanto você pensa.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: PRICE.garrafas,
@@ -646,7 +654,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Antes do café eu não assino contrato",
     shortDescription: "Aviso legal em cerâmica.",
     description:
-      "Caneca de cerâmica branca com impressão sublimática. Suporta micro-ondas, lava-louças e sua personalidade matinal.",
+      "Caneca em cinco modelos: branca, preta, mágica (preta quando fria), térmica e com alça de coração. Suporta micro-ondas, lava-louças e sua personalidade matinal.",
     humor: Humor.ACIDO,
     gender: Gender.UNISSEX,
     basePriceCents: 6990,
@@ -668,7 +676,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Li tudo no grupo da família e não respondi",
     shortDescription: "Cerâmica neutra para opinião que não é.",
     description:
-      "Caneca de cerâmica branca com impressão sublimática. Aguenta micro-ondas, lava-louças e aquele áudio de cinco minutos sobre política às sete da manhã.",
+      "Caneca em cinco modelos: branca, preta, mágica (preta quando fria), térmica e com alça de coração. Aguenta micro-ondas, lava-louças e aquele áudio de cinco minutos sobre política às sete da manhã.",
     humor: Humor.POLITICO,
     gender: Gender.UNISSEX,
     basePriceCents: 6990,
@@ -789,7 +797,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Socialmente indisponível",
     shortDescription: "Capuz para não ser reconhecido no próprio aniversário.",
     description:
-      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Recomendado para aniversários, reuniões de condomínio e qualquer convite que comece com 'é rapidinho'.",
+      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Recomendado para aniversários, reuniões de condomínio e qualquer convite que comece com 'é rapidinho'.",
     humor: Humor.SARCASTICO,
     gender: Gender.FEMININO,
     basePriceCents: 21990,
@@ -821,7 +829,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Domingo, 18h. Pronto para o pânico",
     shortDescription: "A abertura do Fantástico, agora com capuz.",
     description:
-      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Quentinho o bastante para enfrentar a segunda-feira, ou pelo menos para fingir.",
+      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Quentinho o bastante para enfrentar a segunda-feira, ou pelo menos para fingir.",
     humor: Humor.EXISTENCIAL,
     gender: Gender.UNISSEX,
     basePriceCents: 21990,
@@ -853,7 +861,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Hidratado e ainda assim cansado",
     shortDescription: "Dois litros por dia e nenhuma melhora.",
     description:
-      "Garrafa térmica de aço inox com parede dupla, 500 ml. Mantém a água gelada por horas. A disposição, infelizmente, não acompanha.",
+      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Mantém a água gelada por horas. A disposição, infelizmente, não acompanha.",
     humor: Humor.EXISTENCIAL,
     gender: Gender.UNISSEX,
     basePriceCents: 21990,
@@ -877,7 +885,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Bebendo água para não responder",
     shortDescription: "Cada gole é uma resposta que você não deu.",
     description:
-      "Garrafa térmica de aço inox com parede dupla, 500 ml. Ideal para reuniões: enquanto você bebe, ninguém espera que você fale.",
+      "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml). Ideal para reuniões: enquanto você bebe, ninguém espera que você fale.",
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     basePriceCents: 21990,
@@ -965,7 +973,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Aceita que dói menos (dói igual)",
     shortDescription: "O conselho que todo mundo dá e ninguém consegue seguir.",
     description:
-      "Caneca de cerâmica branca de 325 ml com a frase nos dois lados (destro e canhoto). Vai ao micro-ondas e à lava-louças. A dor continua igual.",
+      "Caneca em cinco modelos, com a frase estampada. A dor continua igual.",
     humor: Humor.MEMES,
     gender: Gender.UNISSEX,
     basePriceCents: 6990,
@@ -987,7 +995,7 @@ export const PRODUCTS: ProductSeed[] = [
     name: "Mandei áudio de 7 minutos (ouve no 2x)",
     shortDescription: "Para quem não sabe resumir e tem orgulho disso.",
     description:
-      "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente. Quentinho o bastante para gravar mais um áudio enquanto espera o ônibus.",
+      "Moletom canguru com capuz, em algodão, com estampa DTF na frente. Quentinho o bastante para gravar mais um áudio enquanto espera o ônibus.",
     humor: Humor.MEMES,
     gender: Gender.UNISSEX,
     basePriceCents: 21990,
@@ -1020,18 +1028,19 @@ export const PRODUCTS: ProductSeed[] = [
 
 /** Texto do produto por categoria; a piada da frase (pitch) fecha a descrição. */
 const MATERIAL: Record<"camisetas" | "moletons" | "canecas" | "garrafas", string> = {
-  camisetas: "Camiseta 100% algodão fio penteado com estampa DTG na frente.",
-  moletons: "Moletom canguru com capuz, 50% algodão e 50% poliéster, estampa DTG na frente.",
-  canecas: "Caneca de cerâmica branca com impressão sublimática, 325 ml. Vai ao micro-ondas e à lava-louças.",
-  garrafas: "Garrafa térmica de aço inox com parede dupla, 500 ml.",
+  camisetas: "Camiseta 100% algodão fio penteado com estampa DTF na frente.",
+  moletons: "Moletom canguru com capuz, em algodão, com estampa DTF na frente.",
+  canecas: "Caneca em cinco modelos: branca, preta, mágica (preta quando fria), térmica e com alça de coração.",
+  garrafas: "Garrafa em dois modelos: Queta Soft (alumínio emborrachado com tampa de bambu, 550 ml) ou Norton (térmica de aço inox com parede dupla, 570 ml).",
 };
 
 /** Produtos de cada frase: peças com modelagem para M/F, objetos só na versão unissex. */
 function phraseProducts(phrase: Phrase): ProductSeed[] {
   const kinds =
-    phrase.gender === Gender.UNISSEX
+    phrase.kinds ??
+    (phrase.gender === Gender.UNISSEX
       ? (["camisetas", "canecas", "garrafas"] as const)
-      : (["camisetas", "moletons"] as const);
+      : (["camisetas", "moletons"] as const));
 
   return (kinds as readonly (keyof typeof MATERIAL)[]).map((category): ProductSeed => {
     const prefix = { camisetas: "camiseta", moletons: "moletom", canecas: "caneca", garrafas: "garrafa" }[category];
@@ -1041,12 +1050,13 @@ function phraseProducts(phrase: Phrase): ProductSeed[] {
       slug,
       name: phrase.name,
       shortDescription: phrase.short,
-      description: `${MATERIAL[category]} ${phrase.pitch}`,
+      description: `${MATERIAL[category]} ${phrase.pitch}` + (phrase.details ? `\n\n${phrase.details}` : ""),
       humor: phrase.humor,
       gender: phrase.gender,
       basePriceCents: PRICE[category],
       category,
       tags: [prefix, ...phrase.tags],
+      isFeatured: phrase.isFeatured,
       rating: 0,
       ratingCount: 0,
     };
@@ -1055,7 +1065,8 @@ function phraseProducts(phrase: Phrase): ProductSeed[] {
         return {
           ...base,
           images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Branca" }],
-          isFeatured: phrase.featured ?? false,
+          // featured: so a camiseta; isFeatured: todas as pecas da frase
+          isFeatured: Boolean(phrase.isFeatured || phrase.featured),
           variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas),
         };
       case "moletons":
@@ -1101,3 +1112,157 @@ for (const product of PRODUCTS) {
     SHIRT_MODELS[product.gender].map((model) => ({ url: `/products/${product.slug}-${model}-${file}.jpg`, color })),
   );
 }
+
+// ---------------------------------------------------------------- linha do fornecedor (Pikarrucha)
+
+/**
+ * Preços de venda por peça, a partir da proposta comercial da Pikarrucha (modelos 1 e 2:
+ * produção sob demanda, já com a taxa de R$ 10 por produto de embalar e postar; estampa A4 frente).
+ *
+ * Conta usada: lucro = preço − custo − embalagem − 6% de imposto (Simples) − 5% de taxa de pagamento.
+ * A margem líquida mínima buscada é 15% do preço; todos ficam entre 16% e 22%.
+ *
+ *   peça                     custo  embalagem  preço    lucro   margem
+ *   camiseta de algodão      73,00    4,00     109,90   20,81   18,9%
+ *   camiseta oversized       70,00    4,00     109,90   23,81   21,7%
+ *   moletom canguru         105,00    6,00     159,90   31,31   19,6%
+ *   moletom gola careca     100,00    6,00     154,90   31,86   20,6%
+ *   caneca branca            45,00    5,00      69,90   12,21   17,5%
+ *   caneca preta             60,00    5,00      89,90   15,01   16,7%
+ *   caneca mágica preta      55,00    5,00      84,90   15,56   18,3%
+ *   caneca alça de coração   55,00    5,00      84,90   15,56   18,3%
+ *   caneca térmica           85,00    5,00     129,90   25,61   19,7%
+ *   garrafa Queta Soft       50,00    4,00      79,90   17,11   21,4%
+ *   garrafa Norton           60,00    4,00      89,90   16,01   17,8%
+ *
+ * Tamanhos especiais (EXG, G1, G2, G3): o fornecedor cobra R$ 5 a mais e a loja R$ 10 a mais.
+ *
+ * Imposto, taxa de pagamento e embalagem são estimativas: ajuste aqui se os números reais mudarem.
+ * O frete é cobrado do cliente à parte.
+ */
+const RETAIL = {
+  camiseta: 10990,
+  oversized: 10990,
+  moletomCanguru: 15990,
+  moletomGolaCareca: 15490,
+} as const;
+
+/** Modelos de caneca: a "cor" da variante é o modelo, e a página troca a foto ao escolher. */
+const MUG_MODELS = [
+  { color: "Branca", file: "branca", code: "BR", priceCents: 6990, weightGrams: 450 },
+  { color: "Preta", file: "preta", code: "PT", priceCents: 8990, weightGrams: 450 },
+  { color: "Mágica preta", file: "magica", code: "MAG", priceCents: 8490, weightGrams: 450 },
+  { color: "Térmica preta", file: "termica", code: "TER", priceCents: 12990, weightGrams: 400 },
+  { color: "Alça de coração", file: "coracao", code: "COR", priceCents: 8490, weightGrams: 450 },
+];
+
+/** Garrafas: Queta Soft 550 ml nas cores do fornecedor e Norton 570 ml (só preta). */
+const BOTTLE_MODELS = [
+  { color: "Queta Soft preta", file: "queta-preta", code: "QS-PT", priceCents: 7990, weightGrams: 250 },
+  { color: "Queta Soft branca", file: "queta-branca", code: "QS-BR", priceCents: 7990, weightGrams: 250 },
+  { color: "Queta Soft roxa", file: "queta-roxa", code: "QS-RX", priceCents: 7990, weightGrams: 250 },
+  { color: "Queta Soft azul", file: "queta-azul", code: "QS-AZ", priceCents: 7990, weightGrams: 250 },
+  { color: "Norton térmica preta", file: "norton", code: "NT-PT", priceCents: 8990, weightGrams: 450 },
+];
+
+/** Moletons (canguru e gola careca): a mesma foto para masculino e feminino, uma por cor. */
+const SWEATSHIRT_COLORS = [
+  { color: "Cinza", file: "cinza" },
+  { color: "Preta", file: "preta" },
+  { color: "Branca", file: "branca" },
+];
+
+/** "CAM-TEUCU-PT-P" -> "TEUCU": código da estampa, sem o tipo e sem cor/tamanho. */
+const stampCode = (product: ProductSeed, tail: number) =>
+  product.variants[0].sku.split("-").slice(1, -tail).join("-");
+
+const setPrice = (product: ProductSeed, priceCents: number) => {
+  product.basePriceCents = priceCents;
+  product.variants = product.variants.map((v) => ({ ...v, priceCents: sizePrice(priceCents, v.size) }));
+};
+
+/**
+ * Estampas que não saem no moletom canguru: a área entre o cordão do capuz e o bolso é baixa, e a
+ * estampa-lista e a estampa desenhada ficam pequenas demais. Elas continuam no gola careca.
+ * (mockup.js segue a mesma regra e não gera essas fotos.)
+ */
+const NO_HOODIE = new Set(["13-melhores-frases-ja-ditas", "eu-prefiro-morrer-do-que-perder-a-vida"]);
+
+const derived: ProductSeed[] = [];
+
+for (const product of PRODUCTS) {
+  const [type] = product.slug.split("-");
+  const key = product.slug.slice(type.length + 1);
+
+  if (type === "camiseta") {
+    setPrice(product, RETAIL.camiseta);
+    if (product.isSecret) continue;
+    // Mesma estampa na camiseta oversized (foto da peça, cor única)
+    derived.push({
+      ...product,
+      slug: `oversized-${key}`,
+      name: `${product.name} (oversized)`,
+      description: `Camiseta oversized em algodão, com modelagem ampla e estampa DTF na frente. ${product.shortDescription}`,
+      basePriceCents: RETAIL.oversized,
+      tags: ["oversized", ...product.tags],
+      isFeatured: false,
+      rating: 0,
+      ratingCount: 0,
+      images: [{ url: `/products/oversized-${key}.jpg`, color: "Off-white" }],
+      variants: shirtVariants(`OVS-${stampCode(product, 2)}`, RETAIL.oversized, ["Off-white"]),
+    });
+  }
+
+  if (type === "moletom") {
+    const code = stampCode(product, 2);
+    const colors = SWEATSHIRT_COLORS.map((c) => c.color);
+    product.basePriceCents = RETAIL.moletomCanguru;
+    product.variants = hoodieVariants(`MOL-${code}`, RETAIL.moletomCanguru, colors);
+    product.images = SWEATSHIRT_COLORS.map(({ color, file }) => ({ url: `/products/${product.slug}-${file}.jpg`, color }));
+    // Mesma estampa no moletom gola careca (sem capuz)
+    derived.push({
+      ...product,
+      slug: `moletom-gola-careca-${key}`,
+      name: `${product.name} (gola careca)`,
+      description: `Moletom gola careca em algodão, sem capuz, com estampa DTF na frente. ${product.shortDescription}`,
+      basePriceCents: RETAIL.moletomGolaCareca,
+      tags: ["gola-careca", ...product.tags],
+      isFeatured: false,
+      rating: 0,
+      ratingCount: 0,
+      images: SWEATSHIRT_COLORS.map(({ color, file }) => ({ url: `/products/moletom-gola-careca-${key}-${file}.jpg`, color })),
+      variants: hoodieVariants(`MGC-${code}`, RETAIL.moletomGolaCareca, colors),
+    });
+  }
+
+  if (type === "caneca") {
+    const code = stampCode(product, 1);
+    product.basePriceCents = Math.min(...MUG_MODELS.map((m) => m.priceCents));
+    product.variants = MUG_MODELS.map((m) => ({
+      sku: `CAN-${code}-${m.code}`,
+      color: m.color,
+      priceCents: m.priceCents,
+      weightGrams: m.weightGrams,
+    }));
+    product.images = MUG_MODELS.map((m) => ({ url: `/products/${product.slug}-${m.file}.jpg`, color: m.color }));
+  }
+
+  if (type === "garrafa") {
+    const code = stampCode(product, 1);
+    product.basePriceCents = Math.min(...BOTTLE_MODELS.map((m) => m.priceCents));
+    product.variants = BOTTLE_MODELS.map((m) => ({
+      sku: `GAR-${code}-${m.code}`,
+      color: m.color,
+      priceCents: m.priceCents,
+      weightGrams: m.weightGrams,
+    }));
+    product.images = BOTTLE_MODELS.map((m) => ({ url: `/products/${product.slug}-${m.file}.jpg`, color: m.color }));
+  }
+}
+
+for (const key of NO_HOODIE) {
+  const index = PRODUCTS.findIndex((p) => p.slug === `moletom-${key}`);
+  if (index >= 0) PRODUCTS.splice(index, 1);
+}
+
+PRODUCTS.push(...derived);
