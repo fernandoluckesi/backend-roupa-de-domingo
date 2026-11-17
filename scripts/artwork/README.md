@@ -13,15 +13,20 @@ Rode a partir de uma pasta temporária que tenha:
 
 ## Tipografia das estampas
 
-A mesma em todas as artes, como marca registrada da loja (`fonts.js`). Todas são Google Fonts com
-licença SIL OFL, que libera o uso comercial.
+A mesma em todas as artes, como marca registrada da loja (`fonts.js`). A Dinofans (Khurasan) é livre
+para uso pessoal e comercial; as demais são Google Fonts com licença SIL OFL, que libera o uso
+comercial.
 
 | Uso | Fonte | Onde |
 | --- | ----- | ---- |
-| Frase principal | Titan One, em maiúsculas | `lines` |
+| Frase principal | Dinofans, em maiúsculas (`Dinofans-Acentos.ttf`, ver abaixo) | `lines` |
 | Frase de baixo, que fecha a piada | Pacifico, em minúsculas (convertidas no script) | `small` |
 | Texto corrido da estampa-lista | Space Grotesk Medium | `items` |
 | Legenda de meme com personagem | Bangers | `caption` |
+
+A Dinofans original não tem letras acentuadas. `Dinofans-Acentos.ttf` acrescenta Á À Â Ã É Ê Í Ó Ô Õ
+Ú Ç (e minúsculas) com os próprios glifos da fonte (circunflexo, crase, til e vírgula); é gerado por
+`frontend/scripts/brand/dinofans-accents.py <Dinofans.ttf> <saída>` (precisa do `fonttools`).
 
 O Space Grotesk é um arquivo estático (`SpaceGrotesk-Medium.ttf`, do pacote `@fontsource`): com a
 fonte variável o resvg ignora o peso e desenha a versão fina. A família gravada no arquivo é
