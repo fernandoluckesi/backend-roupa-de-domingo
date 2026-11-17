@@ -1,6 +1,6 @@
 // Bloco de texto das estampas de frase: linhas grandes (lines) e, embaixo, a linha de apoio (small).
 //
-// Tipografia da marca (fonts.js): a frase principal em Dinofans, maiuscula, e a linha de apoio,
+// Tipografia da marca (fonts.js): a frase principal em Mouldy Cheese, maiuscula, e a linha de apoio,
 // que fecha a piada, em Pacifico, cursiva e minuscula (o catalogo guarda tudo em maiusculas e a
 // conversao e feita aqui). A linha de apoio tem 75% da altura das linhas grandes (Pacifico tem
 // letras baixas) e, quando e mais larga que a maior linha grande, quebra em mais linhas para nao
@@ -13,7 +13,7 @@ const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const SIZE = 200;
 const SMALL = SIZE * 0.75;
-// Espaco entre as linhas grandes: folga para os acentos das maiusculas (Dinofans-Acentos.ttf)
+// Espaco entre as linhas grandes: folga para os acentos das maiusculas
 const LINE = SIZE * 1.12;
 
 /** Linha de apoio em minusculas (Pacifico em maiusculas fica ilegivel). */
