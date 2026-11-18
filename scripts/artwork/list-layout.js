@@ -11,6 +11,7 @@
 // Usado por render.js (arte de impressao), mockup.js e model-mockup.js (fotos do site).
 
 const { FONTS } = require("./fonts");
+const { signature, withSignature } = require("./signature");
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
@@ -38,7 +39,7 @@ function wrap(text, max) {
 }
 
 /** Bloco SVG (coordenadas livres) com as frases quebradas em `wrapChars` caracteres. */
-function listBlock(p, { ink, accent }, wrapChars) {
+function listBlock(p, { ink, accent }, wrapChars, measure) {
   let y = TITLE;
   let out = "";
   for (const line of p.lines) {
@@ -60,7 +61,8 @@ function listBlock(p, { ink, accent }, wrapChars) {
     });
     y += lines.length * LINE + ITEM_GAP;
   });
-  return out;
+  // Assinatura da marca no pe da lista, alinhada a esquerda como o resto
+  return withSignature(out, ink, measure, { anchor: "start", min: 420, max: 520, gap: 70 });
 }
 
 // Espaco entre a coluna do titulo e a lista, na versao lado a lado
@@ -79,6 +81,9 @@ function listSideBlock(p, { ink, accent }, measure) {
     y += SUBTITLE * 1.4;
     title += `<text x="0" y="${y}" font-family="${FONTS.PUNCHLINE}" font-size="${SUBTITLE}" fill="${ink}">${esc(punchline(p.small))}</text>`;
   }
+  // Assinatura da marca embaixo do titulo, na coluna da esquerda
+  const head = measure(title);
+  title += signature(ink, measure, { x: head.x, y: head.y + head.height + 90, width: Math.min(head.width, 520), anchor: "start" });
   const titleBox = measure(title);
   const x = titleBox.width + SIDE_GAP;
 
@@ -108,7 +113,7 @@ function fitList(p, colors, [, , w, h], measure, { side = false } = {}) {
   }
   let best = null;
   for (let chars = 24; chars <= 72; chars += 2) {
-    const inner = listBlock(p, colors, chars);
+    const inner = listBlock(p, colors, chars, measure);
     const b = measure(inner);
     const scale = Math.min(w / b.width, h / b.height);
     if (!best || scale > best.scale) best = { inner, scale, chars };

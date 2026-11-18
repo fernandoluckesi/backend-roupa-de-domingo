@@ -14,7 +14,7 @@ Rode a partir de uma pasta temporária que tenha:
 ## Tipografia das estampas
 
 A mesma em todas as artes, como marca registrada da loja (`fonts.js`). Todas são Google Fonts com
-licença SIL OFL, que libera o uso comercial.
+licença SIL OFL, que libera o uso comercial (a Permanent Marker é Apache 2.0, também liberada).
 
 | Uso | Fonte | Onde |
 | --- | ----- | ---- |
@@ -27,6 +27,27 @@ A frase de baixo tem 105% da altura da frase principal e as duas mudam de tamanh
 `text-block.js` testa várias quebras de linha (da frase de baixo e, se deixar a letra pelo menos 12%
 maior, também da frase principal) e fica com a que deixa a estampa maior na proporção `textAspect` do
 tipo no `catalog.json`. A arte impressa e as fotos usam a mesma proporção, então a quebra é igual nas duas.
+
+## Estilos das frases e assinatura da marca
+
+Cada frase escolhe um estilo tipográfico no campo `style` do `catalog.json` (`styles.js`), para a
+coleção não ter cara de modelo único. Sem `style`, vale o `classic`.
+
+| Estilo | Visual |
+| ------ | ------ |
+| `classic` | Londrina Solid + linha de apoio em Lobster Two (`text-block.js`) |
+| `poster` | Anton condensada; cada linha cresce até a largura das outras, como cartaz; apoio pequeno em Space Grotesk espaçada |
+| `stack` | Kanit Black em minúsculas; a linha de apoio fecha a piada em itálico, na cor de destaque |
+| `marker` | Permanent Marker (pincel), levemente inclinada |
+
+Cor de destaque: verde-limão da logo em peça escura; em peça clara, a própria tinta.
+
+Toda estampa leva embaixo, pequena, a assinatura da marca (`signature.js`): "Roupa de Domingo" em
+Archivo Black e "ESTAMPAS SEM ANESTESIA" em Space Grotesk espaçada na mesma largura, como na logo.
+Em peça escura sai nas cores da logo (off-white e limão); em peça clara, na cor da tinta.
+
+A Kanit é declarada pela família tipográfica ("Kanit" com `font-weight="900"`): pelo nome
+"Kanit Black" o resvg não encontra a fonte e cai em outra sem avisar.
 
 O Space Grotesk é um arquivo estático (`SpaceGrotesk-Medium.ttf`, do pacote `@fontsource`): com a
 fonte variável o resvg ignora o peso e desenha a versão fina. A família gravada no arquivo é

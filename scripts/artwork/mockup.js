@@ -138,13 +138,17 @@ function sideListArt(p, v) {
   const s = Math.min(aw / b.width, ah / b.height);
   // Borda esquerda da arte um pouco antes da lateral visivel da caneca
   const left = cx - SIDE_LIST_START * Math.PI * r;
-  const top = v.art[1] + v.art[3] / 2 - ah / 2;
+  // Centro vertical do corpo da caneca: um pouco abaixo do centro de `art`, porque a boca (elipse)
+  // ocupa o topo e a curvatura ainda levanta o texto nas laterais
+  const top = v.art[1] + v.art[3] / 2 + SIDE_LIST_DROP * v.art[3] - ah / 2;
   const tx = left - b.x * s;
   const ty = top + ah / 2 - (b.y + b.height / 2) * s;
   return { art: `<g transform="translate(${tx},${ty}) scale(${s})">${inner}</g>`, area: [left, top, aw, ah] };
 }
 // Onde a arte comeca na foto, em fracao de pi*r a esquerda do eixo (0,5 = lateral da caneca)
 const SIDE_LIST_START = 0.28;
+// Quanto a arte desce em relacao ao centro de `art`, em fracao da altura de `art`
+const SIDE_LIST_DROP = 0.08;
 
 function mockup(p, v) {
   const tall = (p.layout === "list" || p.layout === "image") && v.listArt;
