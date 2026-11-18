@@ -21,8 +21,8 @@
     { "slug": "moletom-acordei-disposto", "type": "moletom", "lines": ["ACORDEI", "DISPOSTO"], "small": "(A VOLTAR A DORMIR)" },
     { "slug": "camiseta-hoje-eu-so-existo", "type": "camiseta", "lines": ["HOJE EU", "SÓ EXISTO"], "small": "(E OLHE LÁ)" },
     { "slug": "moletom-hoje-eu-so-existo", "type": "moletom", "lines": ["HOJE EU", "SÓ EXISTO"], "small": "(E OLHE LÁ)" },
-    { "slug": "camiseta-a-ultima-palavra-e-minha-em-casa", "type": "camiseta", "lines": ["A ÚLTIMA PALAVRA", "É MINHA EM CASA"], "small": "(SIM SRA, NÃO SRA)" },
-    { "slug": "moletom-a-ultima-palavra-e-minha-em-casa", "type": "moletom", "lines": ["A ÚLTIMA PALAVRA", "É MINHA EM CASA"], "small": "(SIM SRA, NÃO SRA)" },
+    { "slug": "camiseta-a-ultima-palavra-e-minha-em-casa", "type": "camiseta", "lines": ["EM CASA", "A ÚLTIMA PALAVRA", "É SEMPRE MINHA"], "small": "(SIM SRA, NÃO SRA)" },
+    { "slug": "moletom-a-ultima-palavra-e-minha-em-casa", "type": "moletom", "lines": ["EM CASA", "A ÚLTIMA PALAVRA", "É SEMPRE MINHA"], "small": "(SIM SRA, NÃO SRA)" },
     { "slug": "camiseta-na-minha-maquina-funciona", "type": "camiseta", "lines": ["NA MINHA", "MÁQUINA", "FUNCIONA"] },
     { "slug": "moletom-na-minha-maquina-funciona", "type": "moletom", "lines": ["NA MINHA", "MÁQUINA", "FUNCIONA"] },
     { "slug": "camiseta-tao-feio-que-a-lagrima-sai-pelo-ouvido", "type": "camiseta", "lines": ["TÃO FEIO QUE", "A LÁGRIMA SAI", "PELO OUVIDO", "PRA NÃO PASSAR", "PELO ROSTO"] },
@@ -90,10 +90,10 @@
     { "slug": "garrafa-paciencia-coice-de-porco", "type": "garrafa", "lines": ["MINHA PACIÊNCIA", "ESTÁ MAIS CURTA", "QUE COICE", "DE PORCO"] }
   ],
   "types": {
-    "camiseta": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "area": [0.08, 0.06, 0.84, 0.42], "listArea": [0.08, 0.05, 0.84, 0.8] },
-    "moletom": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "area": [0.1, 0.1, 0.8, 0.36], "listArea": [0.08, 0.06, 0.84, 0.5] },
-    "caneca": { "files": { "default": [2700, 1050] }, "inks": ["dark", "light"], "wrap": true, "area": [0.04, 0.1, 0.42, 0.8] },
+    "camiseta": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "textAspect": 1.2, "area": [0.08, 0.06, 0.84, 0.42], "listArea": [0.08, 0.05, 0.84, 0.8] },
+    "moletom": { "files": { "front": [1800, 2400] }, "inks": ["dark", "light"], "textAspect": 1.3, "area": [0.1, 0.1, 0.8, 0.36], "listArea": [0.08, 0.06, 0.84, 0.5] },
+    "caneca": { "files": { "default": [2700, 1050] }, "inks": ["dark", "light"], "wrap": true, "textAspect": 1.0, "area": [0.04, 0.1, 0.42, 0.8] },
     "capa": { "files": { "iphone": [879, 1830], "samsung": [936, 1950] }, "inks": ["dark"], "area": [0.12, 0.3, 0.76, 0.5] },
-    "garrafa": { "files": { "default": [2557, 1582] }, "inks": ["dark", "light"], "area": [0.3, 0.12, 0.4, 0.76] }
+    "garrafa": { "files": { "default": [2557, 1582] }, "inks": ["dark", "light"], "textAspect": 0.7, "area": [0.3, 0.12, 0.4, 0.76] }
   }
 }

@@ -11,7 +11,7 @@ const { FONTS } = require("./fonts");
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
 const TITLE = 140;
-const SUBTITLE = 90;
+const SUBTITLE = 126;
 const BODY = 64;
 const NUMBER_COLUMN = 140;
 const LINE = BODY * 1.22;

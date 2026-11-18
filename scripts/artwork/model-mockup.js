@@ -15,7 +15,7 @@ const { Resvg } = require("@resvg/resvg-js");
 const { FONTS, FONT_FILES } = require("./fonts");
 const { PNG } = require("pngjs");
 const { fitList } = require("./list-layout");
-const { textBlock: textBlockSvg } = require("./text-block");
+const { textBlock: textBlockSvg, textAspect } = require("./text-block");
 const { imageBlock } = require("./image-layout");
 const { blendPrint } = require("./fabric-blend");
 
@@ -72,7 +72,7 @@ const MODELS = {
 
 
 /** Frase da estampa na cor da tinta (text-block.js). */
-const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
+const textBlock = (p, ink, aspect) => textBlockSvg(p, INK[ink], bbox, aspect);
 
 const render = (svg) =>
   new Resvg(svg, { font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: FONTS.HEADLINE } });
@@ -122,7 +122,7 @@ function cleanPixels(model) {
 
 /** Estampa (grupo SVG em coordenadas da foto) e a area que ela ocupa. */
 function artFor(p, shot) {
-  if (p.layout !== "list" && p.layout !== "image") return { art: placeBlock(textBlock(p, shot.ink), shot), area: shot.art };
+  if (p.layout !== "list" && p.layout !== "image") return { art: placeBlock(textBlock(p, shot.ink, textAspect(catalog, p)), shot), area: shot.art };
   // Estampa-lista: area mais alta no peito, quebra de linha escolhida para a letra ficar maior
   const area = shot.listArt;
   const inner =

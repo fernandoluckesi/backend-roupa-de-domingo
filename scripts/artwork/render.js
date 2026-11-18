@@ -5,7 +5,7 @@ const path = require("path");
 const { Resvg } = require("@resvg/resvg-js");
 const { FONTS, FONT_FILES } = require("./fonts");
 const { fitList } = require("./list-layout");
-const { textBlock: textBlockSvg } = require("./text-block");
+const { textBlock: textBlockSvg, textAspect } = require("./text-block");
 const { imageBlock } = require("./image-layout");
 
 const catalog = JSON.parse(fs.readFileSync(path.join(__dirname, "catalog.json"), "utf8"));
@@ -18,7 +18,7 @@ const ACCENT = { dark: "#141414", light: "#D9FF3F" };
 
 
 /** Frase da estampa na cor da tinta (text-block.js). */
-const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
+const textBlock = (p, ink, aspect) => textBlockSvg(p, INK[ink], bbox, aspect);
 
 function render(svg) {
   return new Resvg(svg, {
@@ -57,7 +57,7 @@ for (const p of catalog.products) {
         ? fitList(p, { ink: INK[ink], accent: ACCENT[ink] }, [0, 0, a[2] * w, a[3] * h], bbox).inner
         : isImage
           ? imageBlock(p, INK[ink], bbox)
-          : textBlock(p, ink);
+          : textBlock(p, ink, textAspect(catalog, p));
       let body;
       if (t.wrap) {
         // Caneca: a frase aparece dos dois lados (destro e canhoto)

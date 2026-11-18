@@ -13,16 +13,20 @@ Rode a partir de uma pasta temporária que tenha:
 
 ## Tipografia das estampas
 
-A mesma em todas as artes, como marca registrada da loja (`fonts.js`). A Mouldy Cheese (NH Fonts) é
-livre para uso comercial; as demais são Google Fonts com licença SIL OFL, que libera o uso
-comercial.
+A mesma em todas as artes, como marca registrada da loja (`fonts.js`). Todas são Google Fonts com
+licença SIL OFL, que libera o uso comercial.
 
 | Uso | Fonte | Onde |
 | --- | ----- | ---- |
-| Frase principal | Mouldy Cheese, em maiúsculas | `lines` |
-| Frase de baixo, que fecha a piada | Pacifico, em minúsculas (convertidas no script) | `small` |
+| Frase principal | Londrina Solid, em maiúsculas | `lines` |
+| Frase de baixo, que fecha a piada | Lobster Two, em minúsculas (convertidas no script) | `small` |
 | Texto corrido da estampa-lista | Space Grotesk Medium | `items` |
 | Legenda de meme com personagem | Bangers | `caption` |
+
+A frase de baixo tem 105% da altura da frase principal e as duas mudam de tamanho juntas. O
+`text-block.js` testa várias quebras de linha (da frase de baixo e, se deixar a letra pelo menos 12%
+maior, também da frase principal) e fica com a que deixa a estampa maior na proporção `textAspect` do
+tipo no `catalog.json`. A arte impressa e as fotos usam a mesma proporção, então a quebra é igual nas duas.
 
 O Space Grotesk é um arquivo estático (`SpaceGrotesk-Medium.ttf`, do pacote `@fontsource`): com a
 fonte variável o resvg ignora o peso e desenha a versão fina. A família gravada no arquivo é

@@ -19,7 +19,7 @@ const { Resvg } = require("@resvg/resvg-js");
 const { FONTS, FONT_FILES } = require("./fonts");
 const { PNG } = require("pngjs");
 const { fitList } = require("./list-layout");
-const { textBlock: textBlockSvg } = require("./text-block");
+const { textBlock: textBlockSvg, textAspect } = require("./text-block");
 const { imageBlock } = require("./image-layout");
 const { blendPrint } = require("./fabric-blend");
 const { wrapCylinder } = require("./cylinder");
@@ -91,7 +91,7 @@ const VARIANTS = {
 
 
 /** Frase da estampa na cor da tinta (text-block.js). */
-const textBlock = (p, ink) => textBlockSvg(p, INK[ink], bbox);
+const textBlock = (p, ink, aspect) => textBlockSvg(p, INK[ink], bbox, aspect);
 
 const render = (svg) =>
   new Resvg(svg, { font: { fontFiles: FONT_FILES, loadSystemFonts: false, defaultFontFamily: FONTS.HEADLINE } });
@@ -133,7 +133,7 @@ function mockup(p, v) {
       ? placeBlock(fitList(p, { ink: INK[v.ink], accent: ACCENT[v.ink] }, area, bbox).inner, area, Infinity)
       : p.layout === "image"
         ? placeBlock(imageBlock(p, INK[v.ink], bbox), area, Infinity)
-        : placeBlock(textBlock(p, v.ink), area, v.maxScale);
+        : placeBlock(textBlock(p, v.ink, textAspect(catalog, p)), area, v.maxScale);
   // Estampa sozinha (fundo transparente), aplicada na peca acompanhando dobras e sombras
   let overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">${art}</svg>`).render().pixels;
   let region = area;
