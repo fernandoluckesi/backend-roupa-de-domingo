@@ -67,6 +67,7 @@ async function main() {
       categoryId: categoryIds.get(p.category)!,
       tags: p.tags,
       isFeatured: p.isFeatured ?? false,
+      featuredPosition: p.featuredPosition ?? null,
       isSecret: p.isSecret ?? false,
     };
 

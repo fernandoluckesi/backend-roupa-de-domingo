@@ -38,6 +38,8 @@ export type ProductSeed = {
   category: string;
   tags: string[];
   isFeatured?: boolean;
+  /** Ordem na vitrine da home (1 = primeiro); vem de FEATURED_ORDER */
+  featuredPosition?: number;
   isSecret?: boolean;
   rating: number;
   ratingCount: number;
@@ -826,4 +828,12 @@ function productTexts({ details, ...product }: ProductInput): ProductSeed {
   };
 }
 
-export const PRODUCTS: ProductSeed[] = ITEMS.map(productTexts);
+/** Produtos que abrem a vitrine da home, nesta ordem; os demais destaques vem depois. */
+const FEATURED_ORDER = ["camiseta-13-melhores-frases-ja-ditas"];
+
+function featuredPosition(product: ProductSeed): ProductSeed {
+  const index = FEATURED_ORDER.indexOf(product.slug);
+  return index < 0 ? product : { ...product, isFeatured: true, featuredPosition: index + 1 };
+}
+
+export const PRODUCTS: ProductSeed[] = ITEMS.map(productTexts).map(featuredPosition);

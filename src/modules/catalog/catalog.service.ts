@@ -130,8 +130,13 @@ export class CatalogService {
     return this.prisma.product.findMany({
       where: { isActive: true, isSecret: false, isFeatured: true },
       select: PRODUCT_LIST_SELECT,
-      // Sem avaliacoes (lancamentos), o mais novo vem primeiro
-      orderBy: [{ ratingCount: "desc" }, { createdAt: "desc" }],
+      // Primeiro os de featuredPosition (catalog.ts, FEATURED_ORDER); depois, sem avaliacoes
+      // (lancamentos), o mais novo vem primeiro
+      orderBy: [
+        { featuredPosition: { sort: "asc", nulls: "last" } },
+        { ratingCount: "desc" },
+        { createdAt: "desc" },
+      ],
       take: 12,
     });
   }

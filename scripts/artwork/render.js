@@ -53,13 +53,15 @@ for (const p of catalog.products) {
       const isList = p.layout === "list";
       const isImage = p.layout === "image";
       const a = ((isList || isImage) && t.listArea) || t.area;
+      // Caneca com lista: uma estampa so dando a volta na caneca (lista lado a lado)
+      const side = isList && Boolean(t.listSide);
       const inner = isList
-        ? fitList(p, { ink: INK[ink], accent: ACCENT[ink] }, [0, 0, a[2] * w, a[3] * h], bbox).inner
+        ? fitList(p, { ink: INK[ink], accent: ACCENT[ink] }, [0, 0, a[2] * w, a[3] * h], bbox, { side }).inner
         : isImage
           ? imageBlock(p, INK[ink], bbox)
           : textBlock(p, ink, textAspect(catalog, p));
       let body;
-      if (t.wrap) {
+      if (t.wrap && !side) {
         // Caneca: a frase aparece dos dois lados (destro e canhoto)
         const left = [a[0] * w, a[1] * h, a[2] * w, a[3] * h];
         const right = [w - (a[0] + a[2]) * w, a[1] * h, a[2] * w, a[3] * h];

@@ -122,14 +122,42 @@ function basePixels(file) {
   return baseCache.get(file);
 }
 
+/**
+ * Caneca com a lista lado a lado (listSide): a estampa da a volta na caneca, entao a foto so mostra
+ * a parte da frente. A arte aberta tem a largura de verdade (fracao da circunferencia) e e girada
+ * para o titulo e o comeco das frases ficarem de frente para a camera.
+ */
+function sideListArt(p, v) {
+  const t = catalog.types[p.type];
+  const [fw, fh] = Object.values(t.files)[0];
+  const { cx, r } = v.cylinder;
+  const aw = 2 * Math.PI * r * t.listArea[2];
+  const ah = (aw * (t.listArea[3] * fh)) / (t.listArea[2] * fw);
+  const inner = fitList(p, { ink: INK[v.ink], accent: ACCENT[v.ink] }, [0, 0, aw, ah], bbox, { side: true }).inner;
+  const b = bbox(inner);
+  const s = Math.min(aw / b.width, ah / b.height);
+  // Borda esquerda da arte um pouco antes da lateral visivel da caneca
+  const left = cx - SIDE_LIST_START * Math.PI * r;
+  const top = v.art[1] + v.art[3] / 2 - ah / 2;
+  const tx = left - b.x * s;
+  const ty = top + ah / 2 - (b.y + b.height / 2) * s;
+  return { art: `<g transform="translate(${tx},${ty}) scale(${s})">${inner}</g>`, area: [left, top, aw, ah] };
+}
+// Onde a arte comeca na foto, em fracao de pi*r a esquerda do eixo (0,5 = lateral da caneca)
+const SIDE_LIST_START = 0.28;
+
 function mockup(p, v) {
   const tall = (p.layout === "list" || p.layout === "image") && v.listArt;
   const cyl = v.cylinder;
   let area = tall ? v.listArt : v.art;
+  let sideArt;
   // No cilindro a arte aberta fica centrada no eixo
   if (cyl) area = [cyl.cx - area[2] / 2, area[1], area[2], area[3]];
-  const art =
-    p.layout === "list" && v.listArt
+  const side = p.layout === "list" && cyl && catalog.types[p.type].listSide;
+  if (side) ({ art: sideArt, area } = sideListArt(p, v));
+  const art = side
+    ? sideArt
+    : p.layout === "list" && v.listArt
       ? placeBlock(fitList(p, { ink: INK[v.ink], accent: ACCENT[v.ink] }, area, bbox).inner, area, Infinity)
       : p.layout === "image"
         ? placeBlock(imageBlock(p, INK[v.ink], bbox), area, Infinity)

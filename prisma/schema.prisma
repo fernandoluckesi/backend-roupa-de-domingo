@@ -160,6 +160,8 @@ model Product {
   categoryId       String
   tags             String[] @default([])
   isFeatured       Boolean  @default(false)
+  /// Ordem na vitrine da home (1 = primeiro). Sem valor, vem depois dos ordenados.
+  featuredPosition Int?
   isSecret         Boolean  @default(false)
   isActive         Boolean  @default(true)
   rating           Float    @default(5)

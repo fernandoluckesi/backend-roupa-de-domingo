@@ -195,7 +195,7 @@ export const PHRASES: Phrase[] = [
     humor: Humor.POLITICO,
     gender: Gender.UNISSEX,
     tags: ["politica", "frases", "ironia", "unissex"],
-    kinds: ["camisetas", "moletons"],
+    kinds: ["camisetas", "moletons", "canecas"],
     isFeatured: true,
     details: "Frases da estampa:\n" + THIRTEEN_QUOTES.map((q, i) => `${i + 1}. "${q}"`).join("\n"),
   },
