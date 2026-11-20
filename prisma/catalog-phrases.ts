@@ -203,6 +203,17 @@ export const PHRASES: Phrase[] = [
     noOversized: true,
   },
 
+  {
+    key: "em-terra-de-olho-quem-tem-cego",
+    code: "OLHO",
+    name: "Em terra de olho quem tem cego errei",
+    humor: Humor.MEMES,
+    gender: Gender.UNISSEX,
+    tags: ["memes", "ditado", "zoeira", "unissex"],
+    // Todos os produtos: camiseta (e oversized), moletom (e gola careca), caneca e garrafa
+    kinds: ["camisetas", "moletons", "canecas", "garrafas"],
+  },
+
   // ------------------------------------------------------------ Coleção GG (nov/2026): só do G para cima
   {
     key: "sou-gordo-e-nao-nego",
