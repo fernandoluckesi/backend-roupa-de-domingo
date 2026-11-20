@@ -31,6 +31,10 @@ export type Phrase = {
   isFeatured?: boolean;
   /** Texto extra no fim da descrição (ex.: a lista de frases da estampa) */
   details?: string;
+  /** Menor tamanho vendido da camiseta (ex.: "G" = só G, GG, EXG, G1, G2 e G3) */
+  minSize?: string;
+  /** Só a camiseta de algodão: sem a versão oversized derivada dela */
+  noOversized?: boolean;
 };
 
 /** Estampa-lista: as frases aparecem na arte e, por extenso, na descrição. */
@@ -185,6 +189,53 @@ export const PHRASES: Phrase[] = [
     humor: Humor.SARCASTICO,
     gender: Gender.UNISSEX,
     tags: ["sarcasmo", "trabalho", "unissex"],
+  },
+
+  {
+    key: "lugar-de-mulher-e-onde-ela-quiser",
+    code: "LUGAR",
+    name: "Lugar de mulher é... onde ela quiser (lacrei)",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    tags: ["sarcasmo", "mulher", "lacrei", "unissex"],
+    // So camiseta, nas fotos masculina e feminina
+    kinds: ["camisetas"],
+    noOversized: true,
+  },
+
+  // ------------------------------------------------------------ Coleção GG (nov/2026): só do G para cima
+  {
+    key: "sou-gordo-e-nao-nego",
+    code: "NEGO",
+    name: "Sou gordo e não nego. Como o quanto eu puder",
+    humor: Humor.MEMES,
+    gender: Gender.MASCULINO,
+    tags: ["memes", "comida", "plus-size"],
+    kinds: ["camisetas"],
+    minSize: "G",
+    noOversized: true,
+  },
+  {
+    key: "sou-gordo-mas-posso-emagrecer",
+    code: "EMAGRECER",
+    name: "Sou gordo mas posso emagrecer. E vc que é feio e pode engordar...",
+    humor: Humor.ACIDO,
+    gender: Gender.MASCULINO,
+    tags: ["acido", "zoeira", "plus-size"],
+    kinds: ["camisetas"],
+    minSize: "G",
+    noOversized: true,
+  },
+  {
+    key: "deita-vai-e-dieta-vem",
+    code: "PASTEL",
+    name: "Deita vai e dieta vem. Já comi salada, mas prefiro um pastelzinho de Belém",
+    humor: Humor.SARCASTICO,
+    gender: Gender.UNISSEX,
+    tags: ["sarcasmo", "comida", "dieta", "plus-size", "unissex"],
+    kinds: ["camisetas"],
+    minSize: "G",
+    noOversized: true,
   },
 
   // ------------------------------------------------------------ Político: estampa-lista

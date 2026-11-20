@@ -23,8 +23,11 @@ function isLightInk(fill) {
   return 0.299 * r + 0.587 * g + 0.114 * b > 128;
 }
 
-/** Cor de destaque das frases: verde-limao da logo em peca escura, a propria tinta em peca clara. */
-const accentFor = (fill) => (isLightInk(fill) ? LOGO.tagline : fill);
+/**
+ * Cor de destaque das frases: verde-limao da logo em peca escura; em peca clara, o `accent` da
+ * estampa no catalog.json (o limao some no branco) ou, sem ele, a propria tinta.
+ */
+const accentFor = (fill, p = {}) => (isLightInk(fill) ? LOGO.tagline : p.accent || fill);
 
 /**
  * Assinatura com largura `width` (unidades do bloco), alinhada em x (`anchor`: "middle" ou

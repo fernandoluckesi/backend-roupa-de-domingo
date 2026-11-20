@@ -37,10 +37,13 @@ function boxBlur(src, w, h, r) {
  * overlay: RGBA pre-multiplicado (pixels do resvg) com so a estampa, mesmo tamanho da foto.
  * region: [x, y, w, h] onde a estampa esta. fabric: "light" (branco) ou "dark" (preto, marinho).
  * rigid: superficie dura (caneca, garrafa): sem o deslocamento das dobras do tecido.
+ * scale: quantas vezes a imagem foi ampliada em relacao a foto original (raios de desfoque e
+ * deslocamento das dobras crescem junto, para o resultado ser o mesmo em alta resolucao).
  */
-function blendPrint(base, overlay, W, H, region, fabric, { rigid = false } = {}) {
+function blendPrint(base, overlay, W, H, region, fabric, { rigid = false, scale = 1 } = {}) {
   const bend = rigid ? 0 : 0.25;
-  const pad = 16;
+  const shift = 2.5 * scale;
+  const pad = Math.ceil(16 * scale);
   const x0 = clamp(Math.floor(region[0] - pad), 0, W - 1);
   const y0 = clamp(Math.floor(region[1] - pad), 0, H - 1);
   const x1 = clamp(Math.ceil(region[0] + region[2] + pad), 1, W);
@@ -53,8 +56,8 @@ function blendPrint(base, overlay, W, H, region, fabric, { rigid = false } = {})
       const i = ((y + y0) * W + (x + x0)) * 4;
       L[y * w + x] = lum(base[i], base[i + 1], base[i + 2]);
     }
-  const smooth = boxBlur(L, w, h, 10); // luz/sombra do tecido
-  const folds = boxBlur(L, w, h, 3); // dobras, para o deslocamento
+  const smooth = boxBlur(L, w, h, Math.round(10 * scale)); // luz/sombra do tecido
+  const folds = boxBlur(L, w, h, Math.max(1, Math.round(3 * scale))); // dobras, para o deslocamento
 
   // Luz media do tecido debaixo da estampa: referencia do sombreamento
   let sum = 0, n = 0;
@@ -82,8 +85,8 @@ function blendPrint(base, overlay, W, H, region, fabric, { rigid = false } = {})
       // A estampa "escorrega" para o lado escuro da dobra, como tecido que afunda
       const gx = (folds[k + 1] - folds[k - 1]) / 2;
       const gy = (folds[k + w] - folds[k - w]) / 2;
-      const px = x + x0 - clamp(gx * bend, -2.5, 2.5);
-      const py = y + y0 - clamp(gy * bend, -2.5, 2.5);
+      const px = x + x0 - clamp(gx * bend * scale, -shift, shift);
+      const py = y + y0 - clamp(gy * bend * scale, -shift, shift);
       const ink = sample(px, py);
       if (!ink) continue;
 

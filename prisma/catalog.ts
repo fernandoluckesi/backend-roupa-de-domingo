@@ -70,9 +70,12 @@ function shirtVariants(
   prefix: string,
   priceCents: number,
   colors: string[] = ["Preta", "Branca"],
+  minSize = SHIRT_SIZES[0],
 ): VariantSeed[] {
+  const sizes = SHIRT_SIZES.slice(SHIRT_SIZES.indexOf(minSize));
+  if (!sizes.length) throw new Error(`Tamanho desconhecido: ${minSize}`);
   return colors.flatMap((color) =>
-    SHIRT_SIZES.map((size) => ({
+    sizes.map((size) => ({
       sku: `${prefix}-${COLOR_CODE[color]}-${size}`,
       size,
       color,
@@ -576,7 +579,7 @@ function phraseProducts(phrase: Phrase): ProductInput[] {
           images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Branca" }],
           // featured: so a camiseta; isFeatured: todas as pecas da frase
           isFeatured: Boolean(phrase.isFeatured || phrase.featured),
-          variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas),
+          variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas, undefined, phrase.minSize),
         };
       case "moletons":
         return {
@@ -700,6 +703,9 @@ const setPrice = (product: ProductInput, priceCents: number) => {
  */
 const NO_HOODIE = new Set(["13-melhores-frases-ja-ditas", "eu-prefiro-morrer-do-que-perder-a-vida"]);
 
+/** Frases só na camiseta de algodão (sem oversized): noOversized em catalog-phrases.ts. */
+const NO_OVERSIZED = new Set(PHRASES.filter((p) => p.noOversized).map((p) => p.key));
+
 const derived: ProductInput[] = [];
 
 for (const product of ITEMS) {
@@ -708,7 +714,7 @@ for (const product of ITEMS) {
 
   if (type === "camiseta") {
     setPrice(product, RETAIL.camiseta);
-    if (product.isSecret) continue;
+    if (product.isSecret || NO_OVERSIZED.has(key)) continue;
     // Mesma estampa na camiseta oversized (foto da peça, cor única)
     derived.push({
       ...product,
