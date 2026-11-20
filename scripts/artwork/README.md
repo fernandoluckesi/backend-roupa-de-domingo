@@ -74,6 +74,10 @@ cores extras recoloridas). Cada entrada do `catalog.json` gera todas as versões
 Sem slugs, gera tudo. Precisa também do pacote `pngjs`. Os produtos, as cores e os preços dessas
 versões são montados no fim de `prisma/catalog.ts` (linha do fornecedor).
 
+Depois de gerar as fotos de novo, atualize `IMAGE_VERSION` em `prisma/catalog.ts` (data da
+geração). As fotos ficam em cache no Cloudflare e no navegador com o mesmo nome de arquivo; a versão
+muda a URL (`?v=...`) e força o download da foto nova.
+
 A saída é PNG. Converta para JPG (qualidade ~85) antes do commit, por exemplo com
 `sips -s format jpeg` no macOS, e apague os PNGs.
 

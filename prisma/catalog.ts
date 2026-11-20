@@ -18,10 +18,20 @@ export type VariantSeed = {
 export type CatalogImage = string | { url: string; color?: string };
 
 /** Campos de ProductImage a partir de uma imagem do catalogo. */
+/**
+ * Versão das fotos de /products. As fotos são servidas com cache longo (Cloudflare e navegador) e
+ * o nome do arquivo não muda quando a foto é gerada de novo; trocar esta versão muda a URL salva no
+ * banco (?v=...) e obriga todo mundo a baixar a foto nova.
+ * ATUALIZE sempre que regenerar as fotos em frontend/public/products (data da geração).
+ */
+export const IMAGE_VERSION = "20261119";
+
+const versioned = (url: string) => (url.startsWith("/") && !url.includes("?") ? `${url}?v=${IMAGE_VERSION}` : url);
+
 export function imageFields(image: CatalogImage): { url: string; color: string | null } {
   return typeof image === "string"
-    ? { url: image, color: null }
-    : { url: image.url, color: image.color ?? null };
+    ? { url: versioned(image), color: null }
+    : { url: versioned(image.url), color: image.color ?? null };
 }
 
 export type ProductSeed = {
