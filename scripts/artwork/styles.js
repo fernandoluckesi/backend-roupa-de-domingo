@@ -10,7 +10,8 @@
 // - marker: Permanent Marker (pincel atomico), maiuscula, com o bloco levemente inclinado; a linha
 //   de apoio vai menor, no mesmo pincel.
 //
-// Cor de destaque: verde-limao da logo em peca escura, a propria tinta em peca clara (signature.js).
+// Cor de destaque: verde-limao da logo em peca escura; em peca clara, o "accent" da estampa ou a
+// propria tinta (signature.js).
 // Todos devolvem o bloco centrado em x=0, como o classic.
 const { FONTS } = require("./fonts");
 const { accentFor } = require("./signature");
@@ -66,6 +67,7 @@ function bestRows(small, width, minWidth, aspect, build, measure) {
 // ------------------------------------------------------------------ poster
 // Linhas curtas nao crescem mais que isto (uma palavra de 2 letras viraria um outdoor)
 const POSTER_MAX_GROW = 2.2;
+const CAP_ACCENT = /[ÁÀÂÃÉÊÍÓÔÕÚÜ]/;
 
 function poster(p, fill, measure) {
   const lines = p.lines.map((l) => l.trim());
@@ -76,8 +78,10 @@ function poster(p, fill, measure) {
   let y = 0;
   lines.forEach((line, i) => {
     const size = SIZE * Math.min(POSTER_MAX_GROW, target / widths[i]);
-    // Anton tem maiusculas altas e quase sem descendente: entrelinha bem fechada
-    y += size * (i === 0 ? 0.86 : 0.98);
+    // Anton tem maiusculas altas e quase sem descendente: entrelinha bem fechada. Maiuscula
+    // acentuada (É, Á, Ã...) sobe acima da linha: abre espaco para o acento nao encostar na de cima
+    const accent = i > 0 && CAP_ACCENT.test(line) ? 0.2 : 0;
+    y += size * (i === 0 ? 0.86 : 0.98 + accent);
     out += text(line, { y, font: FONTS.POSTER, size, fill });
   });
   if (p.small) {
@@ -88,7 +92,7 @@ function poster(p, fill, measure) {
     y += size * 0.9;
     for (const row of rows) {
       y += size * 1.25;
-      out += text(row, { y, font: FONTS.TEXT, size, fill: accentFor(fill), spacing });
+      out += text(row, { y, font: FONTS.TEXT, size, fill: accentFor(fill, p), spacing });
     }
   }
   return out;
@@ -103,7 +107,7 @@ function stack(p, fill, measure, aspect) {
     let out = "";
     let y = 0;
     for (const line of lines) out += text(line, { ...main, y: (y += LINE) });
-    for (const row of rows) out += text(row, { ...main, y: (y += LINE), italic: true, fill: accentFor(fill) });
+    for (const row of rows) out += text(row, { ...main, y: (y += LINE), italic: true, fill: accentFor(fill, p) });
     return out;
   };
   if (!p.small) return build([]);
@@ -123,7 +127,7 @@ function marker(p, fill, measure, aspect) {
     let y = 0;
     for (const line of lines) out += text(line, { y: (y += SIZE * 1.12), font: FONTS.MARKER, size: SIZE, fill });
     if (rows.length) y += size * 0.35;
-    for (const row of rows) out += text(row, { y: (y += size * 1.15), font: FONTS.MARKER, size, fill: accentFor(fill) });
+    for (const row of rows) out += text(row, { y: (y += size * 1.15), font: FONTS.MARKER, size, fill: accentFor(fill, p) });
     return out;
   };
   let out = build([]);

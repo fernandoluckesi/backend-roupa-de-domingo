@@ -28,7 +28,9 @@ const INK = { dark: "#141414", light: "#F5F5F0" };
 // Cor dos numeros da estampa-lista (list-layout.js)
 const ACCENT = { dark: "#141414", light: "#D9FF3F" };
 const BACKGROUND = "#FEFEFE";
-const OUT = 1000;
+// Lado da foto final. A estampa e desenhada direto nessa resolucao (vetor), entao o texto fica
+// nitido no zoom da pagina do produto mesmo com a foto-base menor.
+const OUT = 2000;
 
 /**
  * Coordenadas na foto-base (1280x853):
@@ -120,6 +122,22 @@ function cleanPixels(model) {
   return out;
 }
 
+/** Foto-base limpa ampliada para SW x SH (RGBA), uma vez por foto. */
+const scaledCache = new Map();
+function scaledClean(model, SW, SH) {
+  const key = `${model.file}|${SW}`;
+  if (scaledCache.has(key)) return scaledCache.get(key);
+  const { width: W, height: H } = model;
+  const png = new PNG({ width: W, height: H });
+  Buffer.from(cleanPixels(model)).copy(png.data);
+  const b64 = PNG.sync.write(png).toString("base64");
+  const px = Buffer.from(
+    render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SW}" height="${SH}"><image href="data:image/png;base64,${b64}" width="${SW}" height="${SH}" preserveAspectRatio="none"/></svg>`).render().pixels,
+  );
+  scaledCache.set(key, px);
+  return px;
+}
+
 /** Estampa (grupo SVG em coordenadas da foto) e a area que ela ocupa. */
 function artFor(p, shot) {
   if (p.layout !== "list" && p.layout !== "image") return { art: placeBlock(textBlock(p, shot.ink, textAspect(catalog, p)), shot), area: shot.art };
@@ -140,20 +158,23 @@ function photo(p, model, shot) {
   const { width: W, height: H } = model;
   const [cx, cw] = shot.crop;
   const w = Math.round((OUT * cw) / H);
+  // Tudo e feito ja na resolucao final: foto-base ampliada e estampa desenhada nesse tamanho
+  const f = OUT / H;
+  const SW = Math.round(W * f), SH = OUT;
 
   // Estampa sozinha (fundo transparente) e aplicada no tecido acompanhando dobras e sombras
   const { art, area } = artFor(p, shot);
-  const overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}">${art}</svg>`).render().pixels;
-  const pixels = Buffer.from(cleanPixels(model));
-  blendPrint(pixels, overlay, W, H, area, shot.ink === "dark" ? "light" : "dark");
-  const png = new PNG({ width: W, height: H });
+  const overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SW}" height="${SH}"><g transform="scale(${f})">${art}</g></svg>`).render().pixels;
+  const pixels = Buffer.from(scaledClean(model, SW, SH));
+  blendPrint(pixels, overlay, SW, SH, area.map((v) => v * f), shot.ink === "dark" ? "light" : "dark", { scale: f });
+  const png = new PNG({ width: SW, height: SH });
   pixels.copy(png.data);
   const b64 = PNG.sync.write(png).toString("base64");
 
   const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${OUT}" height="${OUT}">
     <rect width="${OUT}" height="${OUT}" fill="${BACKGROUND}"/>
-    <svg x="${(OUT - w) / 2}" y="0" width="${w}" height="${OUT}" viewBox="${cx} 0 ${cw} ${H}">
-      <image href="data:image/png;base64,${b64}" width="${W}" height="${H}"/>
+    <svg x="${(OUT - w) / 2}" y="0" width="${w}" height="${OUT}" viewBox="${cx * f} 0 ${cw * f} ${SH}">
+      <image href="data:image/png;base64,${b64}" width="${SW}" height="${SH}"/>
     </svg>
   </svg>`;
   return render(svg).render().asPng();
