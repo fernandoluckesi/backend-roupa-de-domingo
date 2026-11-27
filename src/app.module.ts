@@ -22,6 +22,7 @@ import { ContactModule } from "./modules/contact/contact.module";
 import { ReturnsModule } from "./modules/returns/returns.module";
 import { InvoicesModule } from "./modules/invoices/invoices.module";
 import { SeoModule } from "./modules/seo/seo.module";
+import { AnalyticsModule } from "./modules/analytics/analytics.module";
 import { AuditInterceptor } from "./modules/audit/audit.interceptor";
 import { AuditModule } from "./modules/audit/audit.module";
 
@@ -54,6 +55,7 @@ import { AuditModule } from "./modules/audit/audit.module";
     ContactModule,
     ReturnsModule,
     SeoModule,
+    AnalyticsModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: ThrottlerGuard },

@@ -76,6 +76,15 @@ export class CreateOrderDto {
   @MaxLength(20)
   customerDocument?: string;
 
+  @ApiPropertyOptional({
+    description:
+      "Endereco salvo da conta. Com ele, o pedido usa o endereco gravado (e nao o shippingAddress enviado).",
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(64)
+  addressId?: string;
+
   @ApiProperty({ type: ShippingAddressDto })
   @ValidateNested()
   @Type(() => ShippingAddressDto)

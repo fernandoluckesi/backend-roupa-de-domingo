@@ -235,7 +235,8 @@ export class UsersService {
   listAddresses(userId: string) {
     return this.prisma.address.findMany({
       where: { userId },
-      orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }],
+      // O usado no ultimo pedido primeiro: e o que o checkout pre-seleciona
+      orderBy: [{ lastUsedAt: { sort: "desc", nulls: "last" } }, { isDefault: "desc" }, { createdAt: "asc" }],
     });
   }
 

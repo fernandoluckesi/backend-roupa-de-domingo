@@ -17,6 +17,7 @@ import {
   ApplyCouponDto,
   CartShippingDto,
   UpdateCartItemDto,
+  SelectAllCartItemsDto,
 } from "./dto/cart.dto";
 import { OptionalJwtGuard } from "../../common/guards/jwt-auth.guard";
 import {
@@ -55,7 +56,7 @@ export class CartController {
   }
 
   @Patch("items/:id")
-  @ApiOperation({ summary: "Atualiza quantidade ou texto do item" })
+  @ApiOperation({ summary: "Atualiza quantidade do item ou se ele esta marcado" })
   updateItem(
     @Param("id") id: string,
     @Body() dto: UpdateCartItemDto,
@@ -63,6 +64,16 @@ export class CartController {
     @SessionId() sessionId?: string,
   ) {
     return this.cart.updateItem({ userId, sessionId }, id, dto);
+  }
+
+  @Patch("selection")
+  @ApiOperation({ summary: "Marca ou desmarca todos os itens" })
+  selectAll(
+    @Body() dto: SelectAllCartItemsDto,
+    @CurrentUser("id") userId?: string,
+    @SessionId() sessionId?: string,
+  ) {
+    return this.cart.selectAll({ userId, sessionId }, dto.selected);
   }
 
   @Delete("items/:id")

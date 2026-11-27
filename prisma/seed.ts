@@ -1,6 +1,7 @@
 /* eslint-disable no-console */
 import { PrismaClient, CouponType } from "@prisma/client";
 import * as bcrypt from "bcryptjs";
+import { upsertTestUser } from "./seed-test-user";
 import { CATEGORIES, PRODUCTS, imageFields } from "./catalog";
 
 const prisma = new PrismaClient();
@@ -213,6 +214,9 @@ async function main() {
         },
       },
     });
+
+    // Conta de teste local (prisma/seed-test-user.ts)
+    await upsertTestUser(prisma);
 
     // Admin do backoffice (tabela propria, separada dos clientes) so em desenvolvimento
     await prisma.adminUser.deleteMany();

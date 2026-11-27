@@ -786,9 +786,19 @@ for (const product of ITEMS) {
   }
 }
 
-for (const key of NO_HOODIE) {
-  const index = ITEMS.findIndex((p) => p.slug === `moletom-${key}`);
-  if (index >= 0) ITEMS.splice(index, 1);
+/**
+ * Moletom canguru fora de venda por enquanto (26/11/2026): os produtos saem do site e o
+ * catalog:sync marca os que ja existiam como inativos, sem apagar pedidos antigos. Os moletons
+ * gola careca continuam, porque sao gerados a partir das mesmas entradas "moletom-" acima.
+ * Para voltar a vender, troque para true (as fotos e as artes continuam sendo geradas).
+ */
+const SELL_HOODIE = false;
+
+for (let i = ITEMS.length - 1; i >= 0; i--) {
+  const slug = ITEMS[i].slug;
+  if (!slug.startsWith("moletom-")) continue;
+  const key = slug.slice("moletom-".length);
+  if (!SELL_HOODIE || NO_HOODIE.has(key)) ITEMS.splice(i, 1);
 }
 
 ITEMS.push(...derived);

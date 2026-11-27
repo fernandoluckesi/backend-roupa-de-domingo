@@ -1,5 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import {
+  IsBoolean,
   IsInt,
   IsOptional,
   IsString,
@@ -23,11 +24,23 @@ export class AddCartItemDto {
 }
 
 export class UpdateCartItemDto {
-  @ApiProperty({ minimum: 1, maximum: 99 })
+  @ApiPropertyOptional({ minimum: 1, maximum: 99 })
+  @IsOptional()
   @IsInt()
   @Min(1)
   @Max(99)
-  quantity: number;
+  quantity?: number;
+
+  @ApiPropertyOptional({ description: "Marca ou desmarca o item para comprar agora" })
+  @IsOptional()
+  @IsBoolean()
+  selected?: boolean;
+}
+
+export class SelectAllCartItemsDto {
+  @ApiProperty({ description: "true marca todos os itens; false desmarca todos" })
+  @IsBoolean()
+  selected: boolean;
 }
 
 export class ApplyCouponDto {

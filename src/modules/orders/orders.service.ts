@@ -3,9 +3,11 @@ import {
   Injectable,
   Logger,
   NotFoundException,
+  UnauthorizedException,
 } from "@nestjs/common";
 import { AuditCategory, AuditOutcome, OrderStatus, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
+import { AnalyticsService } from "../analytics/analytics.service";
 import { AuditService } from "../audit/audit.service";
 import { CartOwner, CartService } from "../cart/cart.service";
 import { PaymentsService } from "../payments/payments.service";
@@ -75,6 +77,7 @@ export class OrdersService {
     private readonly mail: MailService,
     private readonly consents: ConsentService,
     private readonly audit: AuditService,
+    private readonly analytics: AnalyticsService,
   ) {}
 
   /**
@@ -82,8 +85,14 @@ export class OrdersService {
    * cria a preferencia de pagamento e devolve a URL de redirecionamento.
    */
   async checkout(owner: CartOwner, dto: CreateOrderDto) {
+    // Pedido so com conta: o endereco fica salvo para as proximas compras
+    if (!owner.userId) {
+      throw new UnauthorizedException("Entre na sua conta ou crie uma para fechar o pedido.");
+    }
+    const userId = owner.userId;
     const method = dto.shippingMethod ?? "economico";
-    const zipCode = onlyDigits(dto.shippingAddress.zipCode);
+    const ship = await this.resolveShippingAddress(userId, dto);
+    const zipCode = ship.zipCode;
 
     // Limite de tentativas: muitos pedidos abertos em pouco tempo costuma ser teste de cartao
     const since = new Date(Date.now() - 60 * 60 * 1000);
@@ -116,8 +125,13 @@ export class OrdersService {
         "Carrinho vazio. Difícil cobrar por boas intenções.",
       );
     }
+    if (cartSnapshot.totals.selectedCount === 0) {
+      throw new BadRequestException("Marque pelo menos um produto do carrinho para fechar o pedido.");
+    }
 
-    const { totals, items } = cartSnapshot;
+    // So os itens marcados entram no pedido; os outros ficam no carrinho
+    const { totals } = cartSnapshot;
+    const items = cartSnapshot.items.filter((item) => item.selected);
     // Mesma cotacao usada nos totais do carrinho
     const shippingOption = cartSnapshot.shipping.selected;
     if (!shippingOption) {
@@ -133,24 +147,27 @@ export class OrdersService {
       : null;
 
     const number = await this.generateUniqueNumber();
+    // De onde veio a venda (QR Code, rede social, campanha): ultima origem deste navegador
+    const attribution = await this.analytics.resolveAttribution(owner.sessionId);
 
     const order = await this.prisma.order.create({
       data: {
         number,
-        userId: owner.userId ?? null,
+        userId,
+        ...(attribution ?? {}),
         status: OrderStatus.PENDING,
         customerName: dto.customerName,
         customerEmail: dto.customerEmail.toLowerCase(),
         customerPhone: dto.customerPhone,
         customerDocument: dto.customerDocument ? onlyDigits(dto.customerDocument) : undefined,
-        shippingRecipient: dto.shippingAddress.recipient,
+        shippingRecipient: ship.recipient,
         shippingZipCode: zipCode,
-        shippingStreet: dto.shippingAddress.street,
-        shippingNumber: dto.shippingAddress.number,
-        shippingComplement: dto.shippingAddress.complement,
-        shippingDistrict: dto.shippingAddress.district,
-        shippingCity: dto.shippingAddress.city,
-        shippingState: dto.shippingAddress.state.toUpperCase(),
+        shippingStreet: ship.street,
+        shippingNumber: ship.number,
+        shippingComplement: ship.complement,
+        shippingDistrict: ship.district,
+        shippingCity: ship.city,
+        shippingState: ship.state,
         subtotalCents: totals.subtotalCents,
         discountCents: totals.discountCents,
         shippingCents,
@@ -201,8 +218,8 @@ export class OrdersService {
         phone: dto.customerPhone,
         document: dto.customerDocument,
         zipCode,
-        street: dto.shippingAddress.street,
-        number: dto.shippingAddress.number,
+        street: ship.street,
+        number: ship.number,
       },
     });
 
@@ -226,10 +243,17 @@ export class OrdersService {
     // Confirmacao por e-mail com o resumo do contrato (Decreto 7.962/2013, art. 4o, III e IV)
     void this.mail.sendOrderConfirmation(order);
 
-    // Carrinho esvaziado só após a preferência existir, para não perder dados em caso de falha
-    await this.cart.clear(owner);
+    // Endereco salvo na conta (ou marcado como o ultimo usado), para pre-selecionar na proxima compra
+    await this.rememberAddress(userId, ship).catch((error) =>
+      this.logger.warn(`Nao foi possivel salvar o endereco do pedido ${order.number}: ${error}`),
+    );
+
+    // Itens comprados saem do carrinho só após a preferência existir, para não perder dados em caso de falha
+    await this.cart.removePurchased(owner, items.map((item) => item.id));
 
     this.logger.log(`Pedido ${order.number} criado (${preference.provider}).`);
+    // Funil de compra da analise: pedido fechado nesta sessao
+    await this.analytics.recordOrder(owner.sessionId, order.number, order.totalCents).catch(() => undefined);
     this.audit.record({
       category: AuditCategory.ORDER,
       action: "order.created",
@@ -244,7 +268,7 @@ export class OrdersService {
         totalCents: totals.totalCents,
         coupon: cartSnapshot.coupon?.code ?? null,
         shippingMethod: method,
-        shippingState: dto.shippingAddress.state.toUpperCase(),
+        shippingState: ship.state,
         termsVersion: dto.termsVersion,
       },
     });
@@ -264,6 +288,87 @@ export class OrdersService {
       },
       paymentUrl: preference.initPoint,
     };
+  }
+
+  /**
+   * Endereco do pedido. Com addressId, vale o endereco gravado na conta (o cliente nao consegue
+   * mandar outro endereco em nome de um salvo); sem ele, o endereco digitado no checkout.
+   */
+  private async resolveShippingAddress(userId: string, dto: CreateOrderDto) {
+    if (dto.addressId) {
+      const saved = await this.prisma.address.findFirst({ where: { id: dto.addressId, userId } });
+      if (!saved) throw new BadRequestException("Esse endereco nao esta na sua conta. Escolha outro.");
+      return {
+        id: saved.id as string | null,
+        recipient: saved.recipient,
+        zipCode: onlyDigits(saved.zipCode),
+        street: saved.street,
+        number: saved.number,
+        complement: saved.complement ?? undefined,
+        district: saved.district,
+        city: saved.city,
+        state: saved.state.toUpperCase(),
+      };
+    }
+    const a = dto.shippingAddress;
+    return {
+      id: null as string | null,
+      recipient: a.recipient.trim(),
+      zipCode: onlyDigits(a.zipCode),
+      street: a.street.trim(),
+      number: a.number.trim(),
+      complement: a.complement?.trim() || undefined,
+      district: a.district.trim(),
+      city: a.city.trim(),
+      state: a.state.toUpperCase(),
+    };
+  }
+
+  /**
+   * Guarda o endereco do pedido na conta: o checkout seguinte ja abre com ele selecionado.
+   * Endereco igual a um ja salvo (mesmo CEP, numero e complemento) nao vira duplicata.
+   */
+  private async rememberAddress(
+    userId: string,
+    ship: Awaited<ReturnType<OrdersService["resolveShippingAddress"]>>,
+  ) {
+    const now = new Date();
+    if (ship.id) {
+      await this.prisma.address.update({ where: { id: ship.id }, data: { lastUsedAt: now } });
+      return;
+    }
+    const norm = (value?: string | null) => (value ?? "").trim().toLowerCase();
+    const saved = await this.prisma.address.findMany({ where: { userId, zipCode: ship.zipCode } });
+    const same = saved.find(
+      (a) =>
+        norm(a.number) === norm(ship.number) &&
+        norm(a.complement) === norm(ship.complement) &&
+        norm(a.street) === norm(ship.street),
+    );
+    if (same) {
+      await this.prisma.address.update({
+        where: { id: same.id },
+        data: { lastUsedAt: now, recipient: ship.recipient },
+      });
+      return;
+    }
+    const count = await this.prisma.address.count({ where: { userId } });
+    await this.prisma.address.create({
+      data: {
+        userId,
+        label: count === 0 ? "Casa" : `Endereço ${count + 1}`,
+        recipient: ship.recipient,
+        zipCode: ship.zipCode,
+        street: ship.street,
+        number: ship.number,
+        complement: ship.complement,
+        district: ship.district,
+        city: ship.city,
+        state: ship.state,
+        isDefault: count === 0,
+        lastUsedAt: now,
+      },
+    });
   }
 
   async listMine(userId: string) {

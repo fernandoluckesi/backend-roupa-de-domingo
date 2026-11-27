@@ -126,6 +126,8 @@ model Address {
   state      String
   isDefault  Boolean  @default(false)
   createdAt  DateTime @default(now())
+  /// Ultimo pedido entregue neste endereco: o checkout pre-seleciona o mais recente
+  lastUsedAt DateTime?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
@@ -236,6 +238,8 @@ model CartItem {
   variantId  String
   quantity   Int      @default(1)
   customText String?
+  /// Marcado para comprar agora: os totais e o pedido usam so os itens marcados
+  selected   Boolean  @default(true)
   createdAt  DateTime @default(now())
 
   cart    Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
@@ -297,6 +301,12 @@ model Order {
   totalCents    Int
 
   couponId       String?
+  /// Origem da visita que trouxe a venda (ultimo toque nao direto, ate 30 dias antes)
+  visitId             String?
+  attributionChannel  String?
+  attributionSource   String?
+  attributionCampaign String?
+  attributionContent  String?
   shippingMethod String  @default("economico")
   estimatedDays  Int     @default(10)
   trackingCode   String?
@@ -308,6 +318,7 @@ model Order {
 
   user        User?           @relation(fields: [userId], references: [id])
   coupon      Coupon?         @relation(fields: [couponId], references: [id])
+  visit       TrafficVisit?   @relation(fields: [visitId], references: [id], onDelete: SetNull)
   items       OrderItem[]
   payment     Payment?
   fulfillment Fulfillment?
@@ -316,6 +327,7 @@ model Order {
 
   @@index([userId])
   @@index([status])
+  @@index([attributionChannel, createdAt])
   @@map("orders")
 }
 
@@ -675,4 +687,84 @@ model Invoice {
   order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
 
   @@map("invoices")
+}
+
+/// Sessao de navegacao (como no Google Analytics: termina apos 30 min sem atividade ou quando
+/// a pessoa chega por outra origem). Sem cookie e sem dado pessoal: o visitante e o hash do id
+/// anonimo do carrinho; a localizacao vem do IP na hora, e o IP nao e guardado.
+model TrafficVisit {
+  id           String   @id @default(uuid())
+  visitorHash  String
+  /// qrcode, instagram, facebook, tiktok, whatsapp, youtube, x, google, bing, outro_site, email, direto
+  channel      String
+  source       String
+  medium       String?
+  campaign     String?
+  /// Detalhe do anuncio ou, no QR Code, onde ele esta impresso (costas, etiqueta...)
+  content      String?
+  landingPath  String
+  referrerHost String?
+  device       String
+  os           String?
+  browser      String?
+  screen       String?
+  language     String?
+  country      String?
+  region       String?
+  city         String?
+  /// Primeira sessao deste navegador
+  isNewVisitor Boolean  @default(true)
+  /// Pessoa recusou "Estatisticas": so a origem da visita, sem paginas, tempo ou local
+  minimal      Boolean  @default(false)
+  pageviews    Int      @default(0)
+  engagedMs    Int      @default(0)
+  lastSeenAt   DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  orders      Order[]
+  pageViews   PageView[]
+  events      AnalyticsEvent[]
+
+  @@index([createdAt])
+  @@index([channel, createdAt])
+  @@index([visitorHash, lastSeenAt])
+  @@map("traffic_visits")
+}
+
+/// Pagina vista dentro de uma sessao, com o tempo em que ficou visivel e em foco
+model PageView {
+  id          String   @id @default(uuid())
+  visitId     String
+  path        String
+  title       String?
+  /// Ordem dentro da sessao (1 = pagina de entrada)
+  seq         Int
+  engagedMs   Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  visit TrafficVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([visitId, seq])
+  @@index([createdAt])
+  @@index([path, createdAt])
+  @@map("page_views")
+}
+
+/// Evento de comercio e de busca (produto visto, carrinho, checkout, pedido, busca no site)
+model AnalyticsEvent {
+  id         String   @id @default(uuid())
+  visitId    String
+  /// view_item, add_to_cart, begin_checkout, order_created, search
+  name       String
+  /// Produto (slug), termo buscado ou numero do pedido
+  label      String?
+  valueCents Int?
+  path       String?
+  createdAt  DateTime @default(now())
+
+  visit TrafficVisit @relation(fields: [visitId], references: [id], onDelete: Cascade)
+
+  @@index([name, createdAt])
+  @@index([visitId])
+  @@map("analytics_events")
 }

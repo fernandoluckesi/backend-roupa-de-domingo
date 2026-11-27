@@ -560,7 +560,7 @@ export class AuthService {
         marketingOptIn: true,
         termsVersion: true,
         privacyVersion: true,
-        addresses: { orderBy: [{ isDefault: "desc" }, { createdAt: "asc" }] },
+        addresses: { orderBy: [{ lastUsedAt: { sort: "desc", nulls: "last" } }, { isDefault: "desc" }, { createdAt: "asc" }] },
         _count: { select: { orders: true, discoveries: true } },
       },
     });

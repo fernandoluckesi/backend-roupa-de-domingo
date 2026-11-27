@@ -38,13 +38,17 @@ const CART_INCLUDE = {
 
 type CartWithItems = Prisma.CartGetPayload<{ include: typeof CART_INCLUDE }>;
 
+/** Totais dos itens marcados (os que vao para o pedido). */
 export interface CartTotals {
   subtotalCents: number;
   discountCents: number;
   shippingCents: number;
   totalCents: number;
   weightGrams: number;
+  /** Unidades no carrinho inteiro (contador do icone do carrinho) */
   itemCount: number;
+  /** Unidades marcadas para comprar agora */
+  selectedCount: number;
 }
 
 @Injectable()
@@ -113,8 +117,10 @@ export class CartService {
         variantId: dto.variantId,
         quantity,
       },
+      // Produto adicionado de novo volta a ficar marcado
       update: {
         quantity: { increment: quantity },
+        selected: true,
       },
     });
 
@@ -126,9 +132,15 @@ export class CartService {
     const cart = await this.getOrCreateCart(owner);
     await this.assertItemInCart(cart.id, itemId);
 
+    if (dto.quantity === undefined && dto.selected === undefined) {
+      throw new BadRequestException("Informe a quantidade ou se o item esta marcado.");
+    }
     await this.prisma.cartItem.update({
       where: { id: itemId },
-      data: { quantity: dto.quantity },
+      data: {
+        ...(dto.quantity !== undefined ? { quantity: dto.quantity } : {}),
+        ...(dto.selected !== undefined ? { selected: dto.selected } : {}),
+      },
     });
 
     await this.touch(cart.id);
@@ -139,6 +151,24 @@ export class CartService {
       // gatilho do easter egg QUARENTA_E_DOIS, validado no servidor
       easterEggTrigger: dto.quantity === 42 ? "QUARENTA_E_DOIS" : null,
     };
+  }
+
+  /** "Todos os produtos": marca ou desmarca o carrinho inteiro. */
+  async selectAll(owner: CartOwner, selected: boolean) {
+    const cart = await this.getOrCreateCart(owner);
+    await this.prisma.cartItem.updateMany({ where: { cartId: cart.id }, data: { selected } });
+    await this.touch(cart.id);
+    return this.buildCartResponse(cart.id);
+  }
+
+  /**
+   * Depois do pedido: tira do carrinho so os itens comprados (os marcados) e o cupom usado. Os
+   * desmarcados ficam para uma proxima compra.
+   */
+  async removePurchased(owner: CartOwner, itemIds: string[]) {
+    const cart = await this.getOrCreateCart(owner);
+    await this.prisma.cartItem.deleteMany({ where: { cartId: cart.id, id: { in: itemIds } } });
+    await this.prisma.cart.update({ where: { id: cart.id }, data: { couponId: null } });
   }
 
   async removeItem(owner: CartOwner, itemId: string) {
@@ -239,13 +269,15 @@ export class CartService {
         where: {
           cartId_variantId: { cartId: userCart.id, variantId: item.variantId },
         },
+        // A escolha feita no carrinho anonimo (marcado ou nao) sobrevive ao login
         create: {
           cartId: userCart.id,
           variantId: item.variantId,
           quantity: item.quantity,
           customText: item.customText,
+          selected: item.selected,
         },
-        update: { quantity: { increment: item.quantity } },
+        update: { quantity: { increment: item.quantity }, selected: item.selected },
       });
     }
 
@@ -294,12 +326,16 @@ export class CartService {
         totalCents: unitPriceCents * item.quantity,
         weightGrams: item.variant.weightGrams * item.quantity,
         customText: item.customText,
+        selected: item.selected,
       };
     });
 
-    const subtotalCents = items.reduce((acc, i) => acc + i.totalCents, 0);
-    const weightGrams = items.reduce((acc, i) => acc + i.weightGrams, 0);
+    // Totais, cupom e frete consideram so os itens marcados
+    const selectedItems = items.filter((i) => i.selected);
+    const subtotalCents = selectedItems.reduce((acc, i) => acc + i.totalCents, 0);
+    const weightGrams = selectedItems.reduce((acc, i) => acc + i.weightGrams, 0);
     const itemCount = items.reduce((acc, i) => acc + i.quantity, 0);
+    const selectedCount = selectedItems.reduce((acc, i) => acc + i.quantity, 0);
 
     const coupon = cart.coupon;
     let discountCents = 0;
@@ -319,7 +355,7 @@ export class CartService {
     let shippingCents = 0;
     let selectedShipping: ShippingOption | null = null;
 
-    if (zipCode && itemCount > 0) {
+    if (zipCode && selectedCount > 0) {
       shippingOptions = await this.shipping.quote(
         zipCode,
         weightGrams,
@@ -341,6 +377,7 @@ export class CartService {
       totalCents: Math.max(0, subtotalCents - discountCents + shippingCents),
       weightGrams,
       itemCount,
+      selectedCount,
     };
 
     const threshold = this.shipping.freeShippingThresholdCents;
