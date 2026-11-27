@@ -9,7 +9,7 @@ import {
   Query,
   UseGuards,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiQuery, ApiTags } from "@nestjs/swagger";
 import { CatalogService } from "./catalog.service";
 import { QueryProductsDto } from "./dto/query-products.dto";
 import { CreateProductDto, UpdateProductDto } from "./dto/upsert-product.dto";
@@ -43,6 +43,13 @@ export class CatalogController {
       ? await this.easterEggs.countDiscoveries({ userId, sessionId })
       : 0;
     return this.catalog.findMany(query, discovered);
+  }
+
+  @Get("products/suggest")
+  @ApiOperation({ summary: "Sugestoes da barra de busca: todos os produtos que casam, com preco" })
+  @ApiQuery({ name: "q", required: true })
+  suggest(@Query("q") q = "") {
+    return this.catalog.suggest(String(q).slice(0, 100));
   }
 
   @Get("products/featured")

@@ -56,7 +56,30 @@ fonte variável o resvg ignora o peso e desenha a versão fina. A família grava
 | Arquivo | Função |
 | ------- | ------ |
 | `catalog.json` | Frases de cada produto e tamanho do arquivo por tipo |
-| `render.js <saída>` | Gera os PNGs de impressão |
+| `render.js <saída>` | Gera os PNGs das artes usados no site (`frontend/public/designs`) |
+| `print-arts.js <saída>` | Exporta as artes de impressão em 300 DPI, por tipo de peça |
+
+## Artes para impressão (produção)
+
+`print-arts.js <pasta de saída>` exporta as artes prontas para mandar ao fornecedor: PNG com fundo
+transparente, 300 DPI gravado no arquivo e no tamanho real da estampa. A composição é a mesma do
+`render.js` (e das fotos do site); muda só a resolução, porque a arte é vetorial.
+
+| Pasta | Peças | Tamanho real | Pixels |
+| ----- | ----- | ------------ | ------ |
+| `camisetas-e-oversized` | camiseta de algodão e oversized | 21 × 28 cm (dentro do A4) | 2480 × 3307 |
+| `moletons` | canguru e gola careca | 21 × 28 cm (dentro do A4) | 2480 × 3307 |
+| `canecas` | todos os modelos (a frase sai dos dois lados) | 22,9 × 8,9 cm | 2700 × 1050 |
+| `garrafas` | Queta Soft e Norton (frase na frente) | 21,6 × 13,4 cm | 2557 × 1582 |
+
+Cada frase tem duas versões: `<frase>--para-peca-clara.png` (tinta escura: camiseta branca,
+oversized, moletom cinza ou branco, caneca branca, de coração e mágica, garrafa branca) e
+`<frase>--para-peca-escura.png` (tinta clara, com o verde-limão da marca: camiseta e moletom
+pretos, caneca preta e térmica, garrafas preta, roxa, azul e Norton). A caneca mágica fica preta
+fria e mostra a estampa sobre o branco quando esquenta, por isso usa a versão para peça clara.
+
+As artes ficam no repositório de docs, em `catalog/print-arts`. Gere de novo sempre que mudar uma
+frase ou o visual das estampas.
 
 ## Mockups do site
 

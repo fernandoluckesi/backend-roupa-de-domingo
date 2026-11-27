@@ -3,6 +3,7 @@ import { Gender, Prisma } from "@prisma/client";
 import { PrismaService } from "../../prisma/prisma.service";
 import { QueryProductsDto } from "./dto/query-products.dto";
 import { CreateProductDto, UpdateProductDto } from "./dto/upsert-product.dto";
+import { cleanPhraseName, rankProducts } from "./search";
 
 const PRODUCT_LIST_SELECT = {
   id: true,
@@ -84,22 +85,11 @@ export class CatalogService {
             },
           }
         : {}),
-      ...(query.search
-        ? {
-            OR: [
-              { name: { contains: query.search, mode: "insensitive" } },
-              {
-                shortDescription: {
-                  contains: query.search,
-                  mode: "insensitive",
-                },
-              },
-              { description: { contains: query.search, mode: "insensitive" } },
-              { tags: { has: query.search.toLowerCase() } },
-            ],
-          }
-        : {}),
     };
+
+    // Busca por texto: relevancia calculada em memoria (search.ts) sobre os produtos ja filtrados
+    const search = query.search?.trim();
+    if (search) return this.searchProducts(where, search, query.sort, page, limit);
 
     const orderBy = this.buildOrderBy(query.sort);
 
@@ -124,6 +114,99 @@ export class CatalogService {
         hasNext: page * limit < total,
       },
     };
+  }
+
+  /** Produtos que casam com a busca, na ordem de relevancia (ou na ordem escolhida pela pessoa). */
+  private async rankedIds(where: Prisma.ProductWhereInput, search: string, sort?: QueryProductsDto["sort"]) {
+    const candidates = await this.prisma.product.findMany({
+      where,
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        shortDescription: true,
+        description: true,
+        tags: true,
+        category: { select: { slug: true } },
+      },
+    });
+    const ids = rankProducts(candidates, search).map((hit) => hit.id);
+    if (!sort || sort === "relevancia" || !ids.length) return ids;
+    // Ordem escolhida pela pessoa, so entre os resultados da busca
+    const ordered = await this.prisma.product.findMany({
+      where: { id: { in: ids } },
+      select: { id: true },
+      orderBy: this.buildOrderBy(sort),
+    });
+    return ordered.map((p) => p.id);
+  }
+
+  private async searchProducts(
+    where: Prisma.ProductWhereInput,
+    search: string,
+    sort: QueryProductsDto["sort"],
+    page: number,
+    limit: number,
+  ) {
+    const ids = await this.rankedIds(where, search, sort);
+    const pageIds = ids.slice((page - 1) * limit, page * limit);
+    const rows = await this.prisma.product.findMany({
+      where: { id: { in: pageIds } },
+      select: PRODUCT_LIST_SELECT,
+    });
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const total = ids.length;
+    return {
+      items: pageIds.map((id) => byId.get(id)).filter((row) => row !== undefined),
+      meta: {
+        page,
+        limit,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+        hasNext: page * limit < total,
+      },
+    };
+  }
+
+  /**
+   * Sugestoes da barra de busca: todos os produtos que casam com o que foi digitado, um por linha
+   * (camiseta, oversized, caneca, garrafa... separados), na ordem de relevancia e com o preco de
+   * cada um. `total` e quantos produtos a busca encontrou.
+   */
+  async suggest(q: string, limit = 40) {
+    const search = q.trim();
+    if (!search) return { total: 0, items: [] };
+    const ids = await this.rankedIds({ isActive: true, isSecret: false }, search);
+    const pageIds = ids.slice(0, limit);
+    const rows = await this.prisma.product.findMany({
+      where: { id: { in: pageIds } },
+      select: {
+        id: true,
+        slug: true,
+        name: true,
+        shortDescription: true,
+        basePriceCents: true,
+        images: { orderBy: { position: "asc" }, take: 1, select: { url: true } },
+        variants: { where: { isAvailable: true }, select: { priceCents: true } },
+      },
+    });
+    const byId = new Map(rows.map((row) => [row.id, row]));
+    const items = pageIds.flatMap((id) => {
+      const row = byId.get(id);
+      if (!row) return [];
+      return [
+        {
+          slug: row.slug,
+          name: cleanPhraseName(row.name),
+          // Tipo da peca ("Camiseta de algodao", "Caneca"...), o mesmo texto do card
+          pieceLabel: row.shortDescription,
+          imageUrl: row.images[0]?.url ?? null,
+          // Mesmo preco do card: a variante mais barata a venda
+          priceCents: Math.min(row.basePriceCents, ...row.variants.map((v) => v.priceCents)),
+        },
+      ];
+    });
+    return { total: ids.length, items };
   }
 
   findFeatured() {

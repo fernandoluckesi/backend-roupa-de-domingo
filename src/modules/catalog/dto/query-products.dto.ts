@@ -46,7 +46,10 @@ export class QueryProductsDto {
   @IsEnum(Gender, { each: true })
   gender?: Gender[];
 
-  @ApiPropertyOptional({ description: "Busca em nome, descricao e tags" })
+  @ApiPropertyOptional({
+    description:
+      "Busca por relevancia em nome, subtitulo, tags e descricao: ignora acento e maiusculas, aceita palavras em qualquer ordem, palavra incompleta e erro de digitacao",
+  })
   @IsOptional()
   @IsString()
   search?: string;
@@ -77,12 +80,12 @@ export class QueryProductsDto {
   maxPrice?: number;
 
   @ApiPropertyOptional({
-    enum: ["recentes", "preco-asc", "preco-desc", "populares", "nome"],
-    default: "recentes",
+    description: "relevancia so faz sentido com busca (e o padrao quando ha busca); sem busca vale recentes",
+    enum: ["relevancia", "recentes", "preco-asc", "preco-desc", "populares", "nome"],
   })
   @IsOptional()
-  @IsIn(["recentes", "preco-asc", "preco-desc", "populares", "nome"])
-  sort?: "recentes" | "preco-asc" | "preco-desc" | "populares" | "nome";
+  @IsIn(["relevancia", "recentes", "preco-asc", "preco-desc", "populares", "nome"])
+  sort?: "relevancia" | "recentes" | "preco-asc" | "preco-desc" | "populares" | "nome";
 
   @ApiPropertyOptional({ default: 1 })
   @IsOptional()
