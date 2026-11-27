@@ -18,10 +18,20 @@ export type VariantSeed = {
 export type CatalogImage = string | { url: string; color?: string };
 
 /** Campos de ProductImage a partir de uma imagem do catalogo. */
+/**
+ * Versão das fotos de /products. As fotos são servidas com cache longo (Cloudflare e navegador) e
+ * o nome do arquivo não muda quando a foto é gerada de novo; trocar esta versão muda a URL salva no
+ * banco (?v=...) e obriga todo mundo a baixar a foto nova.
+ * ATUALIZE sempre que regenerar as fotos em frontend/public/products (data da geração).
+ */
+export const IMAGE_VERSION = "20261119";
+
+const versioned = (url: string) => (url.startsWith("/") && !url.includes("?") ? `${url}?v=${IMAGE_VERSION}` : url);
+
 export function imageFields(image: CatalogImage): { url: string; color: string | null } {
   return typeof image === "string"
-    ? { url: image, color: null }
-    : { url: image.url, color: image.color ?? null };
+    ? { url: versioned(image), color: null }
+    : { url: versioned(image.url), color: image.color ?? null };
 }
 
 export type ProductSeed = {
@@ -70,9 +80,12 @@ function shirtVariants(
   prefix: string,
   priceCents: number,
   colors: string[] = ["Preta", "Branca"],
+  minSize = SHIRT_SIZES[0],
 ): VariantSeed[] {
+  const sizes = SHIRT_SIZES.slice(SHIRT_SIZES.indexOf(minSize));
+  if (!sizes.length) throw new Error(`Tamanho desconhecido: ${minSize}`);
   return colors.flatMap((color) =>
-    SHIRT_SIZES.map((size) => ({
+    sizes.map((size) => ({
       sku: `${prefix}-${COLOR_CODE[color]}-${size}`,
       size,
       color,
@@ -576,7 +589,7 @@ function phraseProducts(phrase: Phrase): ProductInput[] {
           images: [{ url: img(1), color: "Preta" }, { url: img(2), color: "Branca" }],
           // featured: so a camiseta; isFeatured: todas as pecas da frase
           isFeatured: Boolean(phrase.isFeatured || phrase.featured),
-          variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas),
+          variants: shirtVariants(`CAM-${phrase.code}`, PRICE.camisetas, undefined, phrase.minSize),
         };
       case "moletons":
         return {
@@ -700,6 +713,9 @@ const setPrice = (product: ProductInput, priceCents: number) => {
  */
 const NO_HOODIE = new Set(["13-melhores-frases-ja-ditas", "eu-prefiro-morrer-do-que-perder-a-vida"]);
 
+/** Frases só na camiseta de algodão (sem oversized): noOversized em catalog-phrases.ts. */
+const NO_OVERSIZED = new Set(PHRASES.filter((p) => p.noOversized).map((p) => p.key));
+
 const derived: ProductInput[] = [];
 
 for (const product of ITEMS) {
@@ -708,7 +724,7 @@ for (const product of ITEMS) {
 
   if (type === "camiseta") {
     setPrice(product, RETAIL.camiseta);
-    if (product.isSecret) continue;
+    if (product.isSecret || NO_OVERSIZED.has(key)) continue;
     // Mesma estampa na camiseta oversized (foto da peça, cor única)
     derived.push({
       ...product,

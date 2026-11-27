@@ -14,8 +14,13 @@
 // Todos os scripts usam a mesma proporcao, entao a foto do site mostra exatamente a mesma quebra
 // da arte impressa.
 //
+// Outros estilos (campo "style" do catalog.json) ficam em styles.js. Todos ganham embaixo a
+// assinatura discreta da marca (signature.js).
+//
 // Usado por render.js, mockup.js e model-mockup.js.
 const { FONTS } = require("./fonts");
+const { STYLES } = require("./styles");
+const { withSignature } = require("./signature");
 
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
@@ -101,6 +106,14 @@ function blockSvg(lines, rows, fill) {
  * proporcao (largura / altura) da estampa (textAspect).
  */
 function textBlock(p, fill, measure, aspect) {
+  const style = STYLES[p.style];
+  if (p.style && !style) throw new Error(`${p.slug}: estilo desconhecido "${p.style}"`);
+  const inner = style ? style(p, fill, measure, aspect) : classicBlock(p, fill, measure, aspect);
+  return withSignature(inner, fill, measure);
+}
+
+/** Estilo "classic": Londrina Solid + Lobster Two, com a quebra de linha escolhida pela area. */
+function classicBlock(p, fill, measure, aspect) {
   const lines = p.lines.map((line) => line.trim());
   const text = p.small ? punchline(p.small) : "";
   if (!aspect) {

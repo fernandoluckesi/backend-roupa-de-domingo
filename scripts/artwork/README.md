@@ -14,7 +14,7 @@ Rode a partir de uma pasta temporária que tenha:
 ## Tipografia das estampas
 
 A mesma em todas as artes, como marca registrada da loja (`fonts.js`). Todas são Google Fonts com
-licença SIL OFL, que libera o uso comercial.
+licença SIL OFL, que libera o uso comercial (a Permanent Marker é Apache 2.0, também liberada).
 
 | Uso | Fonte | Onde |
 | --- | ----- | ---- |
@@ -28,6 +28,27 @@ A frase de baixo tem 105% da altura da frase principal e as duas mudam de tamanh
 maior, também da frase principal) e fica com a que deixa a estampa maior na proporção `textAspect` do
 tipo no `catalog.json`. A arte impressa e as fotos usam a mesma proporção, então a quebra é igual nas duas.
 
+## Estilos das frases e assinatura da marca
+
+Cada frase escolhe um estilo tipográfico no campo `style` do `catalog.json` (`styles.js`), para a
+coleção não ter cara de modelo único. Sem `style`, vale o `classic`.
+
+| Estilo | Visual |
+| ------ | ------ |
+| `classic` | Londrina Solid + linha de apoio em Lobster Two (`text-block.js`) |
+| `poster` | Anton condensada; cada linha cresce até a largura das outras, como cartaz; apoio pequeno em Space Grotesk espaçada |
+| `stack` | Kanit Black em minúsculas; a linha de apoio fecha a piada em itálico, na cor de destaque |
+| `marker` | Permanent Marker (pincel), levemente inclinada |
+
+Cor de destaque: verde-limão da logo em peça escura; em peça clara, a própria tinta.
+
+Toda estampa leva embaixo, pequena, a assinatura da marca (`signature.js`): "Roupa de Domingo" em
+Archivo Black e "ESTAMPAS SEM ANESTESIA" em Space Grotesk espaçada na mesma largura, como na logo.
+Em peça escura sai nas cores da logo (off-white e limão); em peça clara, na cor da tinta.
+
+A Kanit é declarada pela família tipográfica ("Kanit" com `font-weight="900"`): pelo nome
+"Kanit Black" o resvg não encontra a fonte e cai em outra sem avisar.
+
 O Space Grotesk é um arquivo estático (`SpaceGrotesk-Medium.ttf`, do pacote `@fontsource`): com a
 fonte variável o resvg ignora o peso e desenha a versão fina. A família gravada no arquivo é
 "Space Grotesk Light Medium", e é esse o nome usado em `fonts.js`.
@@ -35,7 +56,30 @@ fonte variável o resvg ignora o peso e desenha a versão fina. A família grava
 | Arquivo | Função |
 | ------- | ------ |
 | `catalog.json` | Frases de cada produto e tamanho do arquivo por tipo |
-| `render.js <saída>` | Gera os PNGs de impressão |
+| `render.js <saída>` | Gera os PNGs das artes usados no site (`frontend/public/designs`) |
+| `print-arts.js <saída>` | Exporta as artes de impressão em 300 DPI, por tipo de peça |
+
+## Artes para impressão (produção)
+
+`print-arts.js <pasta de saída>` exporta as artes prontas para mandar ao fornecedor: PNG com fundo
+transparente, 300 DPI gravado no arquivo e no tamanho real da estampa. A composição é a mesma do
+`render.js` (e das fotos do site); muda só a resolução, porque a arte é vetorial.
+
+| Pasta | Peças | Tamanho real | Pixels |
+| ----- | ----- | ------------ | ------ |
+| `camisetas-e-oversized` | camiseta de algodão e oversized | 21 × 28 cm (dentro do A4) | 2480 × 3307 |
+| `moletons` | canguru e gola careca | 21 × 28 cm (dentro do A4) | 2480 × 3307 |
+| `canecas` | todos os modelos (a frase sai dos dois lados) | 22,9 × 8,9 cm | 2700 × 1050 |
+| `garrafas` | Queta Soft e Norton (frase na frente) | 21,6 × 13,4 cm | 2557 × 1582 |
+
+Cada frase tem duas versões: `<frase>--para-peca-clara.png` (tinta escura: camiseta branca,
+oversized, moletom cinza ou branco, caneca branca, de coração e mágica, garrafa branca) e
+`<frase>--para-peca-escura.png` (tinta clara, com o verde-limão da marca: camiseta e moletom
+pretos, caneca preta e térmica, garrafas preta, roxa, azul e Norton). A caneca mágica fica preta
+fria e mostra a estampa sobre o branco quando esquenta, por isso usa a versão para peça clara.
+
+As artes ficam no repositório de docs, em `catalog/print-arts`. Gere de novo sempre que mudar uma
+frase ou o visual das estampas.
 
 ## Mockups do site
 
@@ -52,6 +96,10 @@ cores extras recoloridas). Cada entrada do `catalog.json` gera todas as versões
 
 Sem slugs, gera tudo. Precisa também do pacote `pngjs`. Os produtos, as cores e os preços dessas
 versões são montados no fim de `prisma/catalog.ts` (linha do fornecedor).
+
+Depois de gerar as fotos de novo, atualize `IMAGE_VERSION` em `prisma/catalog.ts` (data da
+geração). As fotos ficam em cache no Cloudflare e no navegador com o mesmo nome de arquivo; a versão
+muda a URL (`?v=...`) e força o download da foto nova.
 
 A saída é PNG. Converta para JPG (qualidade ~85) antes do commit, por exemplo com
 `sips -s format jpeg` no macOS, e apague os PNGs.

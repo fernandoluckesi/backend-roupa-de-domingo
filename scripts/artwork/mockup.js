@@ -33,6 +33,11 @@ const INK = { dark: "#141414", light: "#F5F5F0" };
 // Cor dos numeros da estampa-lista (list-layout.js)
 const ACCENT = { dark: "#141414", light: "#D9FF3F" };
 const SIZE = 1000;
+// A foto sai com K vezes o lado da foto-base: a estampa e desenhada direto nessa resolucao
+// (vetor), entao o texto fica nitido no zoom da pagina do produto. As coordenadas continuam
+// medidas na foto-base 1000x1000.
+const K = 2;
+const OUT = SIZE * K;
 
 /**
  * Versoes de cada tipo. Coordenadas na foto-base 1000x1000:
@@ -138,13 +143,30 @@ function sideListArt(p, v) {
   const s = Math.min(aw / b.width, ah / b.height);
   // Borda esquerda da arte um pouco antes da lateral visivel da caneca
   const left = cx - SIDE_LIST_START * Math.PI * r;
-  const top = v.art[1] + v.art[3] / 2 - ah / 2;
+  // Centro vertical do corpo da caneca: um pouco abaixo do centro de `art`, porque a boca (elipse)
+  // ocupa o topo e a curvatura ainda levanta o texto nas laterais
+  const top = v.art[1] + v.art[3] / 2 + SIDE_LIST_DROP * v.art[3] - ah / 2;
   const tx = left - b.x * s;
   const ty = top + ah / 2 - (b.y + b.height / 2) * s;
   return { art: `<g transform="translate(${tx},${ty}) scale(${s})">${inner}</g>`, area: [left, top, aw, ah] };
 }
 // Onde a arte comeca na foto, em fracao de pi*r a esquerda do eixo (0,5 = lateral da caneca)
 const SIDE_LIST_START = 0.28;
+// Quanto a arte desce em relacao ao centro de `art`, em fracao da altura de `art`
+const SIDE_LIST_DROP = 0.08;
+
+/** Foto-base ampliada para OUT x OUT (RGBA), uma vez por arquivo. */
+const scaledCache = new Map();
+function scaledBase(file) {
+  if (!scaledCache.has(file)) {
+    basePixels(file); // valida o tamanho da foto-base
+    const b64 = fs.readFileSync(path.join(__dirname, "bases", file)).toString("base64");
+    const px = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${OUT}" height="${OUT}"><image href="data:image/png;base64,${b64}" width="${OUT}" height="${OUT}"/></svg>`).render().pixels;
+    // resvg devolve pre-multiplicado; as fotos-base sao opacas, entao e o mesmo RGBA
+    scaledCache.set(file, Buffer.from(px));
+  }
+  return scaledCache.get(file);
+}
 
 function mockup(p, v) {
   const tall = (p.layout === "list" || p.layout === "image") && v.listArt;
@@ -163,17 +185,17 @@ function mockup(p, v) {
         ? placeBlock(imageBlock(p, INK[v.ink], bbox), area, Infinity)
         : placeBlock(textBlock(p, v.ink, textAspect(catalog, p)), area, v.maxScale);
   // Estampa sozinha (fundo transparente), aplicada na peca acompanhando dobras e sombras
-  let overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${SIZE}" height="${SIZE}">${art}</svg>`).render().pixels;
+  let overlay = render(`<svg xmlns="http://www.w3.org/2000/svg" width="${OUT}" height="${OUT}"><g transform="scale(${K})">${art}</g></svg>`).render().pixels;
   let region = area;
   if (cyl) {
-    overlay = wrapCylinder(overlay, SIZE, SIZE, cyl);
+    overlay = wrapCylinder(overlay, OUT, OUT, { ...cyl, cx: cyl.cx * K, r: cyl.r * K });
     // Enrolada, a estampa ocupa a largura do corpo e sobe um pouco nas bordas
     const lift = Math.ceil(cyl.tilt * cyl.r);
     region = [cyl.cx - cyl.r, area[1] - lift, 2 * cyl.r, area[3] + lift];
   }
-  const pixels = Buffer.from(basePixels(v.base));
-  blendPrint(pixels, overlay, SIZE, SIZE, region, v.ink === "dark" ? "light" : "dark", { rigid: Boolean(cyl) });
-  const png = new PNG({ width: SIZE, height: SIZE });
+  const pixels = Buffer.from(scaledBase(v.base));
+  blendPrint(pixels, overlay, OUT, OUT, region.map((n) => n * K), v.ink === "dark" ? "light" : "dark", { rigid: Boolean(cyl), scale: K });
+  const png = new PNG({ width: OUT, height: OUT });
   pixels.copy(png.data);
   return PNG.sync.write(png);
 }
@@ -182,6 +204,8 @@ let count = 0;
 for (const p of catalog.products) {
   const variants = VARIANTS[p.type];
   if (!variants || (only.size && !only.has(p.slug))) continue;
+  // Frase so na camiseta de algodao: a unica foto daqui seria a oversized
+  if (p.type === "camiseta" && p.noOversized) continue;
   const key = p.slug.slice(p.type.length + 1);
   for (const v of variants) {
     if (v.skip?.includes(p.layout)) continue;

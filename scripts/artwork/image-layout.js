@@ -13,6 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const { PNG } = require("pngjs");
 const { FONTS } = require("./fonts");
+const { withSignature } = require("./signature");
 
 const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;");
 
@@ -69,7 +70,9 @@ function imageBlock(p, ink, measure) {
   const { b64, width, height } = inked(p.image, ink, p.erase);
   const k = WIDTH / width;
   const image = `<image x="${-WIDTH / 2}" y="0" width="${WIDTH}" height="${height * k}" href="data:image/png;base64,${b64}"/>`;
-  return image + (p.caption ? captionBlock(p.caption, ink, k, measure) : "");
+  const inner = image + (p.caption ? captionBlock(p.caption, ink, k, measure) : "");
+  // Assinatura da marca embaixo do desenho
+  return withSignature(inner, ink, measure, { min: 300, max: 360, gap: 50 });
 }
 
 module.exports = { imageBlock };
